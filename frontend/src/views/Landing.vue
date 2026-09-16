@@ -946,18 +946,20 @@ const handleRetry = async () => {
   background-size: cover;
   background-position: center;
   transform-origin: 68% 42%;
-  animation: landscape-drift 32s ease-in-out infinite alternate;
+  animation: landscape-drift 20s ease-in-out -5s infinite alternate;
 }
 .journey-mist {
-  inset: 35% -6% 38% 35%;
+  inset: 30% -12% 34% 40%;
   z-index: -2;
-  background: radial-gradient(ellipse at 30% 55%, rgba(218, 233, 239, .22), transparent 58%), radial-gradient(ellipse at 75% 45%, rgba(244, 236, 213, .17), transparent 55%);
-  animation: valley-mist 24s ease-in-out infinite alternate;
+  mask-image: radial-gradient(ellipse at center, #000 25%, transparent 70%);
+  background: radial-gradient(ellipse at 22% 65%, rgba(218, 233, 239, .44), transparent 48%), radial-gradient(ellipse at 65% 38%, rgba(244, 236, 213, .34), transparent 42%), radial-gradient(ellipse at 88% 72%, rgba(218, 233, 239, .3), transparent 38%);
+  animation: valley-mist 14s ease-in-out -4s infinite alternate;
 }
 .journey-sunlight {
+  inset: -4%;
   z-index: -2;
-  background: radial-gradient(ellipse at 100% 18%, rgba(255, 203, 125, .22), transparent 42%);
-  animation: sunset-glow 18s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 100% 18%, rgba(255, 203, 125, .42), transparent 48%), conic-gradient(from 200deg at 100% 18%, transparent 0deg, rgba(255, 221, 158, .12) 12deg, transparent 24deg, rgba(255, 221, 158, .08) 36deg, transparent 48deg);
+  animation: sunset-glow 10s ease-in-out -3s infinite alternate;
 }
 .journey-motion-toggle {
   position: absolute;
@@ -974,9 +976,9 @@ const handleRetry = async () => {
 .journey-motion-toggle[aria-pressed='true'] { border-color: #f5cb87; color: #f5cb87; }
 .journey-motion-toggle:focus-visible { outline: 3px solid #f5cb87; outline-offset: 4px; }
 .motion-paused .journey-landscape, .motion-paused .journey-mist, .motion-paused .journey-sunlight { animation-play-state: paused; }
-@keyframes landscape-drift { from { transform: scale(1); } to { transform: scale(1.045) translate3d(-.35%, .2%, 0); } }
-@keyframes valley-mist { from { transform: translate3d(-3%, 0, 0); opacity: .45; } to { transform: translate3d(3%, 2%, 0); opacity: .85; } }
-@keyframes sunset-glow { from { opacity: .3; } to { opacity: .75; } }
+@keyframes landscape-drift { from { transform: scale(1); } to { transform: scale(1.10) translate3d(-.7%, .3%, 0); } }
+@keyframes valley-mist { from { transform: translate3d(-12%, 3%, 0); opacity: .45; } to { transform: translate3d(12%, -3%, 0); opacity: .9; } }
+@keyframes sunset-glow { from { opacity: .35; transform: translate3d(0, 0, 0); } to { opacity: .85; transform: translate3d(-2%, 1%, 0); } }
 .journey-hero-shade {
   position: absolute;
   inset: 0;
