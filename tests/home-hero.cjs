@@ -56,15 +56,16 @@ const crypto = require('node:crypto');
       assert.equal(await page.locator(selector).evaluate(el => getComputedStyle(el).animationName), 'none');
     }
     assert.equal(await page.locator('.journey-motion-toggle').isVisible(), false);
-    await page.locator('.journey-search input').fill('西安到成都，喜欢徒步');
-    await page.locator('.journey-search input').press('Enter');
+    assert.equal(await page.locator('.journey-hero input, .journey-search').count(), 0);
+    await page.locator('.special-textarea').fill('保留已有行程需求');
+    await page.locator('.journey-explore').click();
     await page.waitForTimeout(800);
-    assert.equal(await page.locator('.special-textarea').inputValue(), '西安到成都，喜欢徒步');
+    assert.equal(await page.locator('.special-textarea').inputValue(), '保留已有行程需求');
     assert.ok(await page.evaluate(() => scrollY > 300));
     await page.locator('.journey-explore').click();
-    assert.equal(await page.locator('.special-textarea').inputValue(), '西安到成都，喜欢徒步');
+    assert.equal(await page.locator('.special-textarea').inputValue(), '保留已有行程需求');
     assert.deepEqual(writes, [], 'explore must not generate or make paid calls');
     assert.deepEqual(errors, []);
-    console.log('PASS: 4 languages, phone/desktop, image loads, no overflow/settings, search handoff and no generation');
+    console.log('PASS: 4 languages, phone/desktop, motion controls, no hero search, explore scrolls without changing data or generating');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -7,8 +7,8 @@ const landingSource = readFileSync(new URL('./Landing.vue', import.meta.url), 'u
 test('hero uses the supplied landscape with accessible planning entry and no settings button', () => {
   assert.match(landingSource, /import heroImage from '@\/assets\/journeygo-hero\.png'/)
   assert.match(landingSource, /:show-settings="false" :show-cta="false"/)
-  assert.match(landingSource, /@submit\.prevent="beginExploring"/)
-  assert.match(landingSource, /maxlength="200" type="search"/)
+  assert.match(landingSource, /class="journey-explore" :disabled="loading" @click="scrollToForm"/)
+  assert.doesNotMatch(landingSource, /journey-search|heroQuery|beginExploring/)
   assert.match(landingSource, /prefers-reduced-motion: reduce/)
   assert.doesNotMatch(landingSource.split('</template>')[0], /moving-clouds|presentation-title|fog-low/)
 })

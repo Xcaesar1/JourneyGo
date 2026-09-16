@@ -13,15 +13,7 @@
         <div class="journey-hero-content">
           <h1 id="hero-title">{{ t('home.hero.title') }}</h1>
           <p class="journey-hero-copy">{{ t('home.hero.line1') }}<br />{{ t('home.hero.line2') }}</p>
-          <form class="journey-hero-form" @submit.prevent="beginExploring">
-            <div class="journey-search">
-              <input v-model="heroQuery" :aria-label="t('home.hero.search')" :placeholder="t('home.hero.search')" maxlength="200" type="search" />
-              <button type="submit" :aria-label="t('home.hero.explore')" :disabled="loading">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
-              </button>
-            </div>
-            <button type="submit" class="journey-explore" :disabled="loading">{{ t('home.hero.explore') }} <span aria-hidden="true">↗</span></button>
-          </form>
+          <button type="button" class="journey-explore" :disabled="loading" @click="scrollToForm">{{ t('home.hero.explore') }} <span aria-hidden="true">↗</span></button>
         </div>
       </section>
     </div>
@@ -687,16 +679,7 @@ const scrollToForm = () => {
   }
 }
 
-const heroQuery = ref('')
 const motionPaused = ref(false)
-const beginExploring = () => {
-  if (loading.value) return
-  const query = heroQuery.value.trim()
-  if (query && !formData.free_text_input.includes(query)) {
-    formData.free_text_input = [formData.free_text_input.trim(), query].filter(Boolean).join('\n')
-  }
-  scrollToForm()
-}
 
 const formatHistoryTime = (value: string) => {
   const date = new Date(value)
@@ -1023,34 +1006,12 @@ const handleRetry = async () => {
   font-weight: 400;
   text-shadow: 0 2px 20px #10273788;
 }
-.journey-hero-form { max-width: 450px; }
-.journey-search {
-  display: flex;
-  align-items: center;
-  background: #fffaf0;
-  border: 1px solid #fffdf7;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px #091a3626;
-}
-.journey-search input {
-  width: 100%;
-  min-width: 0;
-  padding: 19px 0 19px 20px;
-  border: 0;
-  background: transparent;
-  color: #203744;
-  font-size: 15px;
-  outline: none;
-}
-.journey-search input::placeholder { color: #5c6b6e; opacity: 1; }
-.journey-search:focus-within { outline: 3px solid #f7c87d; outline-offset: 4px; }
-.journey-search button { flex: none; width: 54px; height: 58px; border: 0; background: transparent; color: #203744; cursor: pointer; }
 .journey-explore {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 40px;
-  margin-top: 25px;
+  margin-top: 0;
   padding: 17px 27px;
   border: 1px solid #f5cb87;
   border-radius: 6px;
@@ -1061,7 +1022,7 @@ const handleRetry = async () => {
   cursor: pointer;
 }
 .journey-explore:hover { background: #ffe1ad; }
-.journey-explore:focus-visible, .journey-search button:focus-visible { outline: 3px solid white; outline-offset: 4px; }
+.journey-explore:focus-visible { outline: 3px solid white; outline-offset: 4px; }
 .journey-hero button:disabled { opacity: .55; cursor: wait; }
 @keyframes trail-reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 760px) {
@@ -1073,7 +1034,6 @@ const handleRetry = async () => {
   .journey-hero-content { width: 86%; margin-left: 7%; padding: 150px 0 200px; }
   .journey-hero h1 { font-size: clamp(36px, 9vw, 52px); margin-bottom: 20px; }
   .journey-hero-copy { font-size: 25px; margin-bottom: 28px; }
-  .journey-hero-form { max-width: 380px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .journey-hero-content, .journey-landscape, .journey-mist, .journey-sunlight { animation: none; }
