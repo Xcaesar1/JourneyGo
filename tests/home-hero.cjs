@@ -10,14 +10,18 @@ const crypto = require('node:crypto');
     const page = await browser.newPage(access ? { httpCredentials: { username: access.username, password: access.password } } : {});
     const errors = [];
     const writes = [];
+    const externalFonts = [];
+    const eagerResult = [];
+    page.on('request', request => {
+      if (/fonts\.(googleapis|gstatic)\.com/.test(request.url())) externalFonts.push(request.url());
+      if (/\/Result[-.]/.test(request.url())) eagerResult.push(request.url());
+    });
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/api/**', route => {
       if (route.request().method() === 'POST') writes.push(route.request().url());
       return route.fulfill({ json: { success: true, data: [], items: [] } });
     });
     const base = process.env.HOME_UI_URL || 'http://127.0.0.1:5174';
-    // External fonts must not block application acceptance on restricted networks.
-    await page.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
     await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
     const icon = page.locator('link[rel="icon"]');
     assert.equal(await icon.getAttribute('type'), 'image/png');
@@ -78,6 +82,8 @@ const crypto = require('node:crypto');
     await page.locator('.journey-explore').click();
     assert.equal(await page.locator('.special-textarea').inputValue(), '保留已有行程需求');
     assert.deepEqual(writes, [], 'explore must not generate or make paid calls');
+    assert.deepEqual(externalFonts, [], 'fonts must be served by this site');
+    assert.deepEqual(eagerResult, [], 'result bundle must not be downloaded on the homepage');
     assert.deepEqual(errors, []);
     console.log('PASS: 4 languages, phone/desktop, default motion without toggle, reduced motion, no hero search, explore preserves data');
   } finally { await browser.close(); }

@@ -39,6 +39,7 @@ const assert = require('node:assert/strict');
       await route.fulfill({ json: body });
     });
     await page.goto(base);
+    await page.locator('.landing-brand').waitFor();
     assert.equal(await page.title(), 'JourneyGo');
     assert.ok(await page.getByText('JourneyGo', { exact: true }).count() > 0);
     await page.evaluate(plan => {

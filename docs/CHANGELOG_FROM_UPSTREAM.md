@@ -2,6 +2,15 @@
 
 本文件记录 JourneyOps 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。
 
+## Initial Page Loading - 2026-09-16
+
+- 结果页按路由懒加载，图表、地图与截图依赖不再随首页下载；首屏 JS 未压缩体积由约 3.19 MB 降为 1.75 MB。
+- Outfit、Nunito Sans、Raleway 通过固定版本 Fontsource 包随站点提供，移除三处外部 Google 字体样式请求，保留字体名称及 swap 行为。
+- 仅 `/assets` 启用 gzip，哈希文件使用 private immutable 缓存，HTML 重新校验；不修改 API/SSE 流、数据库或鉴权。
+- 216 项后端测试通过、4 项跳过；30 项前端测试、构建、首页与结果页浏览器回归通过。模拟 1.6 Mbps/150 ms 冷启动：按钮约 4274 ms 可用，主脚本压缩传输 547969 字节，非线上速度承诺。
+- 当前 staging Caddy 已启用压缩，但全站 `Cache-Control: no-store` 会覆盖应用缓存头。未修改入口配置，缓存收益需获批发布时限定 no-store 到 HTML/API，并验证静态资源缓存及未认证请求仍受保护。
+- 回滚本提交并恢复前端依赖锁即可恢复旧资源加载方式；无数据迁移。本次未推送或部署。
+
 ## Default Homepage Motion - 2026-09-16
 
 - 按用户要求移除首页暂停动态按钮、状态和四语言文案，默认播放背景动效；仍尊重系统减少动态偏好与手机端镜头降级。

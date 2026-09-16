@@ -4,6 +4,16 @@ import test from 'node:test'
 
 const landingSource = readFileSync(new URL('./Landing.vue', import.meta.url), 'utf8')
 
+test('initial page avoids eager result imports and external font stylesheets', () => {
+  const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8')
+  assert.match(main, /component: \(\) => import\('\.\/views\/Result.vue'\)/)
+  assert.doesNotMatch(main, /import Result from/)
+  assert.match(main, /@fontsource\/outfit\/latin-400.css/)
+  for (const path of ['../../index.html', '../App.vue', '../components/OverviewAttractionCard.vue']) {
+    assert.doesNotMatch(readFileSync(new URL(path, import.meta.url), 'utf8'), /fonts\.googleapis\.com|fonts\.gstatic\.com/)
+  }
+})
+
 test('hero uses the supplied landscape with accessible planning entry and no settings button', () => {
   assert.match(landingSource, /import heroImage from '@\/assets\/journeygo-hero\.png'/)
   assert.match(landingSource, /:show-settings="false" :show-cta="false"/)

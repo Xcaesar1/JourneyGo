@@ -5,12 +5,12 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from ..config import get_settings, print_config, validate_config
 from ..services.observability import install_trace_middleware
 from .errors import is_v2_path, register_api_exception_handlers
 from .health import router as health_router
+from .static_assets import build_assets
 from .routes import chat, poi, trip
 from .routes import map as map_routes
 from .routes import settings as settings_routes
@@ -115,7 +115,7 @@ async def root():
     # 检查前端构建产物是否存在（Docker 部署时会有）
     dist_index = Path(__file__).resolve().parent.parent.parent.parent / "frontend" / "dist" / "index.html"
     if dist_index.exists():
-        return FileResponse(str(dist_index))
+        return FileResponse(str(dist_index), headers={"Cache-Control": "no-cache"})
     return {
         "name": settings.app_name,
         "version": settings.app_version,
@@ -140,7 +140,7 @@ if _frontend_dist.exists():
     # 挂载 assets 目录
     _assets_dir = _frontend_dist / "assets"
     if _assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=str(_assets_dir)), name="assets")
+        app.mount("/assets", build_assets(_assets_dir), name="assets")
     # SPA catch-all: 未匹配的前端路由一律返回 index.html
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
@@ -151,7 +151,7 @@ if _frontend_dist.exists():
         file_path = _frontend_dist / full_path
         if file_path.exists() and file_path.is_file():
             return FileResponse(str(file_path))
-        return FileResponse(str(_frontend_dist / "index.html"))
+        return FileResponse(str(_frontend_dist / "index.html"), headers={"Cache-Control": "no-cache"})
 
 
 if __name__ == "__main__":
