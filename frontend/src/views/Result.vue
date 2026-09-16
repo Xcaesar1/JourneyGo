@@ -2756,18 +2756,19 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
             <div style="text-align:center;color:#00e5ff;font-weight:bold;margin-bottom:12px;font-size:15px;">${w.date}</div>
             <div style="display:flex;align-items:center;margin-bottom:10px;">
               <div style="line-height:1.2;">
-                <div style="font-size:12px;color:#99b0c9;margin-bottom:2px;">${t('result.export.daytime')}</div>
+                <div style="font-size:12px;color:#99b0c9;margin-bottom:2px;">${t(w.source_url ? 'result.weatherHigh' : 'result.export.daytime')}</div>
                 <div style="font-size:14px;color:#fff;font-weight:600;">${w.day_weather} ${w.day_temp}°C</div>
               </div>
             </div>
             <div style="display:flex;align-items:center;margin-bottom:12px;">
               <div style="line-height:1.2;">
-                <div style="font-size:12px;color:#99b0c9;margin-bottom:2px;">${t('result.export.nighttime')}</div>
+                <div style="font-size:12px;color:#99b0c9;margin-bottom:2px;">${t(w.source_url ? 'result.weatherLow' : 'result.export.nighttime')}</div>
                 <div style="font-size:14px;color:#fff;font-weight:600;">${w.night_weather} ${w.night_temp}°C</div>
               </div>
             </div>
             <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;text-align:center;font-size:12px;color:#99b0c9;">
               ${w.wind_direction} ${w.wind_power}
+              ${w.source_url === 'https://open-meteo.com/' ? '<br><a href="https://open-meteo.com/" style="color:#99b0c9">Weather data by Open-Meteo (CC BY 4.0)</a>' : ''}
             </div>
           </div>`
       })
@@ -4049,7 +4050,8 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 .weather-dashboard {
   display: flex;
-  height: 350px;
+  min-height: 350px;
+  height: auto;
   /* border-radius: 24px; */
   overflow: hidden;
   /* border: 1px solid rgba(255, 255, 255, 0.14); */

@@ -17,7 +17,9 @@ test('weather percentages preserve zero and never invent missing measurements', 
 })
 
 test('mobile weather grows to fit measurements and attribution', () => {
+  assert.match(source, /\.weather-dashboard\s*\{\s*display: flex;\s*min-height: 350px;\s*height: auto;/)
   assert.match(source, /\.weather-dashboard\s*\{\s*flex-direction: column;\s*height: auto;/)
   assert.ok(source.includes('Weather data by Open-Meteo (CC BY 4.0)'))
+  assert.equal(source.split('Weather data by Open-Meteo (CC BY 4.0)').length - 1, 2)
   assert.ok(source.includes("t('result.weatherCoverage')"))
 })

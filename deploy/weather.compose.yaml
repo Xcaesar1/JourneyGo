@@ -1,11 +1,11 @@
 services:
   trip-planner:
-    image: journeyops-app:weather-20260916-r2
+    image: journeyops-app:weather-20260916-r3
     environment:
       WEATHER_ENABLED: "true"
       WEATHER_MCP_PYTHON: /opt/weather/bin/python
   worker:
-    image: journeyops-app:weather-20260916-r2
+    image: journeyops-app:weather-20260916-r3
     environment:
       WEATHER_ENABLED: "true"
       WEATHER_MCP_PYTHON: /opt/weather/bin/python

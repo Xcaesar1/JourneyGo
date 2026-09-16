@@ -36,7 +36,7 @@ Production remains unchanged; migrating the old single-service production is a s
 
 ## Staging Release 2026-09-16
 
-- Image: `journeyops-app:weather-20260916-r2`, layered on `mobile-f62e7bd`.
+- Image: `journeyops-app:weather-20260916-r3`, layered on `mobile-f62e7bd`.
 - Release directory: `/opt/tripstar/releases/weather-20260916`.
 - The server's original checkout/environment remain unchanged. Use the weather override
   for subsequent recreations; running the old two-file Compose command omits this release.
