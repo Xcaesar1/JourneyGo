@@ -1,8 +1,10 @@
-# TripStar - AI 旅行エージェント
+# JourneyGo - AI 旅行エージェント
 
 
 > **HelloAgents フレームワークに基づくマルチエージェント連携の旅行計画プラットフォーム**
-<img width="1804" height="815" alt="image" src="https://github.com/user-attachments/assets/4bf6f5b1-b67d-4df6-9690-f99367fef473" />
+<p align="center">
+  <img src="docs/assets/journeygo-logo.png" alt="JourneyGo" width="480" />
+</p>
 <p align="center">
   <img src="https://img.shields.io/badge/license-GPL--2.0-orange">
   <img src="https://img.shields.io/badge/version-v2.1.0-green">

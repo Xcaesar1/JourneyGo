@@ -1,4 +1,8 @@
-# JourneyOps
+# JourneyGo
+
+<p align="center">
+  <img src="docs/assets/journeygo-logo.png" alt="JourneyGo" width="480" />
+</p>
 
 可持续运行、有来源、可校验、可恢复并支持局部重规划的旅行执行 Agent。
 

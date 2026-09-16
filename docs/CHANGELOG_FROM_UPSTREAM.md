@@ -2,6 +2,12 @@
 
 本文件记录 JourneyOps 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。
 
+## JourneyGo Brand Assets - 2026-09-16
+
+- 三种语言 README 使用用户提供的 JourneyGo 品牌图，替换日文页原有 TripStar 顶图。
+- 网站 Favicon 使用用户提供的独立 JPG 图标，并修正 MIME 类型；保留原图，不重绘或伪造透明背景。
+- 仅静态资源与文档变更，无 API/数据库影响；回滚本次提交可恢复旧图片。
+
 ## Result Simplification And JourneyGo Branding - 2026-09-16
 
 - 移除结果页的版本历史、来源独立版块及手机/桌面导航入口，停止页面上的版本列表请求。

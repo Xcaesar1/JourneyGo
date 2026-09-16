@@ -1,4 +1,8 @@
-# JourneyOps
+# JourneyGo
+
+<p align="center">
+  <img src="docs/assets/journeygo-logo.png" alt="JourneyGo" width="480" />
+</p>
 
 A durable, source-backed, validated and recoverable travel execution agent with scoped replanning.
 

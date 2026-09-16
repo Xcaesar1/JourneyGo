@@ -35,6 +35,19 @@ test('Korean covers every existing message and preserves interpolation parameter
   for (const pack of Object.values(packs)) assert.equal(pack.app.language.ko, '한국어')
 })
 
+test('README branding and favicon use the supplied JourneyGo assets', () => {
+  for (const file of ['README.md', 'README_en.md', 'README_ja.md']) {
+    const document = read(`../../../${file}`)
+    assert.match(document, /src="docs\/assets\/journeygo-logo\.png" alt="JourneyGo"/)
+    assert.doesNotMatch(document, /4bf6f5b1-b67d-4df6-9690-f99367fef473/)
+  }
+  const logo = readFileSync(new URL('../../../docs/assets/journeygo-logo.png', import.meta.url))
+  assert.equal(logo.subarray(0, 8).toString('hex'), '89504e470d0a1a0a')
+  const icon = readFileSync(new URL('../../favicon.jpg', import.meta.url))
+  assert.equal(icon.subarray(0, 3).toString('hex'), 'ffd8ff')
+  assert.match(read('../../index.html'), /rel="icon" type="image\/jpeg" href="\/favicon\.jpg"/)
+})
+
 function loadLocale(browserLanguage, saved) {
   const storage = new Map(saved ? [['tripstar-locale', saved]] : [])
   const document = { documentElement: { lang: '' } }
