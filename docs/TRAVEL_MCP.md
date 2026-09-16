@@ -94,3 +94,46 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 - Three potentially billed flight queries were made across connection diagnostics and this integration, within the user's three-query authorization. Actual monetary charges were not checked; make no further live flight call without renewed approval.
 - Backend: 215 passed, 4 skipped. Frontend: 25 tests passed; type check and build passed with existing asset/bundle warnings. Mocked Chrome regression passed at 390 and 1280 pixels, including paid consent, quote invalidation, empty/disabled states and contrast.
 - Compose configuration validated. Docker image build and real Redis multi-process quota verification remain unverified because the local Docker engine is unavailable. No staging/production deployment or Git push was performed as part of implementation.
+
+## Staging Release (2026-09-16)
+
+- Application source: `d7f99ce`, pushed to `Xcaesar1/JourneyGo` main.
+- Image: `journeyops-app:travel-d7f99ce`, successfully built from the root Dockerfile on the ARM64 staging host.
+- Release directory: `/opt/tripstar/releases/travel-d7f99ce-20260916`.
+- Public site: `https://staging.elonmusk0.asia`, existing Basic Auth preserved.
+- Only staging API and Worker were recreated after confirming zero active tasks. Production, PostgreSQL and Redis container IDs/start times remained unchanged.
+- Train and hotel queries are enabled on the API. Flight remains disabled with cumulative limit zero: the earlier three-query authorization is exhausted. Worker does not automatically call any travel provider.
+- Provider credentials are in `travel.private.env` with mode 0600, outside Git and not copied into the image. Do not print this file or an expanded Compose configuration.
+- The original server checkout/environment remain unchanged. Future recreations must include the release override; the old two-file or weather-only command would omit this deployment.
+
+### Recreate Staging
+
+```bash
+cd /opt/tripstar/JourneyOps-staging
+docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
+  -f /opt/tripstar/releases/travel-d7f99ce-20260916/travel.release.compose.yaml \
+  up -d --no-deps --no-build worker trip-planner
+```
+
+Prefer the release's `travel-release-deploy.sh`, which checks active tasks, waits for health, compares protected containers and automatically rolls back on a deployment error.
+
+### Roll Back
+
+```bash
+cd /opt/tripstar/JourneyOps-staging
+docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
+  -f /opt/tripstar/releases/travel-d7f99ce-20260916/travel.release.rollback.yaml \
+  up -d --no-deps --no-build worker trip-planner
+```
+
+Both prior application services use `journeyops-app:weather-20260916-r3`. Preserve Redis data and all persistent volumes; do not run migrations or alter ingress.
+
+### Verified After Deployment
+
+- API/Worker healthy, public readiness accessible with Basic Auth, anonymous API requests rejected.
+- Real Beijing-to-Xi'an train search returned 20 seat/price offers; Xi'an two-night hotel search returned 5 offers. Repeated requests used cached results and retained fetch timestamps.
+- Real Redis test: eight independent concurrent processes shared a three-call ceiling; three reservations succeeded and five were rejected. The counter had no expiry. This used a synthetic account and a mocked supplier, made zero external calls, and removed only its own synthetic Redis keys.
+- Direct API flight request without access code rejected; public flight request without paid consent rejected. Flight capabilities/UI disabled. No extra paid queries were made during deployment.
+- Browser checked the deployed UI with real train/hotel responses at 390/1280 pixels, source/price semantics and disabled flight controls. Temporary browser-only itinerary data did not modify saved server trips.
+- Existing weather smoke passed inside the new Worker with two real forecast days and a deterministic graph, without paid model calls or database writes.
+- Full paid-LLM trip generation was not rerun as part of this deployment.

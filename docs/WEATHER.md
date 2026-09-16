@@ -36,6 +36,10 @@ Production remains unchanged; migrating the old single-service production is a s
 
 ## Staging Release 2026-09-16
 
+The subsequent travel release now supersedes this image on staging while keeping weather enabled.
+Use the current [travel release commands](TRAVEL_MCP.md#staging-release-2026-09-16) for normal
+recreation; the commands below describe the historical weather-only release and rollback.
+
 - Image: `journeyops-app:weather-20260916-r3`, layered on `mobile-f62e7bd`.
 - Release directory: `/opt/tripstar/releases/weather-20260916`.
 - The server's original checkout/environment remain unchanged. Use the weather override
