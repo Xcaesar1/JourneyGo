@@ -108,7 +108,17 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
-#### Slogan Release (Current)
+#### Landscape Homepage Release (Current)
+
+- Source: `661534c`, pushed to GitHub main. Image: `journeyops-app:hero-661534c`.
+- Release directory: `/opt/tripstar/releases/hero-661534c-20260916`.
+- Use the base/staging Compose files, the travel override, then this release's `hero.compose.yaml`. Existing private configuration and provider flags are inherited from the travel override.
+- `hero-deploy.sh` builds archived source, checks active tasks and application health, and restores `journeyops-app:slogan-4738b30` on failure. Manual rollback: substitute `/opt/tripstar/releases/slogan-4738b30-20260916/slogan.compose.yaml` for the hero override. Preserve data volumes and Redis counters.
+- No API/database migration. Production is out of scope.
+- Deployment verified: API/Worker healthy; production/PostgreSQL/Redis unchanged; live four-language layouts at 390/1440 pixels, new PNG favicon hash, background loading, hidden settings and search handoff passed. Real capabilities retain train/hotel enabled and flight disabled; no supplier query was made.
+- Browser acceptance: set `HOME_UI_URL` to the staging URL and `HOME_UI_AUTH_FILE` to a private JSON file containing `username`/`password`, then run `node tests/home-hero.cjs` with Playwright available. The script mocks API responses; it checks live page assets/layout without generating trips or querying suppliers.
+
+#### Slogan Release (Previous)
 
 - Image: `journeyops-app:slogan-4738b30`, built from source commit `4738b30`, pushed to GitHub main on 2026-09-16.
 - Release directory: `/opt/tripstar/releases/slogan-4738b30-20260916`.

@@ -1,11 +1,13 @@
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const crypto = require('node:crypto');
 
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-proxy-server'] });
   try {
-    const page = await browser.newPage();
+    const access = process.env.HOME_UI_AUTH_FILE ? JSON.parse(fs.readFileSync(process.env.HOME_UI_AUTH_FILE, 'utf8')) : null;
+    const page = await browser.newPage(access ? { httpCredentials: { username: access.username, password: access.password } } : {});
     const errors = [];
     const writes = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -15,6 +17,12 @@ const fs = require('node:fs');
     });
     const base = process.env.HOME_UI_URL || 'http://127.0.0.1:5174';
     await page.goto(base);
+    const icon = page.locator('link[rel="icon"]');
+    assert.equal(await icon.getAttribute('type'), 'image/png');
+    const iconResponse = await page.request.get(new URL(await icon.getAttribute('href'), base).href);
+    assert.equal(iconResponse.status(), 200);
+    const digest = data => crypto.createHash('sha256').update(data).digest('hex');
+    assert.equal(digest(await iconResponse.body()), digest(fs.readFileSync('frontend/favicon.png')));
     for (const [code, locale] of [['zh', 'zh-CN'], ['en', 'en-US'], ['ja', 'ja-JP'], ['ko', 'ko-KR']]) {
       const pack = JSON.parse(fs.readFileSync(`frontend/src/i18n/locales/${code}.json`, 'utf8'));
       await page.evaluate(locale => localStorage.setItem('tripstar-locale', locale), locale);
