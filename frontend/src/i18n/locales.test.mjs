@@ -24,6 +24,17 @@ test('all languages and visible brand entry points use JourneyGo', () => {
   assert.match(read('../../index.html'), /<title>JourneyGo<\/title>/)
 })
 
+test('homepage slogans use the updated JourneyGo copy in all four languages', () => {
+  const slogans = {
+    zh: '即刻启程，见所未见 ！',
+    en: 'Start Your Journey, Find Your Trail.',
+    ja: '今すぐ旅へ、まだ見ぬ世界に出会おう！',
+    ko: '지금 떠나, 아직 만나지 못한 세상을 발견하세요!',
+  }
+  for (const [code, slogan] of Object.entries(slogans)) assert.equal(packs[code].home.titleLine, slogan)
+  assert.match(read('../views/Landing.vue'), /t\('home.titleLine'\)/)
+})
+
 test('Korean covers every existing message and preserves interpolation parameters', () => {
   const expected = flatten(packs.en)
   const actual = flatten(packs.ko)

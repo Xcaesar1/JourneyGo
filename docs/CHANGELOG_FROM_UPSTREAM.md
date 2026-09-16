@@ -2,6 +2,11 @@
 
 本文件记录 JourneyOps 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。
 
+## JourneyGo Homepage Slogans - 2026-09-16
+
+- 更新中文、英文首页标语，并同步日文、韩文的启程与探索语义。
+- 增加四语言文案回归测试；无布局、API 或数据库变更，回滚本次提交可恢复原标语。
+
 ## JourneyGo Brand Assets - 2026-09-16
 
 - 三种语言 README 使用用户提供的 JourneyGo 品牌图，替换日文页原有 TripStar 顶图。
