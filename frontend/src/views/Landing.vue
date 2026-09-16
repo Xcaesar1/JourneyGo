@@ -1,31 +1,25 @@
 <template>
   <div class="landing-page">
     <div class="lower-shade" :style="lowerShadeStyle"></div>
-    <NavBar @brand-click="scrollToTop" @cta-click="scrollToForm" />
+    <NavBar :show-settings="false" :show-cta="false" @brand-click="scrollToTop" @cta-click="scrollToForm" />
 
     <div class="wrapper">
-      <div class="page-header section-dark landing-header" :style="pageHeaderStyle">
-        <div class="filter"></div>
-        <div class="content-center" :style="heroContentStyle">
-          <div class="container">
-            <!-- <p class="landing-hero-badge text-center">{{ t('home.heroBadge') }}</p> -->
-            <div class="title-brand">
-              <h1 class="presentation-title">
-                {{ t('app.brand') }}
-              </h1>
+      <section class="journey-hero" :style="{ backgroundImage: `url(${heroImage})` }" aria-labelledby="hero-title">
+        <div class="journey-hero-shade" aria-hidden="true"></div>
+        <div class="journey-hero-content">
+          <h1 id="hero-title">{{ t('home.hero.title') }}</h1>
+          <p class="journey-hero-copy">{{ t('home.hero.line1') }}<br />{{ t('home.hero.line2') }}</p>
+          <form class="journey-hero-form" @submit.prevent="beginExploring">
+            <div class="journey-search">
+              <input v-model="heroQuery" :aria-label="t('home.hero.search')" :placeholder="t('home.hero.search')" maxlength="200" type="search" />
+              <button type="submit" :aria-label="t('home.hero.explore')" :disabled="loading">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>
+              </button>
             </div>
-            <h2 class="presentation-subtitle text-center">{{ t('home.titleLine') }}</h2>
-          </div>
+            <button type="submit" class="journey-explore" :disabled="loading">{{ t('home.hero.explore') }} <span aria-hidden="true">↗</span></button>
+          </form>
         </div>
-        <div class="moving-clouds" :style="movingCloudsStyle"></div>
-        <div class="fog-low" :style="fogLowStyle">
-          <img src="https://demos.creative-tim.com/paper-kit-2/assets/img/clouds.png" alt="fog" />
-        </div>
-        <div class="fog-low right" :style="fogLowRightStyle">
-          <img src="https://demos.creative-tim.com/paper-kit-2/assets/img/clouds.png" alt="fog" />
-        </div>
-        <div class="hero-bottom-shade" :style="heroBottomShadeStyle"></div>
-      </div>
+      </section>
     </div>
 
     <section ref="formRef" class="form-section">
@@ -457,6 +451,7 @@ import {
 } from '@/services/attractionSelection'
 import { getCurrentLocale } from '@/i18n'
 import NavBar from '@/components/NavBar.vue'
+import heroImage from '@/assets/journeygo-hero.png'
 import type {
   AttractionCandidatePage,
   TripFormData,
@@ -659,31 +654,7 @@ const removeCity = (index: number) => {
   formData.cities.splice(index, 1)
 }
 
-const heroProgress = computed(() => Math.min(scrollY.value / 320, 1))
 const toneProgress = computed(() => Math.min(Math.max((scrollY.value - 20) / 360, 0), 1))
-const pageHeaderStyle = computed(() => ({
-  backgroundImage: "url('http://demos.creative-tim.com/paper-kit-2/assets/img/antoine-barres.jpg')",
-  backgroundPosition: `center ${Math.max(-scrollY.value * 0.08, -120)}px`,
-  backgroundSize: 'cover',
-  backgroundRepeat: 'no-repeat',
-}))
-const movingCloudsStyle = computed(() => ({
-  backgroundImage: "url('https://demos.creative-tim.com/paper-kit-2/assets/img/clouds.png')",
-  opacity: fogEnabled.value ? '0.55' : '0',
-}))
-const fogLowStyle = computed(() => ({
-  opacity: fogEnabled.value ? '0.82' : '0',
-}))
-const fogLowRightStyle = computed(() => ({
-  opacity: fogEnabled.value ? '0.72' : '0',
-}))
-const heroContentStyle = computed(() => ({
-  opacity: `${1 - heroProgress.value * 0.95}`,
-  transform: `translate3d(0, ${-heroProgress.value * 46}px, 0)`,
-}))
-const heroBottomShadeStyle = computed(() => ({
-  opacity: `${(0.48 + toneProgress.value * 0.44) * (fogEnabled.value ? 1 : 0)}`,
-}))
 const lowerShadeStyle = computed(() => ({
   opacity: `${(0.34 + toneProgress.value * 0.52) * (fogEnabled.value ? 1 : 0)}`,
 }))
@@ -710,6 +681,16 @@ const scrollToForm = () => {
     const y = formRef.value.getBoundingClientRect().top + window.scrollY - 65
     window.scrollTo({ top: y, behavior: 'smooth' })
   }
+}
+
+const heroQuery = ref('')
+const beginExploring = () => {
+  if (loading.value) return
+  const query = heroQuery.value.trim()
+  if (query && !formData.free_text_input.includes(query)) {
+    formData.free_text_input = [formData.free_text_input.trim(), query].filter(Boolean).join('\n')
+  }
+  scrollToForm()
 }
 
 const formatHistoryTime = (value: string) => {
@@ -953,6 +934,98 @@ const handleRetry = async () => {
   height: 28px;
   background: linear-gradient(to bottom, rgba(6, 14, 20, 0), rgba(6, 14, 20, 0.92));
 }
+
+.journey-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 720px;
+  height: 100svh;
+  max-height: 1100px;
+  display: flex;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  color: #fff9ed;
+}
+.journey-hero-shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, rgba(9, 26, 36, .74), rgba(9, 26, 36, .38) 36%, transparent 65%), linear-gradient(0deg, #0b151d 0%, transparent 18%);
+}
+.journey-hero-content {
+  width: 40%;
+  margin-left: 7%;
+  padding: 110px 0 150px;
+  animation: trail-reveal .7s ease-out both;
+}
+.journey-hero h1 {
+  margin: 0 0 26px;
+  color: #ffe2a9;
+  font-family: 'Noto Serif SC', 'Songti SC', 'SimSun', Georgia, serif;
+  font-size: clamp(40px, 4.2vw, 72px);
+  font-weight: 600;
+  letter-spacing: .04em;
+  line-height: 1.2;
+}
+.journey-hero-copy {
+  margin: 0 0 38px;
+  color: #fff9ed;
+  font-size: clamp(23px, 2.3vw, 38px);
+  line-height: 1.65;
+  font-weight: 400;
+  text-shadow: 0 2px 20px #10273788;
+}
+.journey-hero-form { max-width: 450px; }
+.journey-search {
+  display: flex;
+  align-items: center;
+  background: #fffaf0;
+  border: 1px solid #fffdf7;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px #091a3626;
+}
+.journey-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 19px 0 19px 20px;
+  border: 0;
+  background: transparent;
+  color: #203744;
+  font-size: 15px;
+  outline: none;
+}
+.journey-search input::placeholder { color: #5c6b6e; opacity: 1; }
+.journey-search:focus-within { outline: 3px solid #f7c87d; outline-offset: 4px; }
+.journey-search button { flex: none; width: 54px; height: 58px; border: 0; background: transparent; color: #203744; cursor: pointer; }
+.journey-explore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  margin-top: 25px;
+  padding: 17px 27px;
+  border: 1px solid #f5cb87;
+  border-radius: 6px;
+  background: #f5cb87;
+  color: #1b3035;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.journey-explore:hover { background: #ffe1ad; }
+.journey-explore:focus-visible, .journey-search button:focus-visible { outline: 3px solid white; outline-offset: 4px; }
+.journey-hero button:disabled { opacity: .55; cursor: wait; }
+@keyframes trail-reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 760px) {
+  .journey-hero { min-height: 760px; height: 100svh; background-position: 63% center; align-items: flex-start; }
+  .journey-hero-shade { background: linear-gradient(90deg, #091a3699, #091a3622), linear-gradient(0deg, #0b151d, transparent 28%); }
+  .journey-hero-content { width: 86%; margin-left: 7%; padding: 150px 0 200px; }
+  .journey-hero h1 { font-size: clamp(36px, 9vw, 52px); margin-bottom: 20px; }
+  .journey-hero-copy { font-size: 25px; margin-bottom: 28px; }
+  .journey-hero-form { max-width: 380px; }
+}
+@media (prefers-reduced-motion: reduce) { .journey-hero-content { animation: none; } }
 
 .landing-header {
   /* 确保 hero 区域占满全屏高度，背景图不重复 */

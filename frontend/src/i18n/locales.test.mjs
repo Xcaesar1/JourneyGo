@@ -19,7 +19,7 @@ test('all languages and visible brand entry points use JourneyGo', () => {
     assert.equal(pack.app.footerBrand, 'JourneyGo')
     assert.doesNotMatch(JSON.stringify(pack), /TripStar|旅途星辰/)
   }
-  assert.match(read('../views/Landing.vue'), /\{\{ t\('app.brand'\) \}\}/)
+  assert.match(read('../views/Landing.vue'), /<NavBar/)
   assert.match(read('../components/NavBar.vue'), /\{\{ t\('app.brand'\) \}\}/)
   assert.match(read('../../index.html'), /<title>JourneyGo<\/title>/)
 })
@@ -32,7 +32,7 @@ test('homepage slogans use the updated JourneyGo copy in all four languages', ()
     ko: '지금 떠나, 아직 만나지 못한 세상을 발견하세요!',
   }
   for (const [code, slogan] of Object.entries(slogans)) assert.equal(packs[code].home.titleLine, slogan)
-  assert.match(read('../views/Landing.vue'), /t\('home.titleLine'\)/)
+  assert.match(read('../views/Landing.vue'), /t\('home.hero.title'\)/)
 })
 
 test('Korean covers every existing message and preserves interpolation parameters', () => {

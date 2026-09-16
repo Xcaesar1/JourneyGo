@@ -109,6 +109,13 @@
   "home": {
     "heroBadge": "AI Intelligent Itinerary Engine",
     "titleLine": "Start Your Journey, Find Your Trail.",
+    "hero": {
+      "title": "Start Your Journey",
+      "line1": "Go where you dream.",
+      "line2": "It starts right here.",
+      "search": "Search destinations, routes, cities...",
+      "explore": "Start Exploring"
+    },
     "heroDesc": "Tell me your destination and preferences, and AI will craft a unique travel plan for you",
     "nav": {
       "cta": "Start Planning",

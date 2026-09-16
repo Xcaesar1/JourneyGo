@@ -4,6 +4,15 @@ import test from 'node:test'
 
 const landingSource = readFileSync(new URL('./Landing.vue', import.meta.url), 'utf8')
 
+test('hero uses the supplied landscape with accessible planning entry and no settings button', () => {
+  assert.match(landingSource, /import heroImage from '@\/assets\/journeygo-hero\.png'/)
+  assert.match(landingSource, /:show-settings="false" :show-cta="false"/)
+  assert.match(landingSource, /@submit\.prevent="beginExploring"/)
+  assert.match(landingSource, /maxlength="200" type="search"/)
+  assert.match(landingSource, /prefers-reduced-motion: reduce/)
+  assert.doesNotMatch(landingSource.split('</template>')[0], /moving-clouds|presentation-title|fog-low/)
+})
+
 test('candidate cards and search stay responsive at tablet and phone widths', () => {
   assert.match(
     landingSource,
