@@ -4,12 +4,11 @@
     <NavBar :show-settings="false" :show-cta="false" @brand-click="scrollToTop" @cta-click="scrollToForm" />
 
     <div class="wrapper">
-      <section class="journey-hero" :class="{ 'motion-paused': motionPaused }" aria-labelledby="hero-title">
+      <section class="journey-hero" aria-labelledby="hero-title">
         <div class="journey-landscape" :style="{ backgroundImage: `url(${heroImage})` }" aria-hidden="true"></div>
         <div class="journey-mist" aria-hidden="true"></div>
         <div class="journey-sunlight" aria-hidden="true"></div>
         <div class="journey-hero-shade" aria-hidden="true"></div>
-        <button class="journey-motion-toggle" type="button" :aria-pressed="motionPaused" @click="motionPaused = !motionPaused">{{ t('home.hero.pauseMotion') }}</button>
         <div class="journey-hero-content">
           <h1 id="hero-title">{{ t('home.hero.title') }}</h1>
           <p class="journey-hero-copy">{{ t('home.hero.line1') }}<br />{{ t('home.hero.line2') }}</p>
@@ -679,7 +678,6 @@ const scrollToForm = () => {
   }
 }
 
-const motionPaused = ref(false)
 
 const formatHistoryTime = (value: string) => {
   const date = new Date(value)
@@ -961,21 +959,6 @@ const handleRetry = async () => {
   background: radial-gradient(ellipse at 100% 18%, rgba(255, 203, 125, .42), transparent 48%), conic-gradient(from 200deg at 100% 18%, transparent 0deg, rgba(255, 221, 158, .12) 12deg, transparent 24deg, rgba(255, 221, 158, .08) 36deg, transparent 48deg);
   animation: sunset-glow 10s ease-in-out -3s infinite alternate;
 }
-.journey-motion-toggle {
-  position: absolute;
-  right: 24px;
-  bottom: 128px;
-  padding: 10px 14px;
-  border: 1px solid #ffffff66;
-  border-radius: 24px;
-  background: #142c3bd9;
-  color: #fff9ed;
-  font-size: 12px;
-  cursor: pointer;
-}
-.journey-motion-toggle[aria-pressed='true'] { border-color: #f5cb87; color: #f5cb87; }
-.journey-motion-toggle:focus-visible { outline: 3px solid #f5cb87; outline-offset: 4px; }
-.motion-paused .journey-landscape, .motion-paused .journey-mist, .motion-paused .journey-sunlight { animation-play-state: paused; }
 @keyframes landscape-drift { from { transform: scale(1); } to { transform: scale(1.10) translate3d(-.7%, .3%, 0); } }
 @keyframes valley-mist { from { transform: translate3d(-12%, 3%, 0); opacity: .45; } to { transform: translate3d(12%, -3%, 0); opacity: .9; } }
 @keyframes sunset-glow { from { opacity: .35; transform: translate3d(0, 0, 0); } to { opacity: .85; transform: translate3d(-2%, 1%, 0); } }
@@ -1030,7 +1013,6 @@ const handleRetry = async () => {
 @media (max-width: 760px) {
   .journey-landscape { animation: none; background-position: 63% center; }
   .journey-mist { inset: 35% -8% 42% 15%; }
-  .journey-motion-toggle { right: 18px; font-size: 11px; }
   .journey-hero { min-height: 760px; height: 100svh; background-position: 63% center; align-items: flex-start; }
   .journey-hero-shade { background: linear-gradient(90deg, #091a3699, #091a3622), linear-gradient(0deg, #0b151d, transparent 28%); }
   .journey-hero-content { width: 86%; margin-left: 7%; padding: 150px 0 200px; }
@@ -1041,7 +1023,6 @@ const handleRetry = async () => {
   .journey-hero-content, .journey-landscape, .journey-mist, .journey-sunlight { animation: none; }
   .journey-mist { opacity: .45; }
   .journey-sunlight { opacity: .3; }
-  .journey-motion-toggle { display: none; }
 }
 
 .landing-header {

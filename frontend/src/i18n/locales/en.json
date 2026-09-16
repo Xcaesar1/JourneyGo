@@ -114,8 +114,7 @@
       "line1": "Go where you dream.",
       "line2": "It starts right here.",
       "search": "Search destinations, routes, cities...",
-      "explore": "Start Exploring",
-      "pauseMotion": "Pause motion"
+      "explore": "Start Exploring"
     },
     "heroDesc": "Tell me your destination and preferences, and AI will craft a unique travel plan for you",
     "nav": {

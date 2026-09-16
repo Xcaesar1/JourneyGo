@@ -58,9 +58,7 @@ const crypto = require('node:crypto');
       return after - before;
     });
     assert.ok(scaleChange > .02, 'camera movement should be noticeable within five seconds');
-    await page.locator('.journey-motion-toggle').click();
-    assert.equal(await landscape.evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
-    await page.locator('.journey-motion-toggle').click();
+    assert.equal(await page.locator('.journey-motion-toggle').count(), 0);
     assert.equal(await landscape.evaluate(el => getComputedStyle(el).animationPlayState), 'running');
     await page.setViewportSize({ width: 390, height: 900 });
     assert.equal(await landscape.evaluate(el => getComputedStyle(el).animationName), 'none');
@@ -79,6 +77,6 @@ const crypto = require('node:crypto');
     assert.equal(await page.locator('.special-textarea').inputValue(), '保留已有行程需求');
     assert.deepEqual(writes, [], 'explore must not generate or make paid calls');
     assert.deepEqual(errors, []);
-    console.log('PASS: 4 languages, phone/desktop, motion controls, no hero search, explore scrolls without changing data or generating');
+    console.log('PASS: 4 languages, phone/desktop, default motion without toggle, reduced motion, no hero search, explore preserves data');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
