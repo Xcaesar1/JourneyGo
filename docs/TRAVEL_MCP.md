@@ -108,7 +108,16 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
-#### Landscape Homepage Release (Current)
+#### Homepage Motion Release (Current)
+
+- Source: `0cc1839`, pushed to GitHub main. Image: `journeyops-app:motion-0cc1839`.
+- Release directory: `/opt/tripstar/releases/motion-0cc1839-20260916`.
+- Use base/staging Compose files, the travel override, then `motion.compose.yaml` in this release. Provider configuration and private environment remain inherited from the travel override.
+- `motion-deploy.sh` checks active tasks, application health and protected containers, with automatic rollback to `journeyops-app:hero-661534c`. Manual rollback: replace the motion override with `/opt/tripstar/releases/hero-661534c-20260916/hero.compose.yaml`.
+- No migrations or paid queries. Browser regression `tests/home-hero.cjs` checks four-language layouts, animation/pause, mobile/reduced-motion behavior and explore-only entry without altering form data or triggering generation.
+- Verified after deployment: API/Worker healthy, production/PostgreSQL/Redis unchanged, provider capabilities unchanged. Live browser regression passed all four languages at 390/1440 pixels, actual animation movement, pause/resume, mobile/reduced-motion settings, removed search and preserved form data. API responses in the browser regression were mocked; no trip generation or supplier search was made.
+
+#### Landscape Homepage Release (Previous)
 
 - Source: `661534c`, pushed to GitHub main. Image: `journeyops-app:hero-661534c`.
 - Release directory: `/opt/tripstar/releases/hero-661534c-20260916`.
