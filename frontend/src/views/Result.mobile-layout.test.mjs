@@ -32,3 +32,14 @@ test('phone cards do not require hover and navbar overrides legacy full-width br
   assert.match(navbar, /\.landing-navbar \.navbar-translate\s*\{[^}]*width: auto !important/s)
   assert.match(navbar, /flex-direction: row !important/)
 })
+
+test('result removes version history and source panels without removing review or attribution', () => {
+  const result = read('./Result.vue')
+  assert.doesNotMatch(result, /key[=:]\s*["'](?:versions|sources)["']/)
+  assert.doesNotMatch(result, /id="(?:versions|sources)"/)
+  assert.doesNotMatch(result, /refreshVersions|getTripVersions|rollbackTripVersion|compareTripVersions/)
+  assert.match(result, /submitTripReview/)
+  assert.match(result, /currentReview\.proposed_version/)
+  assert.match(result, /Weather data by Open-Meteo \(CC BY 4\.0\)/)
+  assert.match(result, /<TravelSearch :plan="tripPlan"/)
+})

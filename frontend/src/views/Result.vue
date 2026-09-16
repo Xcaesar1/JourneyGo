@@ -18,12 +18,6 @@
               <a-menu-item key="overview">
                 <span>{{ t('result.side.overview') }}</span>
               </a-menu-item>
-              <a-menu-item key="versions" v-if="tripId">
-                <span>{{ t('result.side.versions') }}</span>
-              </a-menu-item>
-              <a-menu-item key="sources">
-                <span>{{ t('result.side.sources') }}</span>
-              </a-menu-item>
               <a-menu-item key="budget" v-if="tripPlan.budget">
                 <span>{{ t('result.side.budget') }}</span>
               </a-menu-item>
@@ -80,7 +74,7 @@
             </div>
             <div class="review-state">
               <span>{{ t('result.review.draftBadge') }}</span>
-              <strong>V{{ currentReview?.proposed_version || nextVersionNumber }}</strong>
+              <strong v-if="currentReview?.proposed_version">V{{ currentReview.proposed_version }}</strong>
             </div>
           </div>
 
@@ -318,145 +312,6 @@
           </div>
         </a-card>
 
-        <a-card
-          v-show="activeSection === 'versions'"
-          id="versions"
-          :bordered="false"
-          class="versions-card section-shellless"
-        >
-          <div class="versions-heading">
-            <div>
-              <span class="review-eyebrow">IMMUTABLE HISTORY</span>
-              <h2>{{ t('result.versions.title') }}</h2>
-              <p>{{ t('result.versions.description') }}</p>
-            </div>
-            <a-button :loading="versionsLoading" @click="refreshVersions">
-              {{ t('result.versions.refresh') }}
-            </a-button>
-          </div>
-
-          <div v-if="tripVersions.length" class="version-layout">
-            <div class="version-list">
-              <article
-                v-for="version in tripVersions"
-                :key="version.version"
-                :class="['version-row', { 'is-active': version.active }]"
-              >
-                <div class="version-number">V{{ version.version }}</div>
-                <div class="version-copy">
-                  <div>
-                    <strong>{{ getVersionRoleLabel(version.version_role) }}</strong>
-                    <span v-if="version.active" class="active-version-chip">
-                      {{ t('result.versions.active') }}
-                    </span>
-                  </div>
-                  <p>{{ version.change_reason || t('result.versions.noReason') }}</p>
-                  <small>
-                    {{ formatSourceTime(version.created_at) }}
-                    <template v-if="version.parent_version"> · V{{ version.parent_version }}</template>
-                  </small>
-                </div>
-                <a-button
-                  v-if="!version.active"
-                  size="small"
-                  :loading="rollbackLoading === version.version"
-                  @click="restoreVersion(version.version)"
-                >
-                  {{ t('result.versions.restore') }}
-                </a-button>
-              </article>
-            </div>
-
-            <div class="version-compare">
-              <h3>{{ t('result.versions.compareTitle') }}</h3>
-              <div class="compare-controls">
-                <a-select v-model:value="compareFrom" :options="versionOptions" />
-                <span aria-hidden="true">→</span>
-                <a-select v-model:value="compareTo" :options="versionOptions" />
-                <a-button type="primary" :loading="compareLoading" @click="runVersionCompare">
-                  {{ t('result.versions.compare') }}
-                </a-button>
-              </div>
-              <div v-if="versionDiff" class="version-diff">
-                <p>{{ versionDiff.summary }}</p>
-                <div class="diff-scope">
-                  <span>{{ t('result.versions.changed', { days: formatDayList(versionDiff.changed_day_indices) }) }}</span>
-                  <span>{{ t('result.versions.preserved', { count: versionDiff.unchanged_day_indices.length }) }}</span>
-                </div>
-                <div class="diff-entry-list">
-                  <article v-for="(entry, index) in versionDiff.entries" :key="`${entry.path}-${index}`">
-                    <span :class="['diff-operation', `is-${entry.operation}`]">{{ entry.operation }}</span>
-                    <code>{{ entry.path }}</code>
-                    <p>{{ formatDiffValue(entry.before) }} → {{ formatDiffValue(entry.after) }}</p>
-                  </article>
-                </div>
-              </div>
-              <div v-else class="version-empty">{{ t('result.versions.compareEmpty') }}</div>
-            </div>
-          </div>
-          <div v-else class="version-empty">{{ t('result.versions.empty') }}</div>
-        </a-card>
-
-        <a-card
-          v-show="activeSection === 'sources'"
-          id="sources"
-          :bordered="false"
-          class="sources-card section-shellless"
-        >
-          <div class="sources-header">
-            <div>
-              <span class="sources-eyebrow">{{ t('result.sources.eyebrow') }}</span>
-              <h2>{{ t('result.sources.title') }}</h2>
-              <p>{{ t('result.sources.description') }}</p>
-            </div>
-            <div class="sources-state-panel">
-              <span :class="['sources-status', `is-${tripPlan.research_status || 'unavailable'}`]">
-                {{ getResearchStatusLabel(tripPlan.research_status) }}
-              </span>
-              <span class="sources-updated-label">{{ t('result.sources.updatedAt') }}</span>
-              <strong>{{ formatSourceTime(tripPlan.research_updated_at) }}</strong>
-            </div>
-          </div>
-
-          <div v-if="sourceEvidence.length > 0" class="sources-grid">
-            <article
-              v-for="(source, index) in sourceEvidence"
-              :key="source.id"
-              :class="['source-entry', { 'is-unknown': !getSafeSourceUrl(source) }]"
-            >
-              <div class="source-entry-topline">
-                <span class="source-index">{{ String(index + 1).padStart(2, '0') }}</span>
-                <span class="source-claim">{{ getSourceClaimLabel(source.claim_type) }}</span>
-                <span :class="['source-trust', `is-${source.trust_level}`]">
-                  {{ getSourceTrustLabel(source.trust_level) }}
-                </span>
-              </div>
-              <a
-                v-if="getSafeSourceUrl(source)"
-                class="source-title source-link"
-                :href="getSafeSourceUrl(source) || undefined"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{ source.title }}
-                <span aria-hidden="true">↗</span>
-              </a>
-              <h3 v-else class="source-title">{{ t('result.sources.unknownSource') }}</h3>
-              <p class="source-claim-text">{{ source.claim_text }}</p>
-              <div class="source-entry-meta">
-                <span>{{ source.domain || t('result.sources.noDomain') }}</span>
-                <span>{{ t('result.sources.fetchedAt') }} {{ formatSourceTime(source.fetched_at) }}</span>
-              </div>
-            </article>
-          </div>
-          <div v-else class="sources-empty">
-            <span class="sources-empty-mark">?</span>
-            <div>
-              <strong>{{ t('result.sources.emptyTitle') }}</strong>
-              <p>{{ t('result.sources.emptyDescription') }}</p>
-            </div>
-          </div>
-        </a-card>
 
         <!-- 顶部信息区:预算/地图 -->
         <div class="top-info-section" v-show="['budget', 'map'].includes(activeSection)">
@@ -1024,32 +879,23 @@ import type {
   IntercityTransportMode,
   KnowledgeGraphData,
   Meal,
-  PlanDiff,
   ReplanRequest,
   RouteEstimateStatus,
   ScheduleItemType,
-  SourceClaimType,
-  SourceEvidence,
-  SourceTrustLevel,
   TripPlan,
   TripPlanResponse,
   TripReviewRecord,
   TripTaskRecord,
-  TripVersionRecord,
   ValidationIssue,
   ValidationSeverity,
   WeatherInfo,
 } from '@/types'
 import {
-  compareTripVersions,
   getBackendRuntimeSettings,
   getRuntimeApiBaseUrl,
   getRuntimeMapJsKey,
   getTripTask,
-  getTripVersion,
-  getTripVersions,
   pollTaskStatus,
-  rollbackTripVersion,
   submitTripReview,
   waitForTripTask,
   RUNTIME_SETTINGS_UPDATED_EVENT,
@@ -1067,13 +913,6 @@ const reviewMode = ref<'summary' | 'modify' | 'reject'>('summary')
 const reviewReason = ref('')
 const reviewSubmitting = ref(false)
 const replanComposerOpen = ref(false)
-const tripVersions = ref<TripVersionRecord[]>([])
-const versionsLoading = ref(false)
-const compareLoading = ref(false)
-const rollbackLoading = ref<number | null>(null)
-const compareFrom = ref<number>()
-const compareTo = ref<number>()
-const versionDiff = ref<PlanDiff | null>(null)
 const replanForm = reactive<ReplanRequest>({
   instruction: '',
   day_indices: [],
@@ -1092,8 +931,6 @@ const attractionPhotoMetadata = ref<Record<string, {
 const activeSection = ref('overview')
 const mobileSections = computed(() => [
   { key: 'overview', label: t('result.side.overview') },
-  ...(tripId.value ? [{ key: 'versions', label: t('result.side.versions') }] : []),
-  { key: 'sources', label: t('result.side.sources') },
   ...(tripPlan.value?.budget ? [{ key: 'budget', label: t('result.side.budget') }] : []),
   { key: 'map', label: t('result.side.map') },
   { key: 'days', label: t('result.side.days') },
@@ -1110,9 +947,6 @@ const invalidMapPlaces = computed(() => tripPlan.value?.days.reduce((count, day)
   count + day.attractions.filter(attraction => !toRoutePoint(attraction.location)).length, 0) || 0)
 let overviewSwiper: Swiper | null = null
 
-const nextVersionNumber = computed(() => (
-  Math.max(0, ...tripVersions.value.map(version => version.version)) + 1
-))
 
 const dayScopeOptions = computed(() => (
   tripPlan.value?.days.map(day => ({
@@ -1127,10 +961,6 @@ const paceOptions = computed(() => [
   { value: 'intensive', label: t('result.review.paces.intensive') },
 ])
 
-const versionOptions = computed(() => tripVersions.value.map(version => ({
-  value: version.version,
-  label: `V${version.version}${version.active ? ` · ${t('result.versions.active')}` : ''}`,
-})))
 
 const canApproveCurrentReview = computed(() => {
   const review = currentReview.value
@@ -1203,7 +1033,6 @@ const localeTag = computed(() => {
   return 'en-US'
 })
 
-const sourceEvidence = computed<SourceEvidence[]>(() => tripPlan.value?.source_evidence ?? [])
 const validationSeverities: ValidationSeverity[] = ['critical', 'warning', 'info']
 const recommendedTransportOptions = computed(() => (
   tripPlan.value?.transport_options
@@ -1232,35 +1061,6 @@ const getScheduleItemTypeLabel = (type: ScheduleItemType): string => t(`result.e
 const getEstimateStatusLabel = (status: RouteEstimateStatus): string => t(`result.execution.${status}`)
 const getValidationSeverityLabel = (severity: ValidationSeverity): string => t(`result.execution.${severity}`)
 
-const formatSourceTime = (rawTime?: string | null): string => {
-  if (!rawTime) return t('result.sources.unknownTime')
-  const parsed = new Date(rawTime)
-  if (Number.isNaN(parsed.getTime())) return t('result.sources.unknownTime')
-  return new Intl.DateTimeFormat(localeTag.value, {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(parsed)
-}
-
-const getSafeSourceUrl = (source: SourceEvidence): string | null => {
-  const url = source.url?.trim()
-  return url && /^https?:\/\//i.test(url) ? url : null
-}
-
-const getResearchStatusLabel = (status?: TripPlan['research_status']): string => {
-  return t(`result.sources.status.${status || 'unavailable'}`)
-}
-
-const getSourceClaimLabel = (claimType: SourceClaimType): string => {
-  return t(`result.sources.claims.${claimType}`)
-}
-
-const getSourceTrustLabel = (trustLevel: SourceTrustLevel): string => {
-  return t(`result.sources.trust.${trustLevel}`)
-}
 
 const weatherList = computed<WeatherInfo[]>(() => tripPlan.value?.weather_info ?? [])
 
@@ -1528,29 +1328,6 @@ const persistWorkflowState = () => {
   }
 }
 
-const refreshVersions = async () => {
-  if (!tripId.value) return
-  versionsLoading.value = true
-  try {
-    tripVersions.value = await getTripVersions(tripId.value)
-    const values = tripVersions.value.map(version => version.version)
-    if (values.length > 1) {
-      if (!compareFrom.value || !values.includes(compareFrom.value)) {
-        compareFrom.value = values[values.length - 2]
-      }
-      if (!compareTo.value || !values.includes(compareTo.value)) {
-        compareTo.value = values[values.length - 1]
-      }
-    } else if (values.length === 1) {
-      compareFrom.value = values[0]
-      compareTo.value = values[0]
-    }
-  } catch (error: any) {
-    message.error(error.message || t('result.versions.loadFailed'))
-  } finally {
-    versionsLoading.value = false
-  }
-}
 
 const applyTaskRecord = async (task: TripTaskRecord) => {
   taskId.value = task.task_id
@@ -1564,7 +1341,6 @@ const applyTaskRecord = async (task: TripTaskRecord) => {
   if (task.result?.data) {
     await restoreTripPlanFromResponse(task.result)
   }
-  await refreshVersions()
 }
 
 const resetReplanForm = () => {
@@ -1677,52 +1453,6 @@ const formatDayList = (days: number[]): string => (
   days.length ? days.map(day => day + 1).join(', ') : t('result.review.none')
 )
 
-const formatDiffValue = (value: unknown): string => {
-  if (value === null || value === undefined || value === '') return '∅'
-  const text = typeof value === 'string' ? value : JSON.stringify(value)
-  return text.length > 180 ? `${text.slice(0, 177)}...` : text
-}
-
-const getVersionRoleLabel = (role: string): string => {
-  const knownRoles = ['primary', 'replan', 'rollback', 'comparison']
-  return knownRoles.includes(role) ? t(`result.versions.roles.${role}`) : role
-}
-
-const runVersionCompare = async () => {
-  if (!tripId.value || compareFrom.value === undefined || compareTo.value === undefined) return
-  compareLoading.value = true
-  try {
-    versionDiff.value = await compareTripVersions(
-      tripId.value,
-      compareFrom.value,
-      compareTo.value
-    )
-  } catch (error: any) {
-    message.error(error.message || t('result.versions.compareFailed'))
-  } finally {
-    compareLoading.value = false
-  }
-}
-
-const restoreVersion = async (version: number) => {
-  if (!tripId.value) return
-  const reason = window.prompt(t('result.versions.restorePrompt', { version }))?.trim()
-  if (!reason) return
-  if (!window.confirm(t('result.versions.restoreConfirm', { version }))) return
-  rollbackLoading.value = version
-  try {
-    const restored = await rollbackTripVersion(tripId.value, version, reason)
-    const detailed = restored.payload ? restored : await getTripVersion(tripId.value, restored.version)
-    if (detailed.payload?.data) await restoreTripPlanFromResponse(detailed.payload)
-    if (taskId.value) await applyTaskRecord(await getTripTask(taskId.value))
-    versionDiff.value = null
-    message.success(t('result.versions.restored', { version: restored.version }))
-  } catch (error: any) {
-    message.error(error.message || t('result.versions.restoreFailed'))
-  } finally {
-    rollbackLoading.value = null
-  }
-}
 
 const destroyCurrentMap = () => {
   mapGeneration++
@@ -2027,7 +1757,6 @@ onMounted(async () => {
       graph: gd ? JSON.parse(gd) : null,
       planId: planId.value || cachedPlanId,
     })
-    if (tripId.value) await refreshVersions()
     return
   }
 
@@ -2814,7 +2543,7 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
   const footerHTML = `
     <div style="text-align:center;padding:24px 16px 16px;border-top:1px solid #e8e8e8;margin-top:8px;">
       <img src="${qrUrl}" style="width:120px;height:120px;margin-bottom:10px;" crossorigin="anonymous" />
-      <div style="font-size:13px;color:#667eea;font-weight:600;margin-bottom:4px;">JourneyOps</div>
+      <div style="font-size:13px;color:#667eea;font-weight:600;margin-bottom:4px;">JourneyGo</div>
       <div style="font-size:11px;color:#aaa;">https://github.com/Xcaesar1/JourneyGo</div>
       <div style="font-size:11px;color:#bbb;margin-top:6px;">${t('result.export.footer')}</div>
     </div>`
@@ -3608,8 +3337,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   box-shadow: none !important;
 }
 
-.review-console,
-.versions-card {
+.review-console {
   position: relative;
   overflow: hidden;
   margin-bottom: 16px;
@@ -3633,16 +3361,14 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   background: linear-gradient(180deg, #ffad84, #d76e42 54%, transparent);
 }
 
-.review-console-head,
-.versions-heading {
+.review-console-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
 }
 
-.review-console h1,
-.versions-heading h2 {
+.review-console h1 {
   margin: 7px 0 6px;
   color: #f8fafc;
   font-family: Georgia, 'Times New Roman', serif;
@@ -3654,12 +3380,8 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   font-size: clamp(26px, 3vw, 40px);
 }
 
-.versions-heading h2 {
-  font-size: 30px;
-}
 
-.review-console-head p,
-.versions-heading p {
+.review-console-head p {
   max-width: 720px;
   margin: 0;
   color: rgba(222, 232, 239, 0.66);
@@ -3773,157 +3495,6 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   gap: 10px;
 }
 
-.versions-card :deep(.ant-card-body) {
-  padding: 26px;
-}
-
-.versions-heading {
-  margin-bottom: 22px;
-}
-
-.version-layout {
-  display: grid;
-  grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.45fr);
-  gap: 18px;
-}
-
-.version-list,
-.version-compare {
-  min-width: 0;
-  border: 1px solid rgba(234, 241, 247, 0.12);
-  border-radius: 16px;
-  background: rgba(5, 15, 22, 0.32);
-}
-
-.version-list {
-  padding: 8px;
-}
-
-.version-row {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 12px;
-  border-radius: 12px;
-}
-
-.version-row + .version-row {
-  border-top: 1px solid rgba(230, 238, 244, 0.08);
-}
-
-.version-row.is-active {
-  background: linear-gradient(110deg, rgba(215, 110, 66, 0.17), rgba(215, 110, 66, 0.03));
-}
-
-.version-number {
-  color: #f0a27d;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 17px;
-  font-weight: 800;
-}
-
-.version-copy {
-  min-width: 0;
-}
-
-.version-copy strong {
-  color: #f1f5f8;
-}
-
-.version-copy p {
-  margin: 4px 0;
-  overflow: hidden;
-  color: rgba(228, 236, 242, 0.64);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.version-copy small {
-  color: rgba(217, 226, 234, 0.42);
-}
-
-.active-version-chip {
-  margin-left: 8px;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: rgba(72, 170, 128, 0.18);
-  color: #a8e8c9;
-  font-size: 9px;
-  font-weight: 800;
-}
-
-.version-compare {
-  padding: 20px;
-}
-
-.version-compare h3 {
-  margin: 0 0 14px;
-  color: #f3f6f9;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 22px;
-}
-
-.compare-controls {
-  display: grid;
-  grid-template-columns: minmax(110px, 1fr) auto minmax(110px, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-}
-
-.version-diff > p,
-.version-empty {
-  color: rgba(225, 233, 240, 0.62);
-}
-
-.diff-entry-list {
-  display: grid;
-  gap: 8px;
-  max-height: 430px;
-  margin-top: 16px;
-  overflow-y: auto;
-}
-
-.diff-entry-list article {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 7px 10px;
-  padding: 11px;
-  border-radius: 10px;
-  background: rgba(232, 239, 245, 0.05);
-}
-
-.diff-entry-list code {
-  overflow: hidden;
-  color: #dce6ed;
-  font-size: 11px;
-  text-overflow: ellipsis;
-}
-
-.diff-entry-list p {
-  grid-column: 1 / -1;
-  margin: 0;
-  color: rgba(218, 228, 235, 0.55);
-  font-size: 11px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
-
-.diff-operation {
-  color: #eaa17e;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.version-empty {
-  display: grid;
-  min-height: 120px;
-  place-items: center;
-  text-align: center;
-}
 
 .empty-state-panel {
   max-width: 900px;
@@ -5653,243 +5224,6 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   }
 }
 
-.sources-card {
-  min-height: 620px;
-}
-
-.sources-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 28px;
-  padding: 28px 30px;
-  margin-bottom: 18px;
-  border: 1px solid rgba(215, 110, 66, 0.28);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 84% 20%, rgba(215, 110, 66, 0.2), transparent 36%),
-    linear-gradient(135deg, rgba(20, 39, 50, 0.96), rgba(10, 22, 30, 0.88));
-}
-
-.sources-eyebrow {
-  display: block;
-  margin-bottom: 8px;
-  color: #e79069;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.sources-header h2 {
-  margin: 0;
-  color: #fff3eb;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(28px, 4vw, 48px);
-  font-weight: 500;
-  line-height: 1.05;
-}
-
-.sources-header p {
-  max-width: 700px;
-  margin: 12px 0 0;
-  color: rgba(229, 237, 244, 0.7);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.sources-state-panel {
-  min-width: 220px;
-  display: grid;
-  gap: 7px;
-  justify-items: end;
-  padding-top: 4px;
-}
-
-.sources-state-panel strong {
-  color: #f4f7fa;
-  font-size: 14px;
-}
-
-.sources-status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 12px;
-  border: 1px solid rgba(113, 205, 166, 0.42);
-  border-radius: 999px;
-  background: rgba(58, 139, 105, 0.16);
-  color: #a9ebcb;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sources-status.is-partial {
-  border-color: rgba(231, 168, 92, 0.45);
-  background: rgba(188, 116, 45, 0.17);
-  color: #ffd39c;
-}
-
-.sources-status.is-unavailable {
-  border-color: rgba(180, 193, 204, 0.3);
-  background: rgba(122, 138, 151, 0.14);
-  color: #cad3da;
-}
-
-.sources-updated-label {
-  margin-top: 7px;
-  color: rgba(220, 229, 237, 0.52);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.sources-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.source-entry {
-  position: relative;
-  min-height: 210px;
-  padding: 20px;
-  overflow: hidden;
-  border: 1px solid rgba(236, 243, 250, 0.14);
-  border-radius: 16px;
-  background: linear-gradient(150deg, rgba(25, 43, 54, 0.82), rgba(11, 24, 32, 0.72));
-}
-
-.source-entry::after {
-  content: '';
-  position: absolute;
-  right: -34px;
-  bottom: -42px;
-  width: 120px;
-  height: 120px;
-  border: 1px solid rgba(215, 110, 66, 0.18);
-  border-radius: 50%;
-}
-
-.source-entry.is-unknown {
-  border-style: dashed;
-  background: rgba(23, 36, 45, 0.58);
-}
-
-.source-entry-topline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.source-index {
-  color: rgba(225, 233, 240, 0.4);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-}
-
-.source-claim,
-.source-trust {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(236, 243, 250, 0.08);
-  color: rgba(238, 243, 248, 0.72);
-  font-size: 10px;
-  font-weight: 700;
-}
-
-.source-trust {
-  margin-left: auto;
-}
-
-.source-trust.is-official {
-  background: rgba(215, 110, 66, 0.2);
-  color: #ffd1bd;
-}
-
-.source-title {
-  position: relative;
-  z-index: 1;
-  margin: 0 0 10px;
-  color: #f5f8fa;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.source-link {
-  display: inline-flex;
-  gap: 8px;
-  text-decoration: none;
-}
-
-.source-link:hover {
-  color: #ffbea1;
-}
-
-.source-claim-text {
-  position: relative;
-  z-index: 1;
-  display: -webkit-box;
-  margin: 0 0 20px;
-  overflow: hidden;
-  color: rgba(221, 230, 237, 0.68);
-  font-size: 13px;
-  line-height: 1.65;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-}
-
-.source-entry-meta {
-  position: absolute;
-  z-index: 1;
-  left: 20px;
-  right: 20px;
-  bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: rgba(207, 217, 225, 0.44);
-  font-size: 10px;
-}
-
-.sources-empty {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  min-height: 180px;
-  padding: 28px;
-  border: 1px dashed rgba(236, 243, 250, 0.2);
-  border-radius: 16px;
-  color: rgba(226, 234, 240, 0.7);
-}
-
-.sources-empty-mark {
-  display: grid;
-  width: 52px;
-  height: 52px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid rgba(215, 110, 66, 0.38);
-  border-radius: 50%;
-  color: #e79069;
-  font-family: Georgia, serif;
-  font-size: 28px;
-}
-
-.sources-empty strong {
-  color: #f0f4f7;
-}
-
-.sources-empty p {
-  margin: 6px 0 0;
-}
-
-/* 响应式设计 */
 @media (max-width: 768px) {
   .result-main {
     padding: 84px 10px 24px;
@@ -5982,13 +5316,11 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   .days-card :deep(.ant-collapse-content-box) { padding: 12px; }
   .day-header { flex-wrap: wrap; }
 
-  .review-console,
-  .versions-card :deep(.ant-card-body) {
+  .review-console {
     padding: 18px;
   }
 
-  .review-console-head,
-  .versions-heading {
+  .review-console-head {
     flex-direction: column;
   }
 
@@ -5998,8 +5330,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
     text-align: left;
   }
 
-  .review-form,
-  .version-layout {
+  .review-form {
     grid-template-columns: 1fr;
   }
 
@@ -6015,22 +5346,6 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
     width: 100%;
   }
 
-  .version-row {
-    grid-template-columns: 46px minmax(0, 1fr);
-  }
-
-  .version-row > :deep(.ant-btn) {
-    grid-column: 2;
-    justify-self: start;
-  }
-
-  .compare-controls {
-    grid-template-columns: 1fr auto 1fr;
-  }
-
-  .compare-controls :deep(.ant-btn) {
-    grid-column: 1 / -1;
-  }
 
   .top-info-section {
     flex-direction: column;
@@ -6063,24 +5378,6 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
     gap: 3px;
   }
 
-  .sources-header {
-    flex-direction: column;
-    padding: 22px 20px;
-  }
-
-  .sources-state-panel {
-    min-width: 0;
-    justify-items: start;
-  }
-
-  .sources-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .source-entry-meta {
-    flex-direction: column;
-    gap: 3px;
-  }
 
   .left-info {
     flex: auto;

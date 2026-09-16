@@ -30,9 +30,9 @@
     "copyFailed": "자동 복사에 실패했습니다. 아래 주소를 선택하여 직접 복사하세요."
   },
   "app": {
-    "title": "JourneyOps",
-    "brand": "JourneyOps",
-    "subBrand": "JourneyOps · AI 여행 플래너",
+    "title": "JourneyGo",
+    "brand": "JourneyGo",
+    "subBrand": "JourneyGo · AI 여행 플래너",
     "badge": "AI 여행 에이전트",
     "language": {
       "label": "언어",
@@ -41,7 +41,7 @@
       "en": "English",
       "ko": "한국어"
     },
-    "footerBrand": "JourneyOps",
+    "footerBrand": "JourneyGo",
     "footerCopy": "{year} 모든 권리 보유.",
     "footerTech": "HelloAgents + AMap MCP 기반"
   },
@@ -460,7 +460,7 @@
     "chat": {
       "toggle": "AI 온라인",
       "title": "일정 질문",
-      "welcome": "안녕하세요! JourneyOps AI입니다. 여행 일정에 대해 무엇이든 물어보세요. 예를 들면:",
+      "welcome": "안녕하세요! JourneyGo AI입니다. 여행 일정에 대해 무엇이든 물어보세요. 예를 들면:",
       "quickPriceLabel": "입장료",
       "quickSuitabilityLabel": "어르신 동반 가능?",
       "quickMealLabel": "식사 비용",
@@ -516,7 +516,7 @@
     },
     "export": {
       "filePrefix": "여행계획",
-      "footer": "JourneyOps · AI 여행 플래너로 생성",
+      "footer": "JourneyGo · AI 여행 플래너로 생성",
       "title": "{city} 여행 계획",
       "subtitle": "{start} ~ {end} · {days}일",
       "perNight": "/박",

@@ -30,9 +30,9 @@
     "copyFailed": "コピーできませんでした。下の住所を選択して手動でコピーしてください。"
   },
   "app": {
-    "title": "JourneyOps",
-    "brand": "JourneyOps",
-    "subBrand": "JourneyOps · AI 旅行エンジン",
+    "title": "JourneyGo",
+    "brand": "JourneyGo",
+    "subBrand": "JourneyGo · AI 旅行エンジン",
     "badge": "AI 旅行アシスタント",
     "language": {
       "label": "言語",
@@ -41,7 +41,7 @@
       "en": "English",
       "ko": "한국어"
     },
-    "footerBrand": "JourneyOps",
+    "footerBrand": "JourneyGo",
     "footerCopy": "{year} All rights reserved.",
     "footerTech": "Powered by HelloAgents + AMap MCP"
   },
@@ -460,7 +460,7 @@
     "chat": {
       "toggle": "AI オンライン",
       "title": "旅程 AI チャット",
-      "welcome": "こんにちは。JourneyOps AI です。旅程に関することは何でも聞いてください。例：",
+      "welcome": "こんにちは。JourneyGo AI です。旅程に関することは何でも聞いてください。例：",
       "quickPriceLabel": "料金確認",
       "quickSuitabilityLabel": "高齢者向け？",
       "quickMealLabel": "食費確認",
@@ -516,7 +516,7 @@
     },
     "export": {
       "filePrefix": "旅行プラン",
-      "footer": "JourneyOps · AI 旅行エンジンで生成",
+      "footer": "JourneyGo · AI 旅行エンジンで生成",
       "title": "{city} 旅行プラン",
       "subtitle": "{start} 〜 {end} · {days} 日間",
       "perNight": "/泊",

@@ -12,16 +12,16 @@ const flatten = (object, prefix = '') => Object.fromEntries(Object.entries(objec
   return typeof value === 'string' ? [[path, value]] : Object.entries(flatten(value, path))
 }))
 
-test('all languages and visible brand entry points use JourneyOps', () => {
+test('all languages and visible brand entry points use JourneyGo', () => {
   for (const pack of Object.values(packs)) {
-    assert.equal(pack.app.title, 'JourneyOps')
-    assert.equal(pack.app.brand, 'JourneyOps')
-    assert.equal(pack.app.footerBrand, 'JourneyOps')
+    assert.equal(pack.app.title, 'JourneyGo')
+    assert.equal(pack.app.brand, 'JourneyGo')
+    assert.equal(pack.app.footerBrand, 'JourneyGo')
     assert.doesNotMatch(JSON.stringify(pack), /TripStar|旅途星辰/)
   }
   assert.match(read('../views/Landing.vue'), /\{\{ t\('app.brand'\) \}\}/)
   assert.match(read('../components/NavBar.vue'), /\{\{ t\('app.brand'\) \}\}/)
-  assert.match(read('../../index.html'), /<title>JourneyOps<\/title>/)
+  assert.match(read('../../index.html'), /<title>JourneyGo<\/title>/)
 })
 
 test('Korean covers every existing message and preserves interpolation parameters', () => {

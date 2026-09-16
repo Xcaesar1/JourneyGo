@@ -14,11 +14,13 @@ const assert = require('node:assert/strict');
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors = [];
     const calls = [];
+    const versionRequests = [];
     let enabled = true;
     let responseStatus = 'ok';
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/api/**', async route => {
       const path = new URL(route.request().url()).pathname;
+      if (path.includes('/versions')) versionRequests.push(path);
       let body = { success: true, data: {} };
       if (path === '/api/v2/travel/capabilities') body = Object.fromEntries(['train', 'hotel', 'flight'].map(key => [key, { enabled, paid: key === 'flight' }]));
       if (path === '/api/v2/travel/search') {
@@ -37,13 +39,18 @@ const assert = require('node:assert/strict');
       await route.fulfill({ json: body });
     });
     await page.goto(base);
+    assert.equal(await page.title(), 'JourneyGo');
+    assert.ok(await page.getByText('JourneyGo', { exact: true }).count() > 0);
     await page.evaluate(plan => {
       sessionStorage.setItem('tripPlan', JSON.stringify(plan));
+      sessionStorage.setItem('tripId', 'ui-fixture-trip');
       localStorage.setItem('tripstar-locale', 'zh-CN');
     }, plan);
     await page.goto(`${base}/result`);
     const panel = page.locator('.travel-search');
     await panel.waitFor();
+    assert.equal(await page.locator('#versions, #sources').count(), 0);
+    assert.equal(await page.locator('.mobile-section-nav').getByRole('button', { name: /版本历史|来源/ }).count(), 0);
     await panel.getByRole('button', { name: '查询火车高铁', exact: true }).click();
     await panel.locator('.travel-offer').waitFor();
     assert.equal(calls.length, 1);
@@ -88,6 +95,7 @@ const assert = require('node:assert/strict');
     await panel.getByText('此服务尚未启用，请先由管理员配置。原行程仍可正常使用。').waitFor();
     assert.ok(await panel.getByRole('button', { name: '查询火车高铁', exact: true }).isDisabled());
     assert.deepEqual(errors, []);
-    console.log('PASS: train/hotel/flight forms, consent reset, no automatic calls, empty/disabled states, 390/1280 layout. All supplier responses mocked.');
+    assert.deepEqual(versionRequests, [], 'removed version panel must not fetch history');
+    console.log('PASS: JourneyGo brand, removed history/source panels and requests; train/hotel/flight forms, consent reset, empty/disabled states, 390/1280 layout. All supplier responses mocked.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

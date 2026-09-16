@@ -30,9 +30,9 @@
     "copyFailed": "无法自动复制，请选中下方地址手动复制。"
   },
   "app": {
-    "title": "JourneyOps",
-    "brand": "JourneyOps",
-    "subBrand": "JourneyOps · AI 旅行引擎",
+    "title": "JourneyGo",
+    "brand": "JourneyGo",
+    "subBrand": "JourneyGo · AI 旅行引擎",
     "badge": "AI 文旅智能体",
     "language": {
       "label": "语言",
@@ -41,7 +41,7 @@
       "en": "English",
       "ko": "한국어"
     },
-    "footerBrand": "JourneyOps",
+    "footerBrand": "JourneyGo",
     "footerCopy": "{year} All rights reserved.",
     "footerTech": "Powered by HelloAgents + 高德 MCP"
   },
@@ -460,7 +460,7 @@
     "chat": {
       "toggle": "AI 在线",
       "title": "行程智能问答",
-      "welcome": "您好！我是JourneyOps AI，可以问我关于行程的任何问题，例如：",
+      "welcome": "您好！我是JourneyGo AI，可以问我关于行程的任何问题，例如：",
       "quickPriceLabel": "票价查询",
       "quickSuitabilityLabel": "适合老人？",
       "quickMealLabel": "餐饮价格",
@@ -516,7 +516,7 @@
     },
     "export": {
       "filePrefix": "旅行计划",
-      "footer": "由 JourneyOps · AI 旅行引擎 生成",
+      "footer": "由 JourneyGo · AI 旅行引擎 生成",
       "title": "{city} 旅行计划",
       "subtitle": "{start} 至 {end} · {days} 天行程",
       "perNight": "/晚",
