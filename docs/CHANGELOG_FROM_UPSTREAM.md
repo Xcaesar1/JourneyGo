@@ -2,6 +2,11 @@
 
 本文件记录 JourneyOps 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。
 
+## JourneyGo Favicon Refresh - 2026-09-16
+
+- 网站 Favicon 更新为用户提供的橙色圆形雪山道路 PNG，原样保留，并同步 PNG MIME 声明与资源测试。
+- 无 API/数据库变更；回滚本次提交可恢复上一版 JPG 图标。
+
 ## JourneyGo Landscape Homepage - 2026-09-16
 
 - 首页使用用户提供的雪山徒步图片，左侧约 40% 叠加文案、搜索入口和金色探索按钮，移动端自适应裁切。

@@ -54,9 +54,9 @@ test('README branding and favicon use the supplied JourneyGo assets', () => {
   }
   const logo = readFileSync(new URL('../../../docs/assets/journeygo-logo.png', import.meta.url))
   assert.equal(logo.subarray(0, 8).toString('hex'), '89504e470d0a1a0a')
-  const icon = readFileSync(new URL('../../favicon.jpg', import.meta.url))
-  assert.equal(icon.subarray(0, 3).toString('hex'), 'ffd8ff')
-  assert.match(read('../../index.html'), /rel="icon" type="image\/jpeg" href="\/favicon\.jpg"/)
+  const icon = readFileSync(new URL('../../favicon.png', import.meta.url))
+  assert.equal(icon.subarray(0, 8).toString('hex'), '89504e470d0a1a0a')
+  assert.match(read('../../index.html'), /rel="icon" type="image\/png" href="\/favicon\.png"/)
 })
 
 function loadLocale(browserLanguage, saved) {
