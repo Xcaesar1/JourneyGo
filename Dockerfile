@@ -14,13 +14,21 @@ COPY frontend/ ./
 
 RUN VITE_API_BASE_URL="" npm run build
 
+FROM node:22-bookworm-slim AS travel-mcp-builder
+WORKDIR /opt/travel-mcp
+COPY backend/travel-mcp/package*.json ./
+RUN npm ci --omit=dev --ignore-scripts
+
 
 # ================================
 # 阶段二：构建最终镜像
 # ================================
-FROM python:3.10-slim
+FROM python:3.10-slim-bookworm
 
 WORKDIR /app
+
+COPY --from=travel-mcp-builder /usr/local/bin/node /usr/local/bin/node
+COPY --from=travel-mcp-builder /opt/travel-mcp /opt/travel-mcp
 
 # 安装后端构建与健康检查依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \

@@ -1,0 +1,9 @@
+{
+  "name": "journeygo-travel-mcp-runtime",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "12306-mcp": "0.3.10",
+    "@variflight-ai/variflight-mcp": "1.0.3"
+  }
+}

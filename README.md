@@ -88,6 +88,7 @@ Python 3.10、FastAPI、Pydantic v2、SQLAlchemy 2、Alembic、PostgreSQL 16、R
 
 - [阶段 8 验收](docs/PHASE_8_ACCEPTANCE.md)
 - [API v2](docs/API_V2.md)
+- [火车、酒店与航班 MCP 查询](docs/TRAVEL_MCP.md)
 - [架构与故障策略](docs/ARCHITECTURE.md)
 - [部署与 staging](docs/DEPLOYMENT.md)
 - [备份、恢复与回滚](docs/BACKUP_RESTORE_ROLLBACK.md)

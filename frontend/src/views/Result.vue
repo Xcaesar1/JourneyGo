@@ -233,6 +233,8 @@
             </span>
           </div>
 
+          <TravelSearch :plan="tripPlan" />
+
           <div
             v-if="recommendedTransportOptions.length > 0 || tripPlan.validation_report"
             class="execution-dashboard"
@@ -1013,6 +1015,7 @@ import OverviewAttractionCard from '@/components/OverviewAttractionCard.vue'
 import AIChat from '@/components/AIChat.vue'
 import PlaceNavigation from '@/components/PlaceNavigation.vue'
 import TripNavigator from '@/components/TripNavigator.vue'
+import TravelSearch from '@/components/TravelSearch.vue'
 import { toRoutePoint } from '@/services/mapCoordinates'
 import type {
   Attraction,

@@ -82,6 +82,16 @@ class Settings(BaseSettings):
     demo_mode: bool = False
     weather_enabled: bool = False
     weather_mcp_python: str = "/opt/weather/bin/python"
+    travel_train_enabled: bool = False
+    travel_hotel_enabled: bool = False
+    travel_flight_enabled: bool = False
+    travel_mcp_python: str = "/opt/weather/bin/python"
+    travel_mcp_node: str = "node"
+    travel_mcp_modules: str = "/opt/travel-mcp/node_modules"
+    rollinggo_api_key: SecretStr = SecretStr("")
+    variflight_api_key: SecretStr = SecretStr("")
+    # Non-expiring, atomic Redis counter per credential; operator raises the cumulative ceiling.
+    travel_flight_call_limit: int = Field(default=0, ge=0, le=100000)
     demo_node_delay_seconds: float = Field(default=0, ge=0, le=2)
     runtime_secret_updates_enabled: bool = False
     api_docs_enabled: bool = True

@@ -15,6 +15,7 @@ import type {
   TripVersionRecord,
 } from '@/types'
 import { i18n } from '@/i18n'
+import type { TravelCapabilities, TravelSearchRequest, TravelSearchResponse } from '@/types/travel'
 
 const ENV_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 const ENV_AMAP_WEB_JS_KEY = import.meta.env.VITE_AMAP_WEB_JS_KEY ?? ''
@@ -579,4 +580,12 @@ export async function healthCheck(): Promise<any> {
 }
 
 export default apiClient
+
+export async function getTravelCapabilities(): Promise<TravelCapabilities> {
+  return (await apiClient.get<TravelCapabilities>('/api/v2/travel/capabilities', { timeout: 10000 })).data
+}
+
+export async function searchTravel(payload: TravelSearchRequest): Promise<TravelSearchResponse> {
+  return (await apiClient.post<TravelSearchResponse>('/api/v2/travel/search', payload, { timeout: 55000 })).data
+}
 

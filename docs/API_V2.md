@@ -11,6 +11,10 @@ JourneyGraph 原生输出按 `TripPlanV2` 校验并保存在 `trip_versions.nati
 
 ## Endpoints
 
+Read-only travel quotes: `GET /api/v2/travel/capabilities` and `POST /api/v2/travel/search`.
+These are explicit user queries, not planner tasks. Paid queries require an access code, per-query
+consent and a shared cumulative call ceiling. Contracts and price semantics: [Travel MCP](TRAVEL_MCP.md).
+
 | Method | Path | Result |
 | --- | --- | --- |
 | `POST` | `/api/v2/trips` | 创建或返回幂等任务，返回 `202` |

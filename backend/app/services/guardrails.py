@@ -48,6 +48,13 @@ def enforce_spend_guardrails(
         _consume_rate_limit(request, settings)
 
 
+def enforce_travel_guardrails(request: Request, settings: Settings, *, paid: bool) -> None:
+    protection = settings.model_copy(update={"api_access_code_required": True}) if paid else settings
+    _require_access_code(request, protection)
+    if settings.api_rate_limit_enabled:
+        _consume_rate_limit(request, settings)
+
+
 def _require_access_code(request: Request, settings: Settings) -> None:
     if not settings.api_access_code_required:
         return

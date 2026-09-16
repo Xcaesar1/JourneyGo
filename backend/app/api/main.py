@@ -16,6 +16,7 @@ from .routes import map as map_routes
 from .routes import settings as settings_routes
 from .v2 import attractions as v2_attractions
 from .v2 import tasks as v2_tasks
+from .v2 import travel as v2_travel
 from .v2 import trips as v2_trips
 
 # 强制 stdout/stderr 使用 UTF-8，防止非 UTF-8 控制台（如 cp932）输出中文时崩溃
@@ -72,6 +73,7 @@ app.include_router(health_router)
 app.include_router(v2_trips.router, prefix="/api/v2")
 app.include_router(v2_tasks.router, prefix="/api/v2")
 app.include_router(v2_attractions.router, prefix="/api/v2")
+app.include_router(v2_travel.router, prefix="/api/v2")
 
 
 @app.on_event("startup")
