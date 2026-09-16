@@ -4,8 +4,12 @@
     <NavBar :show-settings="false" :show-cta="false" @brand-click="scrollToTop" @cta-click="scrollToForm" />
 
     <div class="wrapper">
-      <section class="journey-hero" :style="{ backgroundImage: `url(${heroImage})` }" aria-labelledby="hero-title">
+      <section class="journey-hero" :class="{ 'motion-paused': motionPaused }" aria-labelledby="hero-title">
+        <div class="journey-landscape" :style="{ backgroundImage: `url(${heroImage})` }" aria-hidden="true"></div>
+        <div class="journey-mist" aria-hidden="true"></div>
+        <div class="journey-sunlight" aria-hidden="true"></div>
         <div class="journey-hero-shade" aria-hidden="true"></div>
+        <button class="journey-motion-toggle" type="button" :aria-pressed="motionPaused" @click="motionPaused = !motionPaused">{{ t('home.hero.pauseMotion') }}</button>
         <div class="journey-hero-content">
           <h1 id="hero-title">{{ t('home.hero.title') }}</h1>
           <p class="journey-hero-copy">{{ t('home.hero.line1') }}<br />{{ t('home.hero.line2') }}</p>
@@ -684,6 +688,7 @@ const scrollToForm = () => {
 }
 
 const heroQuery = ref('')
+const motionPaused = ref(false)
 const beginExploring = () => {
   if (loading.value) return
   const query = heroQuery.value.trim()
@@ -938,6 +943,7 @@ const handleRetry = async () => {
 .journey-hero {
   position: relative;
   isolation: isolate;
+  overflow: hidden;
   min-height: 720px;
   height: 100svh;
   max-height: 1100px;
@@ -947,6 +953,47 @@ const handleRetry = async () => {
   background-position: center;
   color: #fff9ed;
 }
+.journey-landscape, .journey-mist, .journey-sunlight {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  pointer-events: none;
+}
+.journey-landscape {
+  background-size: cover;
+  background-position: center;
+  transform-origin: 68% 42%;
+  animation: landscape-drift 32s ease-in-out infinite alternate;
+}
+.journey-mist {
+  inset: 35% -6% 38% 35%;
+  z-index: -2;
+  background: radial-gradient(ellipse at 30% 55%, rgba(218, 233, 239, .22), transparent 58%), radial-gradient(ellipse at 75% 45%, rgba(244, 236, 213, .17), transparent 55%);
+  animation: valley-mist 24s ease-in-out infinite alternate;
+}
+.journey-sunlight {
+  z-index: -2;
+  background: radial-gradient(ellipse at 100% 18%, rgba(255, 203, 125, .22), transparent 42%);
+  animation: sunset-glow 18s ease-in-out infinite alternate;
+}
+.journey-motion-toggle {
+  position: absolute;
+  right: 24px;
+  bottom: 128px;
+  padding: 10px 14px;
+  border: 1px solid #ffffff66;
+  border-radius: 24px;
+  background: #142c3bd9;
+  color: #fff9ed;
+  font-size: 12px;
+  cursor: pointer;
+}
+.journey-motion-toggle[aria-pressed='true'] { border-color: #f5cb87; color: #f5cb87; }
+.journey-motion-toggle:focus-visible { outline: 3px solid #f5cb87; outline-offset: 4px; }
+.motion-paused .journey-landscape, .motion-paused .journey-mist, .motion-paused .journey-sunlight { animation-play-state: paused; }
+@keyframes landscape-drift { from { transform: scale(1); } to { transform: scale(1.045) translate3d(-.35%, .2%, 0); } }
+@keyframes valley-mist { from { transform: translate3d(-3%, 0, 0); opacity: .45; } to { transform: translate3d(3%, 2%, 0); opacity: .85; } }
+@keyframes sunset-glow { from { opacity: .3; } to { opacity: .75; } }
 .journey-hero-shade {
   position: absolute;
   inset: 0;
@@ -1018,6 +1065,9 @@ const handleRetry = async () => {
 .journey-hero button:disabled { opacity: .55; cursor: wait; }
 @keyframes trail-reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 760px) {
+  .journey-landscape { animation: none; background-position: 63% center; }
+  .journey-mist { inset: 35% -8% 42% 15%; }
+  .journey-motion-toggle { right: 18px; font-size: 11px; }
   .journey-hero { min-height: 760px; height: 100svh; background-position: 63% center; align-items: flex-start; }
   .journey-hero-shade { background: linear-gradient(90deg, #091a3699, #091a3622), linear-gradient(0deg, #0b151d, transparent 28%); }
   .journey-hero-content { width: 86%; margin-left: 7%; padding: 150px 0 200px; }
@@ -1025,7 +1075,12 @@ const handleRetry = async () => {
   .journey-hero-copy { font-size: 25px; margin-bottom: 28px; }
   .journey-hero-form { max-width: 380px; }
 }
-@media (prefers-reduced-motion: reduce) { .journey-hero-content { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .journey-hero-content, .journey-landscape, .journey-mist, .journey-sunlight { animation: none; }
+  .journey-mist { opacity: .45; }
+  .journey-sunlight { opacity: .3; }
+  .journey-motion-toggle { display: none; }
+}
 
 .landing-header {
   /* 确保 hero 区域占满全屏高度，背景图不重复 */

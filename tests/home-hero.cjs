@@ -33,12 +33,29 @@ const crypto = require('node:crypto');
         assert.equal(await page.locator('#hero-title').textContent(), pack.home.hero.title);
         assert.equal(await page.locator('.settings-btn, .landing-cta, .presentation-title, .moving-clouds').count(), 0);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-        const background = await page.locator('.journey-hero').evaluate(el => getComputedStyle(el).backgroundImage);
+        const background = await page.locator('.journey-landscape').evaluate(el => getComputedStyle(el).backgroundImage);
         const url = background.match(/url\("?(.*?)"?\)/)[1];
         assert.equal((await page.request.get(url)).status(), 200);
         if (code === 'zh') await page.screenshot({ path: `artifacts/home-hero-${width}.png` });
       }
     }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const landscape = page.locator('.journey-landscape');
+    assert.match(await landscape.evaluate(el => getComputedStyle(el).animationName), /^landscape-drift/);
+    const initialTransform = await landscape.evaluate(el => getComputedStyle(el).transform);
+    await page.waitForTimeout(500);
+    assert.notEqual(await landscape.evaluate(el => getComputedStyle(el).transform), initialTransform);
+    await page.locator('.journey-motion-toggle').click();
+    assert.equal(await landscape.evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
+    await page.locator('.journey-motion-toggle').click();
+    assert.equal(await landscape.evaluate(el => getComputedStyle(el).animationPlayState), 'running');
+    await page.setViewportSize({ width: 390, height: 900 });
+    assert.equal(await landscape.evaluate(el => getComputedStyle(el).animationName), 'none');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const selector of ['.journey-landscape', '.journey-mist', '.journey-sunlight']) {
+      assert.equal(await page.locator(selector).evaluate(el => getComputedStyle(el).animationName), 'none');
+    }
+    assert.equal(await page.locator('.journey-motion-toggle').isVisible(), false);
     await page.locator('.journey-search input').fill('西安到成都，喜欢徒步');
     await page.locator('.journey-search input').press('Enter');
     await page.waitForTimeout(800);
