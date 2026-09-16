@@ -1,0 +1,11 @@
+backend/runtime_settings.json
+backend/data/trip_tasks
+.env.staging
+.env.demo
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+artifacts/
+.playwright-cli/

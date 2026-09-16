@@ -1,0 +1,26 @@
+{
+  "evaluation": "phase3_planner_engine_smoke",
+  "executed_at": "2026-08-08",
+  "environment": "Oracle disposable PostgreSQL and application container",
+  "selected_engine": "journey_graph",
+  "comparison_enabled": false,
+  "model": "deepseek-v4-flash",
+  "schema_version": "2.0",
+  "native_days": 1,
+  "legacy_client_contract": true,
+  "checkpoint_present": true,
+  "alembic_revision": "20260808_02",
+  "version_metadata_columns": [
+    "native_payload",
+    "planner_engine",
+    "schema_version",
+    "version_role"
+  ],
+  "progress_stages": [
+    "planning",
+    "graph_building"
+  ],
+  "raw_model_outputs_retained": false,
+  "secrets_retained": false,
+  "production_services_modified": false
+}

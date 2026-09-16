@@ -1,0 +1,17 @@
+{
+  "evaluation": "phase3_structured_output",
+  "executed_at": "2026-08-08",
+  "provider_interface": "OpenAI-compatible native JSON Output",
+  "model": "deepseek-v4-flash",
+  "schema": "TripPlanV2",
+  "request_profile": "one-day Shanghai to Hangzhou fixture",
+  "runs": 30,
+  "concurrency": 5,
+  "valid_trip_plan_v2": 30,
+  "failures": 0,
+  "uncaught_json_parse_errors": 0,
+  "elapsed_seconds": 151.637,
+  "raw_model_outputs_retained": false,
+  "secrets_retained": false,
+  "production_services_modified": false
+}

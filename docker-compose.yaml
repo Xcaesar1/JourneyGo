@@ -1,0 +1,194 @@
+x-app-build: &app-build
+  context: .
+  dockerfile: Dockerfile
+
+x-service-logging: &service-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-app-environment: &app-environment
+  LLM_API_KEY: ${LLM_API_KEY:-}
+  LLM_BASE_URL: ${LLM_BASE_URL:-}
+  LLM_MODEL_ID: ${LLM_MODEL_ID:-}
+  LLM_TIMEOUT: ${LLM_TIMEOUT:-600}
+  LLM_STRUCTURED_MAX_TOKENS: ${LLM_STRUCTURED_MAX_TOKENS:-32768}
+  LLM_STRUCTURED_MAX_ATTEMPTS: ${LLM_STRUCTURED_MAX_ATTEMPTS:-2}
+  LLM_INPUT_COST_PER_MILLION_USD: ${LLM_INPUT_COST_PER_MILLION_USD:-0}
+  LLM_OUTPUT_COST_PER_MILLION_USD: ${LLM_OUTPUT_COST_PER_MILLION_USD:-0}
+  LLM_MAX_TOKENS_PER_TRIP: ${LLM_MAX_TOKENS_PER_TRIP:-80000}
+  LLM_MAX_COST_PER_TRIP_USD: ${LLM_MAX_COST_PER_TRIP_USD:-2.0}
+  API_ACCESS_CODE_REQUIRED: ${API_ACCESS_CODE_REQUIRED:-false}
+  API_ACCESS_CODE: ${API_ACCESS_CODE:-}
+  API_RATE_LIMIT_ENABLED: ${API_RATE_LIMIT_ENABLED:-true}
+  API_RATE_LIMIT_REQUESTS: ${API_RATE_LIMIT_REQUESTS:-6}
+  API_RATE_LIMIT_WINDOW_SECONDS: ${API_RATE_LIMIT_WINDOW_SECONDS:-60}
+  API_MAX_ACTIVE_TRIP_TASKS: ${API_MAX_ACTIVE_TRIP_TASKS:-4}
+  API_MAX_REQUEST_BYTES: ${API_MAX_REQUEST_BYTES:-32768}
+  API_DOCS_ENABLED: ${API_DOCS_ENABLED:-false}
+  RUNTIME_SECRET_UPDATES_ENABLED: ${RUNTIME_SECRET_UPDATES_ENABLED:-false}
+  DEMO_MODE: ${DEMO_MODE:-false}
+  DEMO_NODE_DELAY_SECONDS: ${DEMO_NODE_DELAY_SECONDS:-0}
+  LEGACY_JSON_REPAIR: ${LEGACY_JSON_REPAIR:-true}
+  PLANNER_ENGINE: ${PLANNER_ENGINE:-legacy}
+  PLANNER_COMPARE_ENGINES: ${PLANNER_COMPARE_ENGINES:-false}
+  TRIP_PLANNER_TIMEOUT: ${TRIP_PLANNER_TIMEOUT:-420}
+  VITE_AMAP_WEB_KEY: ${VITE_AMAP_WEB_KEY:-}
+  VITE_AMAP_WEB_JS_KEY: ${VITE_AMAP_WEB_JS_KEY:-}
+  VITE_AMAP_SECURITY_JS_CODE: ${VITE_AMAP_SECURITY_JS_CODE:-}
+  TRIPAI_ENABLED: ${TRIPAI_ENABLED:-false}
+  TRIPAI_API_KEY: ${TRIPAI_API_KEY:-}
+  TRIPAI_BASE_URL: ${TRIPAI_BASE_URL:-https://wendao-skill-prod.ctrip.com/skill/query}
+  TRIPAI_TIMEOUT: ${TRIPAI_TIMEOUT:-30}
+  BRAVE_SEARCH_API_KEY: ${BRAVE_SEARCH_API_KEY:-}
+  BRAVE_SEARCH_BASE_URL: ${BRAVE_SEARCH_BASE_URL:-https://api.search.brave.com/res/v1/web/search}
+  WEB_RESEARCH_TIMEOUT: ${WEB_RESEARCH_TIMEOUT:-10}
+  WEB_RESEARCH_RESULT_COUNT: ${WEB_RESEARCH_RESULT_COUNT:-5}
+  WEB_RESEARCH_OFFICIAL_DOMAINS: ${WEB_RESEARCH_OFFICIAL_DOMAINS:-}
+  SOURCE_CACHE_TTL_SECONDS: ${SOURCE_CACHE_TTL_SECONDS:-21600}
+  GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+  GOOGLE_MAPS_PROXY: ${GOOGLE_MAPS_PROXY:-}
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-journeyops}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-journeyops}
+  REDIS_URL: redis://redis:6379/0
+  CELERY_BROKER_URL: redis://redis:6379/1
+  CELERY_VISIBILITY_TIMEOUT: ${CELERY_VISIBILITY_TIMEOUT:-720}
+  TRIP_TASK_STALE_AFTER: ${TRIP_TASK_STALE_AFTER:-120}
+  TRIP_TASK_RECOVERY_INTERVAL: ${TRIP_TASK_RECOVERY_INTERVAL:-60}
+  TRIP_TASK_LOCK_TIMEOUT: ${TRIP_TASK_LOCK_TIMEOUT:-90}
+  TRIP_TASK_SOFT_TIME_LIMIT: ${TRIP_TASK_SOFT_TIME_LIMIT:-600}
+  TRIP_TASK_HARD_TIME_LIMIT: ${TRIP_TASK_HARD_TIME_LIMIT:-660}
+  LANGGRAPH_STRICT_MSGPACK: ${LANGGRAPH_STRICT_MSGPACK:-true}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-journeyops}
+      POSTGRES_DB: ${POSTGRES_DB:-journeyops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging: *service-logging
+    cpus: 0.75
+    mem_limit: 768m
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    logging: *service-logging
+    cpus: 0.25
+    mem_limit: 256m
+    restart: unless-stopped
+
+  migrate:
+    image: journeyops-app:${IMAGE_TAG:-latest}
+    build: *app-build
+    command:
+      - sh
+      - -c
+      - >-
+        alembic -c backend/alembic.ini upgrade head &&
+        python -m backend.scripts.setup_langgraph_checkpoints
+    environment: *app-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    logging: *service-logging
+    cpus: 1.0
+    mem_limit: 1g
+    restart: "no"
+
+  data-init:
+    image: journeyops-app:${IMAGE_TAG:-latest}
+    build: *app-build
+    user: "0:0"
+    command: ["sh", "-c", "chown -R 10001:10001 /app/backend/data"]
+    volumes:
+      - trip_data:/app/backend/data
+    logging: *service-logging
+    cpus: 0.25
+    mem_limit: 128m
+    restart: "no"
+
+  worker:
+    image: journeyops-app:${IMAGE_TAG:-latest}
+    build: *app-build
+    command:
+      - celery
+      - -A
+      - backend.app.workers.celery_app:celery_app
+      - worker
+      - --loglevel=INFO
+      - --hostname=journeyops@%h
+    environment: *app-environment
+    volumes:
+      - trip_data:/app/backend/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      data-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - celery -A backend.app.workers.celery_app:celery_app inspect ping -d "journeyops@$${HOSTNAME}" --timeout=5 | grep -q pong
+      interval: 15s
+      timeout: 8s
+      retries: 8
+      start_period: 20s
+    logging: *service-logging
+    cpus: 1.5
+    mem_limit: 2g
+    restart: unless-stopped
+
+  trip-planner:
+    image: journeyops-app:${IMAGE_TAG:-latest}
+    build: *app-build
+    container_name: helloagents-trip-planner
+    ports:
+      - "7860:7860"
+    environment:
+      <<: *app-environment
+      HOST: 0.0.0.0
+      PORT: 7860
+    volumes:
+      - trip_data:/app/backend/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:7860/health/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
+    logging: *service-logging
+    cpus: 1.0
+    mem_limit: 1g
+    restart: unless-stopped
+
+volumes:
+  trip_data:
+  postgres_data:
+  redis_data:

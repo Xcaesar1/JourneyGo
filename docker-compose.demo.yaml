@@ -1,0 +1,46 @@
+name: journeyops-demo
+
+services:
+  postgres:
+    container_name: journeyops-postgres-demo
+
+  redis:
+    container_name: journeyops-redis-demo
+
+  migrate:
+    container_name: journeyops-migrate-demo
+
+  data-init:
+    container_name: journeyops-data-init-demo
+
+  worker:
+    container_name: journeyops-worker-demo
+    environment:
+      DEMO_MODE: "true"
+      DEMO_NODE_DELAY_SECONDS: "0.35"
+      PLANNER_ENGINE: journey_graph
+      PLANNER_COMPARE_ENGINES: "false"
+      API_ACCESS_CODE_REQUIRED: "false"
+      API_DOCS_ENABLED: "true"
+
+  trip-planner:
+    container_name: journeyops-app-demo
+    ports: !override
+      - "127.0.0.1:17862:7860"
+    environment:
+      DEMO_MODE: "true"
+      DEMO_NODE_DELAY_SECONDS: "0.35"
+      PLANNER_ENGINE: journey_graph
+      PLANNER_COMPARE_ENGINES: "false"
+      API_ACCESS_CODE_REQUIRED: "false"
+      API_DOCS_ENABLED: "true"
+    volumes: !override
+      - trip_data:/app/backend/data
+
+volumes:
+  trip_data:
+    name: journeyops_demo_trip_data
+  postgres_data:
+    name: journeyops_demo_postgres_data
+  redis_data:
+    name: journeyops_demo_redis_data

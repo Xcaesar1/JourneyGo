@@ -1,0 +1,47 @@
+{
+  "fixture_version": "journeyops-offline-observations/1.0.0",
+  "defaults": {
+    "legacy": {"latency_ms": 118000, "model_cost_usd": 0.19},
+    "journey_graph": {"latency_ms": 91000, "model_cost_usd": 0.14}
+  },
+  "overrides": {
+    "eval_003": {
+      "legacy": {"detected_issues": ["closed_date"]},
+      "journey_graph": {"detected_issues": ["closed_date"]}
+    },
+    "eval_004": {"legacy": {"budget_consistent": false, "failure_node": "legacy_response_parser"}},
+    "eval_007": {"legacy": {"replan_scope_precision": 0.35, "failure_node": "legacy_replan"}},
+    "eval_011": {
+      "legacy": {"detected_issues": ["provider_rate_limited"], "retry_recovered": false, "tool_success_rate": 0.5, "failure_node": "legacy_planner", "failure_tool": "web_search"},
+      "journey_graph": {"detected_issues": ["provider_rate_limited"]}
+    },
+    "eval_012": {
+      "legacy": {"detected_issues": ["provider_timeout"]},
+      "journey_graph": {"detected_issues": ["provider_timeout"]}
+    },
+    "eval_013": {
+      "legacy": {"detected_issues": ["community_auth_expired"], "tool_success_rate": 0.72, "failure_tool": "xhs_community"},
+      "journey_graph": {"detected_issues": ["community_auth_expired"], "tool_success_rate": 0.72, "failure_node": "research", "failure_tool": "xhs_community"}
+    },
+    "eval_014": {"legacy": {"resume_success": false, "failure_node": "legacy_planner"}},
+    "eval_015": {"legacy": {"resume_success": false, "failure_node": "legacy_planner"}},
+    "eval_022": {
+      "legacy": {"detected_issues": ["seasonal_closure_risk"]},
+      "journey_graph": {"detected_issues": ["seasonal_closure_risk"]}
+    },
+    "eval_029": {"legacy": {"source_coverage": 0.4, "failure_tool": "web_search"}},
+    "eval_033": {
+      "legacy": {"detected_issues": ["prompt_injection"]},
+      "journey_graph": {"detected_issues": ["prompt_injection"]}
+    },
+    "eval_034": {
+      "legacy": {"detected_issues": ["concurrency_limited"]},
+      "journey_graph": {"detected_issues": ["concurrency_limited"]}
+    },
+    "eval_035": {
+      "legacy": {"detected_issues": ["model_budget_limited"]},
+      "journey_graph": {"detected_issues": ["model_budget_limited"]}
+    },
+    "eval_036": {"legacy": {"latency_ms": 190000, "failure_tool": "web_search"}}
+  }
+}
