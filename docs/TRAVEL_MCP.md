@@ -108,7 +108,16 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
-#### Homepage Motion Release (Current)
+#### Default Enhanced Motion Release (Current)
+
+- Source: `8499c3c`, pushed to GitHub main. Image: `journeyops-app:ambient-8499c3c`.
+- Release directory: `/opt/tripstar/releases/ambient-8499c3c-20260916`.
+- Recreate with base/staging Compose files, the travel override, then this release's `ambient.compose.yaml`. Private environment and provider flags remain inherited from the travel override.
+- `ambient-deploy.sh` checks active tasks, health and protected containers; automatic rollback restores `journeyops-app:motion-0cc1839`. Manual rollback: substitute `/opt/tripstar/releases/motion-0cc1839-20260916/motion.compose.yaml` for the ambient override.
+- Includes stronger atmosphere/camera movement and removal of the pause control. System reduced-motion and mobile camera fallback remain. No database/API migration or paid query.
+- Deployment checks passed: API/Worker healthy, protected production/PostgreSQL/Redis containers unchanged, train/hotel enabled and flight disabled. Public HTML/JS/CSS returned 200; served CSS contains enhanced scaling and no pause toggle. Full live Chrome regression remains incomplete due navigation/resource transfer timeouts, including after isolating external fonts and trying system network settings. Local browser regression and build passed before deployment; do not label this release's full live browser test passed.
+
+#### Homepage Motion Release (Previous)
 
 - Source: `0cc1839`, pushed to GitHub main. Image: `journeyops-app:motion-0cc1839`.
 - Release directory: `/opt/tripstar/releases/motion-0cc1839-20260916`.

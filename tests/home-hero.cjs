@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const crypto = require('node:crypto');
 
 (async () => {
-  const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--no-proxy-server'] });
+  const browser = await chromium.launch({ channel: 'chrome', headless: true, args: process.env.HOME_UI_SYSTEM_PROXY ? [] : ['--no-proxy-server'] });
   try {
     const access = process.env.HOME_UI_AUTH_FILE ? JSON.parse(fs.readFileSync(process.env.HOME_UI_AUTH_FILE, 'utf8')) : null;
     const page = await browser.newPage(access ? { httpCredentials: { username: access.username, password: access.password } } : {});
@@ -16,7 +16,9 @@ const crypto = require('node:crypto');
       return route.fulfill({ json: { success: true, data: [], items: [] } });
     });
     const base = process.env.HOME_UI_URL || 'http://127.0.0.1:5174';
-    await page.goto(base);
+    // External fonts must not block application acceptance on restricted networks.
+    await page.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
+    await page.goto(base, { waitUntil: 'domcontentloaded', timeout: 60000 });
     const icon = page.locator('link[rel="icon"]');
     assert.equal(await icon.getAttribute('type'), 'image/png');
     const iconResponse = await page.request.get(new URL(await icon.getAttribute('href'), base).href);
@@ -28,7 +30,7 @@ const crypto = require('node:crypto');
       await page.evaluate(locale => localStorage.setItem('tripstar-locale', locale), locale);
       for (const width of [390, 1440]) {
         await page.setViewportSize({ width, height: 900 });
-        await page.reload();
+        await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.locator('#hero-title').waitFor();
         assert.equal(await page.locator('#hero-title').textContent(), pack.home.hero.title);
         assert.equal(await page.locator('.settings-btn, .landing-cta, .presentation-title, .moving-clouds').count(), 0);
@@ -79,4 +81,8 @@ const crypto = require('node:crypto');
     assert.deepEqual(errors, []);
     console.log('PASS: 4 languages, phone/desktop, default motion without toggle, reduced motion, no hero search, explore preserves data');
   } finally { await browser.close(); }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(error => {
+  // Playwright request errors can include authentication headers in call logs.
+  console.error(`${error.name}: ${String(error.message).split('\n')[0]}`);
+  process.exitCode = 1;
+});
