@@ -108,6 +108,12 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
+The current staging image is `journeyops-app:brand-4fd35d2` (2026-09-16), containing the simplified result navigation, JourneyGo naming and supplied favicon. Release directory: `/opt/tripstar/releases/brand-4fd35d2-20260916`. It retains the travel release configuration and private environment. No database migration or provider query is required for this UI release.
+
+Acceptance: API/Worker healthy; authenticated public page title is JourneyGo; served favicon SHA-256 matches the supplied JPEG; train/hotel enabled and flight disabled. Browser-only fixture checks passed at 390/1280 pixels with both removed panels absent. Result API responses were mocked for this layout check; no live supplier search or paid model call was made. Source was deployed from the local committed archive; GitHub push was not part of this release.
+
+For the current release, append `-f /opt/tripstar/releases/brand-4fd35d2-20260916/brand.compose.yaml` after the travel override below. Omitting it restores `travel-d7f99ce`, which is also the rollback procedure for the branding release. The branding release's `brand-release-deploy.sh` builds its archived source, checks active tasks, updates only API/Worker, waits for health and automatically restores the travel image on failure. Production, PostgreSQL and Redis container identities/start times were unchanged during deployment.
+
 ```bash
 cd /opt/tripstar/JourneyOps-staging
 docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
