@@ -31,6 +31,12 @@ npm.cmd --prefix frontend run dev
 
 ## Staging Deploy
 
+### Weather MCP Release (2026-09-16)
+
+Staging API and Worker now use the isolated Open-Meteo MCP weather release. Follow
+[`WEATHER.md`](WEATHER.md) for the required Compose override, verification and per-service
+rollback tags. Production is still the old single-service deployment and is unchanged.
+
 ### Mobile Frontend Release (2026-09-16)
 
 - Source `f62e7bd`, image `journeyops-app:mobile-f62e7bd`, staging only.

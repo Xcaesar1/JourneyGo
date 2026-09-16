@@ -161,6 +161,10 @@ class WeatherInfo(BaseModel):
     night_temp: Union[int, str] = Field(default=0, description="夜间温度")
     wind_direction: str = Field(default="", description="风向")
     wind_power: str = Field(default="", description="风力")
+    precipitation_probability: Optional[float] = None
+    humidity: Optional[float] = None
+    source_url: str = ""
+    fetched_at: Optional[str] = None
 
     @field_validator('day_temp', 'night_temp', mode='before')
     @classmethod

@@ -104,6 +104,10 @@ def trip_plan_v2_to_legacy(plan: TripPlanV2) -> TripPlan:
             night_temp=item.night_temp,
             wind_direction=item.wind_direction,
             wind_power=item.wind_power,
+            precipitation_probability=item.precipitation_probability,
+            humidity=item.humidity,
+            source_url=item.source_url,
+            fetched_at=item.fetched_at.isoformat() if item.fetched_at else None,
         )
         for item in plan.weather_info
     ]

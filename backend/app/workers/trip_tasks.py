@@ -830,6 +830,7 @@ async def _run_journey_graph_planner(
                 draft_generator=draft_generator,
                 research_provider=research_provider,
                 attraction_provider=attraction_provider,
+                weather_settings=settings,
                 route_provider=route_provider,
                 checkpointer=checkpointer,
                 require_human_review=True,

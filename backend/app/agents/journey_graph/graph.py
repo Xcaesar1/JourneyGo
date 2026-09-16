@@ -55,6 +55,7 @@ def build_journey_graph(
     interrupt_before: Sequence[str] | None = None,
     require_human_review: bool = False,
     node_observer: NodeObserver | None = None,
+    weather_settings=None,
 ):
     configured_research_provider = research_provider or NoopWebResearchProvider()
     configured_attraction_provider = attraction_provider or NoopAttractionDiscoveryProvider()
@@ -80,7 +81,7 @@ def build_journey_graph(
         "collect",
         _observed_node(
             "collect",
-            make_collect_node(configured_attraction_provider),
+            make_collect_node(configured_attraction_provider, weather_settings),
             node_observer,
         ),
     )

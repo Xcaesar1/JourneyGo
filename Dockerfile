@@ -30,6 +30,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # 安装 uv 包管理器
 RUN pip install --no-cache-dir uv -i https://mirrors.aliyun.com/pypi/simple/
 
+# Isolate the weather SDK from the application's legacy MCP dependencies.
+COPY backend/weather-requirements.lock /opt/weather-requirements.lock
+RUN uv venv /opt/weather && uv pip sync --python /opt/weather/bin/python /opt/weather-requirements.lock
+
 # 复制后端依赖并使用 uv 安装
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/

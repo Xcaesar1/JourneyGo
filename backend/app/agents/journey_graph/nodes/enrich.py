@@ -16,6 +16,7 @@ from ....domain.trip_models import (
     RouteEstimateV2,
     ScheduleItemV2,
     TripPlanV2,
+    WeatherInfoV2,
 )
 from ....services.routing.providers import route_estimate_id
 from ..state import TripState
@@ -310,6 +311,10 @@ def enrich_plan(state: TripState) -> dict[str, Any]:
     enriched = plan.model_copy(
         update={
             "days": days,
+            "weather_info": [
+                WeatherInfoV2.model_validate(row)
+                for rows in state.get("weather", {}).values() for row in rows
+            ],
             "route_matrix": [*state.get("route_estimates", []), *daily_routes],
         }
     )

@@ -80,6 +80,8 @@ class Settings(BaseSettings):
     planner_engine: Literal["legacy", "journey_graph"] = "legacy"
     planner_compare_engines: bool = False
     demo_mode: bool = False
+    weather_enabled: bool = False
+    weather_mcp_python: str = "/opt/weather/bin/python"
     demo_node_delay_seconds: float = Field(default=0, ge=0, le=2)
     runtime_secret_updates_enabled: bool = False
     api_docs_enabled: bool = True

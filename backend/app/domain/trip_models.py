@@ -255,6 +255,10 @@ class WeatherInfoV2(BaseModel):
     night_temp: int = Field(default=0, ge=-100, le=100)
     wind_direction: str = Field(default="", max_length=120)
     wind_power: str = Field(default="", max_length=120)
+    precipitation_probability: float | None = Field(default=None, ge=0, le=100)
+    humidity: float | None = Field(default=None, ge=0, le=100)
+    source_url: str = ""
+    fetched_at: datetime | None = None
 
 
 class RouteEstimateV2(BaseModel):

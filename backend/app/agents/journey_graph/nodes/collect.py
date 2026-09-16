@@ -13,6 +13,7 @@ from ..state import TripState
 
 def make_collect_node(
     provider: AttractionDiscoveryProvider | None = None,
+    weather_settings=None,
 ):
     configured_provider = provider or NoopAttractionDiscoveryProvider()
     enforce_candidate_policy = not isinstance(configured_provider, NoopAttractionDiscoveryProvider)
@@ -33,14 +34,21 @@ def make_collect_node(
             poi_candidates[destination.city] = [item.model_dump(mode="json") for item in page.items]
             if page.issues:
                 discovery_issues[destination.city] = page.issues
+        from ....services.weather import collect_weather
+
+        weather, weather_status = (
+            collect_weather(request, weather_settings) if weather_settings is not None else ({}, {})
+        )
+        weather = {destination.city: weather.get(destination.city, []) for destination in request.destinations}
         return {
             "sources": list(state.get("sources", [])),
             "poi_candidates": poi_candidates,
-            "weather": {destination.city: [] for destination in request.destinations},
+            "weather": weather,
             "transport_options": list(state.get("transport_options", [])),
             "metrics": {
                 **state.get("metrics", {}),
                 "collected": True,
+                "weather_status": weather_status,
                 "poi_candidate_count": sum(map(len, poi_candidates.values())),
                 "poi_discovery_issues": discovery_issues,
                 "poi_candidate_policy_enforced": enforce_candidate_policy,

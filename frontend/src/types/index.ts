@@ -154,6 +154,10 @@ export interface WeatherInfo {
   night_temp: number
   wind_direction: string
   wind_power: string
+  precipitation_probability?: number | null
+  humidity?: number | null
+  source_url?: string
+  fetched_at?: string | null
 }
 
 export type SourceClaimType = 'opening_hours' | 'closure' | 'reservation' | 'events' | 'travel_tips'

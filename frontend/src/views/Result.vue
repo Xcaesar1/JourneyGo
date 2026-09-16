@@ -36,7 +36,7 @@
               <a-menu-item key="knowledge-graph">
                 <span>{{ t('result.side.graph') }}</span>
               </a-menu-item>
-              <a-menu-item key="weather" v-if="tripPlan.weather_info && tripPlan.weather_info.length > 0">
+              <a-menu-item key="weather">
                 <span>{{ t('result.side.weather') }}</span>
               </a-menu-item>
             </a-menu>
@@ -821,12 +821,12 @@
         </a-card>
 
         <a-card
-          v-show="activeSection === 'weather' && tripPlan.weather_info && tripPlan.weather_info.length > 0"
+          v-show="activeSection === 'weather'"
           id="weather"
-          v-if="tripPlan.weather_info && tripPlan.weather_info.length > 0"
           :bordered="false"
           class="section-shellless weather-section-card"
         >
+          <p>{{ t('result.weatherCoverage') }}</p>
           <div v-if="selectedWeather" class="weather-dashboard">
             <section class="weather-side" :style="weatherSideStyle">
               <div class="weather-gradient"></div>
@@ -947,24 +947,28 @@
               <div class="today-info-container">
                 <div class="today-info">
                   <div class="today-info-item">
-                    <span class="wea-title">{{ t('result.weatherDay') }}</span>
+                    <span class="wea-title">{{ t(selectedWeather.source_url ? 'result.weatherHigh' : 'result.weatherDay') }}</span>
                     <span class="value">{{ selectedWeather.day_weather }} · {{ formatWeatherTemp(selectedWeather.day_temp) }}</span>
                   </div>
                   <div class="today-info-item">
-                    <span class="wea-title">{{ t('result.weatherNight') }}</span>
+                    <span class="wea-title">{{ t(selectedWeather.source_url ? 'result.weatherLow' : 'result.weatherNight') }}</span>
                     <span class="value">{{ selectedWeather.night_weather }} · {{ formatWeatherTemp(selectedWeather.night_temp) }}</span>
                   </div>
                   <div class="today-info-item">
                     <span class="wea-title">{{ t('result.weatherPrecipitation') }}</span>
-                    <span class="value">{{ getWeatherPrecipitation(selectedWeather.day_weather) }}</span>
+                    <span class="value">{{ formatWeatherPercent(selectedWeather.precipitation_probability) }}</span>
                   </div>
                   <div class="today-info-item">
                     <span class="wea-title">{{ t('result.weatherHumidity') }}</span>
-                    <span class="value">{{ getWeatherHumidity(selectedWeather.day_weather) }}</span>
+                    <span class="value">{{ formatWeatherPercent(selectedWeather.humidity) }}</span>
                   </div>
                   <div class="today-info-item">
                     <span class="wea-title">{{ t('result.weatherWind') }}</span>
                     <span class="value">{{ getWeatherWind(selectedWeather) }}</span>
+                  </div>
+                  <div v-if="selectedWeather.source_url === 'https://open-meteo.com/'" class="today-info-item">
+                    <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo (CC BY 4.0)</a>
+                    <span>{{ selectedWeather.fetched_at ? new Date(selectedWeather.fetched_at).toLocaleString() : '' }}</span>
                   </div>
                 </div>
               </div>
@@ -1091,7 +1095,7 @@ const mobileSections = computed(() => [
   { key: 'map', label: t('result.side.map') },
   { key: 'days', label: t('result.side.days') },
   { key: 'knowledge-graph', label: t('result.side.graph') },
-  ...(tripPlan.value?.weather_info?.length ? [{ key: 'weather', label: t('result.side.weather') }] : []),
+  { key: 'weather', label: t('result.side.weather') },
 ])
 const activeDays = ref<number[]>([0]) // 默认展开第一天
 const activeOverviewCard = ref(1)
@@ -1348,23 +1352,8 @@ const getWeatherGradient = (weatherText: string): string => {
   return 'linear-gradient(140deg, #72edf2 0%, #5151e5 100%)'
 }
 
-const getWeatherPrecipitation = (weatherText: string): string => {
-  const text = (weatherText || '').toLowerCase()
-  if (/(雷|thunder|暴雨|storm)/.test(text)) return '85%'
-  if (/(雨|rain|shower|drizzle)/.test(text)) return '65%'
-  if (/(雪|snow|sleet|hail)/.test(text)) return '55%'
-  if (/(阴|cloud|overcast)/.test(text)) return '30%'
-  return '10%'
-}
-
-const getWeatherHumidity = (weatherText: string): string => {
-  const text = (weatherText || '').toLowerCase()
-  if (/(雷|thunder|暴雨|storm)/.test(text)) return '88%'
-  if (/(雨|rain|shower|drizzle)/.test(text)) return '78%'
-  if (/(雪|snow|sleet|hail)/.test(text)) return '72%'
-  if (/(阴|cloud|overcast|雾|霾|fog|mist|haze)/.test(text)) return '62%'
-  return '42%'
-}
+const formatWeatherPercent = (value?: number | null): string =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100 ? `${value}%` : '--'
 
 const getWeatherWind = (weather: WeatherInfo | null): string => {
   if (!weather) return '--'
@@ -6094,6 +6083,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
   .weather-dashboard {
     flex-direction: column;
+    height: auto;
     min-height: auto;
     border-radius: 16px;
   }
