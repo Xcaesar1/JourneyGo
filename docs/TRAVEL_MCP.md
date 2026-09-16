@@ -108,6 +108,17 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
+#### Slogan Release (Current)
+
+- Image: `journeyops-app:slogan-4738b30`, built from source commit `4738b30`, pushed to GitHub main on 2026-09-16.
+- Release directory: `/opt/tripstar/releases/slogan-4738b30-20260916`.
+- Append the branding override described below, then `-f /opt/tripstar/releases/slogan-4738b30-20260916/slogan.compose.yaml`, to the travel Compose command.
+- `slogan-deploy.sh` checks active tasks, retains provider/private configuration, validates health and automatically restores the branding image on failure. Manual rollback: omit only the slogan override.
+- API/Worker health passed; production, PostgreSQL and Redis container identities/start times remained unchanged. No migration or paid query was performed.
+- Live Chrome acceptance passed for all four slogans at 390/1280 pixels without horizontal overflow; original favicon hash and provider flags remain correct. Result layout checks used browser-only fixtures and mocked API responses.
+
+#### Branding Release (Previous)
+
 The current staging image is `journeyops-app:brand-4fd35d2` (2026-09-16), containing the simplified result navigation, JourneyGo naming and supplied favicon. Release directory: `/opt/tripstar/releases/brand-4fd35d2-20260916`. It retains the travel release configuration and private environment. No database migration or provider query is required for this UI release.
 
 Acceptance: API/Worker healthy; authenticated public page title is JourneyGo; served favicon SHA-256 matches the supplied JPEG; train/hotel enabled and flight disabled. Browser-only fixture checks passed at 390/1280 pixels with both removed panels absent. Result API responses were mocked for this layout check; no live supplier search or paid model call was made. Source was deployed from the local committed archive; GitHub push was not part of this release.
