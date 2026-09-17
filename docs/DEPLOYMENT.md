@@ -529,3 +529,42 @@ this frontend rollback.
   unchanged; no real supplier requests or approvals were made.
 - Roll back only staging API using this release's `previous-compose-files.txt`
   and the compose rollback loop above. No data migration or restore is required.
+
+## Trip-date Weather and Progress Scroll (2026-09-17)
+
+- Source: `d5c8d10` (focus/scroll to generation progress) and `133a1bb`
+  (one-click weather collection and missing-date notices).
+- Staging API and worker image: `journeyops-app:weather-133a1bb`.
+  Release directory: `/opt/tripstar/releases/weather-133a1bb-20260917`.
+  Layered on `journeyops-app:nav-progress-f9a281d`, replacing frontend assets,
+  JourneyGraph wiring and weather enrichment only. No dependency/API/schema change.
+- Root cause: the one-click branch bypassed weather collection and returned the
+  draft unchanged during enrichment. It now collects provider forecasts for each
+  destination's inclusive stay dates, retaining the verified schedule and costs.
+  Missing forecasts remain unavailable; existing drafts are not backfilled.
+- Verification: 54 backend tests, 44 frontend tests, production build and targeted
+  Ruff checks passed. Local progress scrolling passed at 360/390/768/1440px with
+  reduced-motion enabled and disabled. Fixed weather fixtures cover empty and
+  partial data; no real supplier calls, task creation or approval were performed.
+- Deployment found zero active tasks. API/worker health, weather enablement,
+  private ingress and capabilities passed; flights remain disabled with zero call
+  allowance. Production, demo, PostgreSQL and Redis identities stayed unchanged.
+- Deployed mobile connection recovery passed using GET only, with zero POSTs.
+- Deployed empty/partial weather views passed at 390/1440px without horizontal
+  overflow or POST requests, using fixed local fixtures against staging assets.
+- Build retains the existing legacy asset-path and large-chunk warnings.
+
+Rollback both staging application services, not data or schema:
+
+```bash
+cd /opt/tripstar/JourneyOps-staging
+release=/opt/tripstar/releases/weather-133a1bb-20260917
+docker exec -i journeyops-worker-staging python < /opt/tripstar/releases/travel-d7f99ce-20260916/travel-active-check.py
+compose=(docker compose --env-file .env.staging)
+IFS=',' read -ra paths < "$release/previous-compose-files.txt"
+for path in "${paths[@]}"; do compose+=(-f "$path"); done
+"${compose[@]}" up -d --no-deps --no-build worker trip-planner
+```
+
+This restores API `journeyops-app:nav-progress-f9a281d` and worker
+`journeyops-app:rail-2d90633`. Wait for both health checks before accepting traffic.
