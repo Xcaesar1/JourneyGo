@@ -452,3 +452,38 @@ docker compose --env-file .env.staging \
 
 Do not downgrade `20260917_07`, restore a dump over live data, reset counters,
 or remove volumes as part of application rollback.
+
+## Outdoor Handbook Staging Release (2026-09-17)
+
+- Application source: `f136167`; target: `https://staging.elonmusk0.asia` only.
+- Image: `journeyops-app:outdoor-f136167`, derived from the running
+  `journeyops-app:rail-2d90633` image with only `/app/frontend/dist` replaced.
+- Release directory: `/opt/tripstar/releases/outdoor-f136167-20260917`.
+  Includes the production frontend build, Dockerfile, compose override, build log,
+  deployment script and previous compose file list. No secrets are included in Git.
+- Outdoor is the sole form/result theme. Preview switch removed; hero remains
+  intact, with the form below it. Train numbers use lining/tabular figures;
+  timeline curved borders and the internal validation summary are removed.
+  Critical travel notices and excluded-cost information remain visible.
+- Verification: 36 frontend tests and production build passed. Readiness,
+  authenticated ingress, train/hotel capability and disabled paid flights passed.
+  No active tasks at deployment. Worker, production, demo, PostgreSQL and Redis
+  container identities/start times were unchanged. No migrations or provider calls.
+- First attempt automatically rolled back when ingress verification could not
+  read protected login configuration. Retry ran only that verifier with `sudo`;
+  file permissions and credentials were not modified.
+- Existing build warnings remain: legacy image/icon paths and large JS chunks.
+
+Rollback only the staging API image, preserving the current compose settings:
+
+```bash
+cd /opt/tripstar/JourneyOps-staging
+release=/opt/tripstar/releases/outdoor-f136167-20260917
+compose=(docker compose --env-file .env.staging)
+IFS=',' read -ra paths < "$release/previous-compose-files.txt"
+for path in "${paths[@]}"; do compose+=(-f "$path"); done
+"${compose[@]}" up -d --no-deps --no-build trip-planner
+```
+
+Do not change worker images, downgrade schema, restore data or remove volumes for
+this frontend rollback.
