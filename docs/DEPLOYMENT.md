@@ -568,3 +568,34 @@ for path in "${paths[@]}"; do compose+=(-f "$path"); done
 
 This restores API `journeyops-app:nav-progress-f9a281d` and worker
 `journeyops-app:rail-2d90633`. Wait for both health checks before accepting traffic.
+
+## Sourced Costs, Attraction Introductions and Map Export (2026-09-17)
+
+- Source: `f784506`. Staging API and worker image: `journeyops-app:costs-f784506`,
+  layered on `journeyops-app:weather-133a1bb`.
+- Release: `/opt/tripstar/releases/costs-f784506-20260917`. Includes source archive,
+  built frontend, Dockerfile, compose override, deployment/verification scripts,
+  build log and `previous-compose-files.txt` for rollback.
+- Ships short sourced attraction introductions, AMap per-person meal references,
+  explicit unknown meal exclusions, budget date scopes and responsive budget rows,
+  and consent-based whole-trip/day personal-map entry points.
+- `AMAP_PERSONAL_MAP_ENABLED=false` is explicitly retained on both services until
+  account entitlement/quota/billing are verified. Paid flights remain disabled with
+  zero allowance. Weather, train and hotel capabilities remain enabled.
+- Before release: 344 backend tests passed, 4 skipped; 47 frontend tests passed;
+  production build passed with existing asset-path/chunk-size warnings.
+- Zero active tasks at deployment. Both services healthy; database revision,
+  private ingress authentication, homepage and capabilities passed. Production,
+  demo and PostgreSQL/Redis container identities/start times were unchanged.
+- Deployed assets passed fixed-fixture Chrome checks at 360/390/768/1440 px:
+  whole/day export, confirmation, mocked failure/retry, budget dates and no
+  horizontal document overflow. All map creation responses were mocked.
+- Live readiness and introduction input validation passed. An empty map POST
+  returned 422 before consent/snapshot validation, without creating a map or task.
+  No real itinerary generation, supplier query, review or database migration.
+- Android was not connected. Real personal-map creation and app handoff remain
+  unverified; enabling the feature is a separate operational decision.
+
+Rollback both application services using this release's `previous-compose-files.txt`
+and the compose loop above, after checking for active tasks. It restores
+`journeyops-app:weather-133a1bb` for both API and worker; do not restore/delete data.
