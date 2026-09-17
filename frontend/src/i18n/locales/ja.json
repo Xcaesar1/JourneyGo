@@ -217,6 +217,13 @@
       "loadFailed": "履歴プランの読み込みに失敗しました"
     },
     "failure": {
+      "connectionEyebrow": "進捗の接続が切断されました",
+      "connectionTitle": "状態を確認中です。再送信しないでください。",
+      "checkStatus": "進捗を再確認",
+      "reconnecting": "既存タスクに再接続しています…",
+      "openingResult": "草案を受信しました。旅程を開いています…",
+      "syncingResult": "計画が終了しました。結果を確認して取得しています…",
+      "openingFailed": "草案は作成済みですが、ページを開けませんでした。再生成せず、既存タスクを確認してください。",
       "eyebrow": "タスク未完了",
       "title": "元のリクエストを保持して再試行",
       "diagnosticId": "診断 ID",

@@ -217,6 +217,13 @@
       "loadFailed": "Failed to load plan history"
     },
     "failure": {
+      "connectionEyebrow": "Progress connection interrupted",
+      "connectionTitle": "Checking task status. Please do not resubmit.",
+      "checkStatus": "Check progress again",
+      "reconnecting": "Reconnecting to the existing task…",
+      "openingResult": "Draft received. Opening your itinerary…",
+      "syncingResult": "Planning finished. Confirming and fetching the result…",
+      "openingFailed": "Your draft is ready, but the page could not open. Check the existing task without generating again.",
       "eyebrow": "Task not completed",
       "title": "Retry safely with the original request",
       "diagnosticId": "Diagnostic ID",

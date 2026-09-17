@@ -47,3 +47,14 @@ test('successful socket messages do not start fallback polling', async () => {
   const f=fixture([]);f.socket().onmessage({data:JSON.stringify(ready)})
   assert.equal((await f.promise).success,true);assert.equal(f.reads(),0)
 })
+test('completion notification without payload fetches the durable result instead of failing', async () => {
+  const f=fixture([ready]);f.socket().onmessage({data:JSON.stringify({...ready,result:null})})
+  assert.equal((await f.promise).success,true);assert.equal(f.reads(),1)
+})
+test('landing does not announce completion before result navigation and separates connection issues', () => {
+  const landing=readFileSync(new URL('../views/Landing.vue',import.meta.url),'utf8')
+  assert.doesNotMatch(landing,/loadingProgress.value = 100/)
+  assert.match(landing,/await router.push/)
+  assert.match(landing,/home.failure.connectionTitle/)
+  assert.match(landing,/home.failure.checkStatus/)
+})

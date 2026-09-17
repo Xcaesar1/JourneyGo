@@ -331,13 +331,13 @@
 
         <div v-if="failedTask && !loading" class="failure-recovery" role="alert">
           <div>
-            <span class="failure-eyebrow">{{ t('home.failure.eyebrow') }}</span>
-            <h3>{{ t('home.failure.title') }}</h3>
+            <span class="failure-eyebrow">{{ t(isConnectionIssue ? 'home.failure.connectionEyebrow' : 'home.failure.eyebrow') }}</span>
+            <h3>{{ t(isConnectionIssue ? 'home.failure.connectionTitle' : 'home.failure.title') }}</h3>
             <p>{{ failedTask.message }}</p>
             <code>{{ t('home.failure.diagnosticId') }}: {{ failedTask.traceId }}</code>
           </div>
           <button type="button" class="btn btn-danger btn-round retry-btn" @click="handleRetry">
-            {{ t('home.failure.retry') }}
+            {{ t(isConnectionIssue ? 'home.failure.checkStatus' : 'home.failure.retry') }}
           </button>
         </div>
 
@@ -496,10 +496,10 @@ onMounted(async () => {
         daily_start_time: dayjs(request.start_date + 'T' + request.daily_start_time),
         daily_end_time: dayjs(request.start_date + 'T' + request.daily_end_time) })
     } else if (task.status === 'awaiting_approval' && task.result) {
-      applyGeneratedPlan({ ...task.result, task_id: taskId, trip_id: task.trip_id, review: task.review ?? undefined })
+      await applyGeneratedPlan({ ...task.result, task_id: taskId, trip_id: task.trip_id, review: task.review ?? undefined })
     } else if (['queued', 'processing', 'retrying'].includes(task.status)) {
       startTaskUi()
-      try { applyGeneratedPlan(await resumeTripPlan(taskId, taskCallbacks())) }
+      try { await applyGeneratedPlan(await resumeTripPlan(taskId, taskCallbacks())) }
       catch (error) { captureTaskFailure(error) }
       finally { finishTaskUi() }
     }
@@ -517,6 +517,8 @@ const fogEnabled = ref(true)
 const planCode = ref('')
 const loadingEvents = ref<Array<{ stage: string; progress: number; message: string }>>([])
 const failedTask = ref<FailedTask | null>(null)
+const connectionIssueCodes = ['websocket_error', 'websocket_closed', 'status_connection_lost', 'result_open_failed']
+const isConnectionIssue = computed(() => connectionIssueCodes.includes(failedTask.value?.code || ''))
 const discoveryLoading = ref(false)
 const candidatePages = ref<Record<string, AttractionCandidatePage>>({})
 const selectedPoiIds = ref<string[]>([])
@@ -740,6 +742,7 @@ const startTaskUi = () => {
 }
 
 const taskCallbacks = () => ({
+  onConnectionRecovering: () => { loadingStatus.value = t('home.failure.reconnecting') },
   onTaskCreated: (task: { task_id: string; trip_id: string; trace_id: string; plan_id: string }) => {
     planCode.value = task.plan_id || task.task_id
     sessionStorage.setItem('tripTaskId', task.task_id)
@@ -754,10 +757,11 @@ const taskCallbacks = () => ({
     }
     if (event.plan_id) planCode.value = event.plan_id
     if (Number.isFinite(event.progress)) {
-      loadingProgress.value = Math.max(0, Math.min(100, event.progress))
+      loadingProgress.value = Math.max(0, Math.min(99, event.progress))
     }
     const translated = getStageStatusText(event.stage)
-    loadingStatus.value = translated || event.message
+    loadingStatus.value = ['completed', 'awaiting_approval'].includes(event.status)
+      ? t('home.failure.syncingResult') : translated || event.message
     const previous = loadingEvents.value[loadingEvents.value.length - 1]
     if (!previous || previous.stage !== event.stage || previous.progress !== event.progress) {
       loadingEvents.value = [
@@ -768,33 +772,35 @@ const taskCallbacks = () => ({
   },
 })
 
-const applyGeneratedPlan = (response: TripPlanResponse) => {
+const applyGeneratedPlan = async (response: TripPlanResponse) => {
   if (!response.success || !response.data) {
     throw new Error(response.message || t('home.messages.generateFailed'))
   }
   const generatedPlanId = response.plan_id || response.task_id || planCode.value
-  loadingProgress.value = 100
-  loadingStatus.value = t('home.loading.done')
+  loadingStatus.value = t('home.failure.openingResult')
+  try {
   sessionStorage.setItem('tripPlan', JSON.stringify(response.data))
   if (response.graph_data) sessionStorage.setItem('graphData', JSON.stringify(response.graph_data))
   if (generatedPlanId) sessionStorage.setItem('planId', generatedPlanId)
   if (response.task_id) sessionStorage.setItem('tripTaskId', response.task_id)
   if (response.trip_id) sessionStorage.setItem('tripId', response.trip_id)
   if (response.review) sessionStorage.setItem('tripReview', JSON.stringify(response.review))
-  message.success(
-    response.review?.status === 'pending'
-      ? t('home.messages.awaitingApproval')
-      : t('home.messages.generateSuccess')
-  )
-  setTimeout(() => {
-    router.push({
+  } catch (error) {
+    // The durable task URL still works when mobile storage is full or unavailable.
+    if (!response.task_id && !generatedPlanId) throw error
+  }
+  try {
+    const navigationFailure = await router.push({
       path: '/result',
       query: {
         ...(generatedPlanId ? { plan_id: generatedPlanId } : {}),
         ...(response.task_id ? { task_id: response.task_id } : {}),
       },
     })
-  }, 500)
+    if (navigationFailure) throw navigationFailure
+  } catch {
+    throw new TripTaskFailure(t('home.failure.openingFailed'), response.task_id || generatedPlanId, '', 'result_open_failed')
+  }
 }
 
 const captureTaskFailure = (error: unknown) => {
@@ -811,7 +817,8 @@ const captureTaskFailure = (error: unknown) => {
     }
   }
   const userMessage = error instanceof Error ? error.message : t('home.messages.generateRetry')
-  message.error(userMessage)
+  if (isConnectionIssue.value) message.warning(userMessage)
+  else message.error(userMessage)
 }
 
 const finishTaskUi = () => {
@@ -899,7 +906,7 @@ const handleSubmit = async () => {
     }
 
     const paused = pausedTask.value
-    applyGeneratedPlan(await (paused
+    await applyGeneratedPlan(await (paused
       ? continueTripPlan(requestData, paused.taskId, refreshQuote.value ? paused.provider : undefined, taskCallbacks())
       : generateTripPlan(requestData, taskCallbacks())))
     pausedTask.value = null
@@ -920,7 +927,7 @@ const handleRetry = async () => {
   startTaskUi()
   planCode.value = task.taskId
   try {
-    applyGeneratedPlan(await (['websocket_error', 'websocket_closed', 'status_connection_lost'].includes(task.code)
+    await applyGeneratedPlan(await (connectionIssueCodes.includes(task.code)
       ? resumeTripPlan(task.taskId, taskCallbacks())
       : retryTripPlan(task.taskId, taskCallbacks())))
   } catch (error: unknown) {

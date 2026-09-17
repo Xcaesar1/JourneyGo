@@ -73,6 +73,7 @@ interface SubmitTripPlanResponse {
 }
 
 interface GenerateTripPlanOptions {
+  onConnectionRecovering?: () => void
   onTaskCreated?: (task: SubmitTripPlanResponse) => void
   onTaskEvent?: (event: TripTaskEvent) => void
 }
@@ -412,8 +413,8 @@ const watchTripPlanTask = (
         }
 
         if (event.status === 'completed') {
-          if (!event.result) {
-            safeReject(new Error(t('api.generateTripPlanFailed')))
+          if (!event.result?.success || !event.result.data) {
+            void recoverStatus()
             return
           }
           safeResolve({
@@ -426,8 +427,8 @@ const watchTripPlanTask = (
         }
 
         if (event.status === 'awaiting_approval') {
-          if (!event.result) {
-            safeReject(new Error(t('api.generateTripPlanFailed')))
+          if (!event.result?.success || !event.result.data) {
+            void recoverStatus()
             return
           }
           safeResolve({
@@ -461,6 +462,7 @@ const watchTripPlanTask = (
     const recoverStatus = async () => {
       if (settled || recovering) return
       recovering = true
+      options?.onConnectionRecovering?.()
       socket.close()
       let failures = 0
       const deadline = Date.now() + 10 * 60 * 1000

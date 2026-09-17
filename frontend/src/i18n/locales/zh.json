@@ -217,6 +217,13 @@
       "loadFailed": "读取历史计划失败"
     },
     "failure": {
+      "connectionEyebrow": "进度连接暂时中断",
+      "connectionTitle": "任务状态待确认，请勿重复提交",
+      "checkStatus": "重新查看进度",
+      "reconnecting": "连接暂时中断，正在同步原任务进度…",
+      "openingResult": "草案已收到，正在打开行程…",
+      "syncingResult": "规划已结束，正在确认并获取结果…",
+      "openingFailed": "草案已生成，但页面暂时未能打开。请重新查看原任务，无需重新生成。",
       "eyebrow": "任务未完成",
       "title": "保留原请求并安全重试",
       "diagnosticId": "诊断编号",
