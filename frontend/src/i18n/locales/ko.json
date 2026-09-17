@@ -1,4 +1,12 @@
 {
+  "memories": {
+    "title": "추억",
+    "description": "최근 업데이트 순으로 최대 50개의 여행 일정 표시",
+    "backHome": "홈으로 돌아가기",
+    "backToMemories": "추억으로 돌아가기",
+    "retry": "다시 시도",
+    "create": "여행 계획하기"
+  },
   "navigation": {
     "title": "여행 길찾기",
     "chooseDay": "날짜 선택",

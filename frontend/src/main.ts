@@ -23,11 +23,22 @@ const router = createRouter({
       component: Landing
     },
     {
+      path: '/history',
+      name: 'Memories',
+      component: () => import('./views/Memories.vue')
+    },
+    {
       path: '/result',
       name: 'Result',
       component: () => import('./views/Result.vue')
     }
-  ]
+  ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.path === '/' && from.path === '/history') return false
+    if (to.path === '/history') return false
+    return { top: 0 }
+  }
 })
 
 const app = createApp(App)

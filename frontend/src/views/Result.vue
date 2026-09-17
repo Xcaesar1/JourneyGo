@@ -5,6 +5,9 @@
     <NavBar @brand-click="goBack" @cta-click="goBack" />
 
     <main class="result-main">
+      <router-link v-if="route.query.from === 'memories'" class="memories-return" to="/history">
+        {{ t('memories.backToMemories') }}
+      </router-link>
       <div v-if="tripPlan" class="content-wrapper">
         <div class="top-switch-nav">
           <nav class="mobile-section-nav" :aria-label="t('result.side.days')">
@@ -3219,6 +3222,14 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 <style scoped>
 @import 'swiper/css';
+
+.memories-return {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-bottom: 16px;
+  color: #f5cb87;
+}
 
 /* ===== Landing 同款视觉基底 - 结果页 ===== */
 

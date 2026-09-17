@@ -1,4 +1,12 @@
 {
+  "memories": {
+    "title": "Memories",
+    "description": "Up to 50 recent trips, ordered by last update",
+    "backHome": "Back to home",
+    "backToMemories": "Back to memories",
+    "retry": "Retry",
+    "create": "Plan a trip"
+  },
   "navigation": {
     "title": "Navigate your day",
     "chooseDay": "Choose a day",

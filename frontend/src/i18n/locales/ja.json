@@ -1,4 +1,12 @@
 {
+  "memories": {
+    "title": "思い出",
+    "description": "更新日時順に、最近の旅程を最大50件表示",
+    "backHome": "ホームに戻る",
+    "backToMemories": "思い出に戻る",
+    "retry": "再試行",
+    "create": "旅を計画する"
+  },
   "navigation": {
     "title": "お出かけナビ",
     "chooseDay": "日付を選択",

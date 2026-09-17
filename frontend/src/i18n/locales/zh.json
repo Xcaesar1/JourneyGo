@@ -1,4 +1,12 @@
 {
+  "memories": {
+    "title": "回忆",
+    "description": "按更新时间排序，最多显示最近 50 条行程",
+    "backHome": "返回首页",
+    "backToMemories": "返回回忆",
+    "retry": "重试",
+    "create": "去规划行程"
+  },
   "navigation": {
     "title": "出发导航",
     "chooseDay": "选择出行日期",

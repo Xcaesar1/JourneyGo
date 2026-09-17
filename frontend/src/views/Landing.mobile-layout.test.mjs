@@ -4,6 +4,17 @@ import test from 'node:test'
 
 const landingSource = readFileSync(new URL('./Landing.vue', import.meta.url), 'utf8')
 
+test('memories are lazy and no longer fetched or rendered by the homepage', () => {
+  const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8')
+  const nav = readFileSync(new URL('../components/NavBar.vue', import.meta.url), 'utf8')
+  assert.match(main, /component: \(\) => import\('\.\/views\/Memories.vue'\)/)
+  assert.doesNotMatch(landingSource, /getTripHistory|history-section|historyPlans/)
+  assert.match(landingSource, /:memories-disabled="loading \|\| discoveryLoading"/)
+  assert.ok(nav.indexOf('landing-github-item') < nav.indexOf('landing-memories-item'))
+  assert.ok(nav.indexOf('landing-memories-item') < nav.indexOf('landing-lang-item'))
+  assert.doesNotMatch(nav, /\.nav-item:first-child/)
+})
+
 test('initial page avoids eager result imports and external font stylesheets', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8')
   assert.match(main, /component: \(\) => import\('\.\/views\/Result.vue'\)/)

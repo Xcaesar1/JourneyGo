@@ -15,7 +15,7 @@
       </div>
       <div class="navbar-collapse landing-navbar-collapse" id="navbarToggler">
         <ul class="navbar-nav ml-auto landing-nav">
-          <li class="nav-item">
+          <li class="nav-item landing-github-item">
             <a
               class="nav-link"
               rel="tooltip"
@@ -29,6 +29,12 @@
                 <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
               </svg>
             </a>
+          </li>
+          <li v-if="showMemories" class="nav-item landing-memories-item">
+            <button type="button" class="nav-link landing-nav-btn memories-entry"
+              :disabled="memoriesDisabled" @click="$emit('memories-click')">
+              {{ t('memories.title') }}
+            </button>
           </li>
           <li class="nav-item">
             <!-- <button class="nav-link landing-nav-btn fog-toggle" type="button" :aria-pressed="fogEnabled" @click="toggleFog">
@@ -123,7 +129,7 @@ import type { RuntimeSettings } from '@/types'
 import { getRuntimeSettings, saveRuntimeSettings } from '@/services/api'
 
 const { t, locale } = useI18n()
-withDefaults(defineProps<{ showSettings?: boolean; showCta?: boolean }>(), { showSettings: true, showCta: true })
+withDefaults(defineProps<{ showSettings?: boolean; showCta?: boolean; showMemories?: boolean; memoriesDisabled?: boolean }>(), { showSettings: true, showCta: true, showMemories: false, memoriesDisabled: false })
 const settingsVisible = ref(false)
 const settingsLoading = ref(false)
 const settingsSaving = ref(false)
@@ -143,6 +149,7 @@ const settingsForm = reactive<RuntimeSettings>({
 })
 
 const emit = defineEmits<{
+  (e: 'memories-click'): void
   (e: 'brand-click'): void
   (e: 'cta-click'): void
 }>()
@@ -359,6 +366,17 @@ const saveSettingsNow = async () => {
   text-transform: uppercase;
 }
 
+.landing-nav .nav-item .memories-entry {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px !important;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.landing-nav .nav-item .memories-entry:disabled { opacity: 0.5 !important; cursor: wait; }
+.memories-entry:focus-visible { outline: 2px solid #f5cb87; outline-offset: 3px; }
+
 .settings-btn {
   text-transform: none;
   border: none !important;
@@ -481,7 +499,7 @@ const saveSettingsNow = async () => {
 }
 
 @media (max-width: 400px) {
-  .landing-nav .nav-item:first-child {
+  .landing-nav .landing-github-item {
     display: none !important;
   }
 

@@ -2,6 +2,9 @@
 
 ## Scope
 
+- Keep the homepage history-free. Its Memories entry sits between GitHub and the language selector; `/history` is lazy-loaded and requests at most 50 records only when opened.
+- Preserve the planning draft and selected candidates only in memory while visiting Memories; browser reload clears that draft. Return from a result preserves the list and scroll position. Refresh failures keep existing records visible.
+- Run `node tests/memories-ui.cjs` against the production build for navigation, four-language responsive layouts, empty/error/retry states and draft restoration. All APIs are mocked; no paid queries are required.
 - Load Result.vue with a route import; keep homepage controls immediately available.
 - Register only shared/homepage Ant Design components globally; import result-only components locally. Do not restore the full Antd plugin. Browser tests detect unresolved components and exercise date selection.
 - Keep html2canvas behind dynamic imports in export actions. The result regression verifies no initial screenshot-library request and a successful PNG download after clicking export.
