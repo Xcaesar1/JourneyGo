@@ -18,6 +18,7 @@ import { i18n } from '@/i18n'
 import type { TravelCapabilities, TravelSearchRequest, TravelSearchResponse } from '@/types/travel'
 
 const ENV_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
+const MOBILE_STYLE_PREVIEW = import.meta.env.DEV && import.meta.env.MODE === 'mobile'
 const ENV_AMAP_WEB_JS_KEY = import.meta.env.VITE_AMAP_WEB_JS_KEY ?? ''
 const RUNTIME_API_BASE_STORAGE_KEY = 'tripstar.runtime.api_base_url'
 const RUNTIME_AMAP_WEB_JS_KEY_STORAGE_KEY = 'tripstar.runtime.amap_web_js_key'
@@ -47,6 +48,7 @@ const normalizeBaseUrl = (value: string | null | undefined): string => {
 const normalizeText = (value: unknown): string => String(value ?? '').trim()
 
 const resolveDefaultApiBaseUrl = (): string => {
+  if (MOBILE_STYLE_PREVIEW) return window.location.origin
   const fromEnv = normalizeBaseUrl(ENV_API_BASE_URL)
   if (fromEnv) return fromEnv
   // 同源部署（Docker / 云端）：API 与前端在同一 origin 下
@@ -86,6 +88,7 @@ interface TripHistoryResponse {
 }
 
 export const getRuntimeApiBaseUrl = (): string => {
+  if (MOBILE_STYLE_PREVIEW) return window.location.origin
   if (typeof window === 'undefined') {
     return DEFAULT_API_BASE_URL
   }
@@ -102,6 +105,7 @@ export const setRuntimeApiBaseUrl = (value: string): string => {
 }
 
 export const getRuntimeMapJsKey = (): string => {
+  if (MOBILE_STYLE_PREVIEW) return ''
   if (typeof window === 'undefined') {
     return DEFAULT_AMAP_WEB_JS_KEY
   }
