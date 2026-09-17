@@ -687,7 +687,11 @@
           class="section-shellless weather-section-card"
         >
           <p>{{ t('result.weatherCoverage') }}</p>
-          <div v-if="selectedWeather" class="weather-dashboard">
+          <p v-if="weatherMissingDates.length" class="weather-missing" role="status">{{ t('result.weatherMissingDates', { dates: weatherMissingDates.join('、') }) }}</p>
+          <a-empty v-if="!selectedWeather" class="weather-empty" :description="t('result.weatherUnavailable')">
+            <p>{{ t('result.weatherUnavailableDetail') }}</p>
+          </a-empty>
+          <div v-else class="weather-dashboard">
             <section class="weather-side" :style="weatherSideStyle">
               <div class="weather-gradient"></div>
 
@@ -1070,6 +1074,10 @@ const getValidationSeverityLabel = (severity: ValidationSeverity): string => t(`
 
 
 const weatherList = computed<WeatherInfo[]>(() => tripPlan.value?.weather_info ?? [])
+const weatherMissingDates = computed(() => (tripPlan.value?.days ?? [])
+  .filter(day => !weatherList.value.some(item => item.date === day.date &&
+    (!item.city || item.city === (day.city || tripPlan.value?.city))))
+  .map(day => `${day.date} ${day.city || tripPlan.value?.city || ''}`))
 
 const selectedWeather = computed<WeatherInfo | null>(() => {
   const list = weatherList.value

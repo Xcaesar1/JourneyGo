@@ -69,6 +69,17 @@ def build_journey_graph(
         return {"one_click_plan": one_click_planner(state)}
 
     builder.add_node("verified_travel", verified_travel)
+
+    def collect_one_click_weather(state):
+        from ...services.weather import collect_weather
+
+        weather, status = (
+            collect_weather(state["request"], weather_settings)
+            if weather_settings is not None else ({}, {})
+        )
+        return {"weather": weather, "metrics": {**state.get("metrics", {}), "weather_status": status}}
+
+    builder.add_node("collect_one_click_weather", collect_one_click_weather)
     builder.add_node(
         "normalize_request",
         _observed_node("normalize_request", normalize_request, node_observer),
@@ -129,7 +140,8 @@ def build_journey_graph(
             else "prepare_research_queries"
         ),
     )
-    builder.add_edge("verified_travel", "draft")
+    builder.add_edge("verified_travel", "collect_one_click_weather")
+    builder.add_edge("collect_one_click_weather", "draft")
     builder.add_edge("prepare_research_queries", "research_web")
     builder.add_edge("research_web", "collect")
     builder.add_edge("collect", "plan_intercity_transport")

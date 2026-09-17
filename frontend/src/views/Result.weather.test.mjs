@@ -23,3 +23,9 @@ test('mobile weather grows to fit measurements and attribution', () => {
   assert.equal(source.split('Weather data by Open-Meteo (CC BY 4.0)').length - 1, 2)
   assert.ok(source.includes("t('result.weatherCoverage')"))
 })
+test('missing trip-date forecasts have an explicit empty state without invented measurements', () => {
+  assert.match(source, /v-if="!selectedWeather" class="weather-empty"/)
+  assert.match(source, /result.weatherUnavailableDetail/)
+  assert.match(source, /weatherMissingDates/)
+  assert.match(source, /item.date === day.date/)
+})

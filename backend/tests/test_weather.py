@@ -117,3 +117,20 @@ def test_graph_preserves_provider_weather_not_model_weather(monkeypatch):
     plan = result["final_plan"]
     assert len(plan.weather_info) == 1
     assert plan.weather_info[0].precipitation_probability == 8
+
+
+def test_multiple_destinations_use_their_own_inclusive_travel_dates(monkeypatch):
+    request = TripRequestV2.model_validate(TRIP_REQUEST_V2_EXAMPLE)
+    calls = []
+    def collect(self, city, start, end):
+        calls.append((city, start, end))
+        return [], "partial_or_out_of_range"
+    monkeypatch.setattr(weather.WeatherProvider, "collect", collect)
+    weather.collect_weather(request, Settings(weather_enabled=True, demo_mode=False))
+    from datetime import timedelta
+    start = request.start_date
+    for call, destination in zip(calls, request.destinations, strict=True):
+        end = start + timedelta(days=destination.days - 1)
+        assert call == (destination.city, start, end)
+        start = end + timedelta(days=1)
+    assert start == request.end_date + timedelta(days=1)

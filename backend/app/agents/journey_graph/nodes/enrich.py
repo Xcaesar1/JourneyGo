@@ -301,7 +301,13 @@ def _calculate_budget(
 
 def enrich_plan(state: TripState) -> dict[str, Any]:
     if state["request"].planning_mode == "one_click":
-        return {"draft_plan": state["draft_plan"]}
+        # Keep the verified schedule and cost ledger intact; enrich only weather.
+        rows = [
+            WeatherInfoV2.model_validate(row)
+            for values in state.get("weather", {}).values()
+            for row in values
+        ]
+        return {"draft_plan": state["draft_plan"].model_copy(update={"weather_info": rows})}
     """Replace model timelines and totals with deterministic program output."""
     plan = state["draft_plan"]
     days: list[DayPlanV2] = []
