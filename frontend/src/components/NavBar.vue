@@ -367,8 +367,9 @@ const saveSettingsNow = async () => {
 }
 
 .landing-nav .nav-item .memories-entry {
-  min-width: 44px;
+  min-width: 64px;
   min-height: 44px;
+  border-radius: 0;
   padding: 0 12px !important;
   text-transform: none;
   white-space: nowrap;

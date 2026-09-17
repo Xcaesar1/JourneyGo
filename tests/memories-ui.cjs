@@ -110,6 +110,7 @@ const fs = require('node:fs');
         await page.locator('.memories-entry').waitFor();
         assert.equal(await page.locator('.memories-entry').innerText(), pack.memories.title);
         const entry = await page.locator('.memories-entry').boundingBox();
+        assert.equal(await page.locator('.memories-entry').evaluate(el => getComputedStyle(el).borderRadius), '0px');
         const language = await page.locator('.landing-lang-item').boundingBox();
         assert.ok(entry && entry.height >= 44 && entry.x >= 0 && entry.x + entry.width <= language.x);
         await noOverflow();
