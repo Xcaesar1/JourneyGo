@@ -92,6 +92,7 @@
                 </template>
                 <a-date-picker
                   v-model:value="formData.start_date"
+                  :input-read-only="touchPicker"
                   style="width: 100%"
                   size="large"
                   class="field-input"
@@ -184,11 +185,11 @@
             <div class="grid grid2 daily-time-grid">
               <a-form-item name="daily_start_time">
                 <template #label><span class="field-label">{{ t('home.dailyStartLabel') }}</span></template>
-                <a-time-picker v-model:value="formData.daily_start_time" format="HH:mm" :minute-step="15" size="large" class="field-input" style="width: 100%" />
+                <a-time-picker v-model:value="formData.daily_start_time" :input-read-only="touchPicker" format="HH:mm" :minute-step="15" size="large" class="field-input" style="width: 100%" />
               </a-form-item>
               <a-form-item name="daily_end_time">
                 <template #label><span class="field-label">{{ t('home.dailyEndLabel') }}</span></template>
-                <a-time-picker v-model:value="formData.daily_end_time" format="HH:mm" :minute-step="15" size="large" class="field-input" style="width: 100%" />
+                <a-time-picker v-model:value="formData.daily_end_time" :input-read-only="touchPicker" format="HH:mm" :minute-step="15" size="large" class="field-input" style="width: 100%" />
               </a-form-item>
             </div>
 
@@ -449,6 +450,7 @@ type FailedTask = {
 
 const router = useRouter()
 const { t } = useI18n()
+const touchPicker = window.matchMedia('(pointer: coarse)').matches
 const oneClickEnabled = ref(false)
 const flightConfirmed = ref(false)
 const refreshQuote = ref(false)

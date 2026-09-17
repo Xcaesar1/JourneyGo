@@ -164,7 +164,7 @@ class TripRequestV2(BaseModel):
             if self.origin == self.destinations[0].city:
                 raise ValueError("Origin and destination must differ.")
             if any(
-                k not in {"train", "flight", "hotel", "amap"} or v < 0
+                k not in {"train", "flight", "hotel", "amap", "model"} or v < 0
                 for k, v in self.quote_revision.items()
             ):
                 raise ValueError("Invalid quote revision")

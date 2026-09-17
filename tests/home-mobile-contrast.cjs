@@ -22,6 +22,7 @@ const fs = require('node:fs');
       await page.evaluate(value => localStorage.setItem('tripstar-locale', value), locale);
       await page.reload({ waitUntil: 'networkidle' });
       await page.locator('.planning-hint').first().waitFor();
+      assert.equal(await page.locator('.ant-picker input').first().evaluate(el => el.readOnly), true);
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       const landscape = await page.locator('.journey-landscape').evaluate(el => {
         const rect = el.getBoundingClientRect();

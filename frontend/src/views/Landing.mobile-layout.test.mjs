@@ -4,6 +4,11 @@ import test from 'node:test'
 
 const landingSource = readFileSync(new URL('./Landing.vue', import.meta.url), 'utf8')
 
+test('touch date and time pickers suppress the software keyboard only on coarse pointers', () => {
+  assert.match(landingSource, /window\.matchMedia\('\(pointer: coarse\)'\)\.matches/)
+  assert.equal((landingSource.match(/:input-read-only="touchPicker"/g) || []).length, 3)
+})
+
 test('memories are lazy and no longer fetched or rendered by the homepage', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8')
   const nav = readFileSync(new URL('../components/NavBar.vue', import.meta.url), 'utf8')

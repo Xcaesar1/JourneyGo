@@ -69,6 +69,27 @@ def test_continue_is_access_protected(client, db_session_factory, monkeypatch):
     )
 
 
+def test_continue_legacy_model_failure_changes_only_model_revision(
+    client, db_session_factory, monkeypatch
+):
+    configure(monkeypatch)
+    payload = request(quote_revision={"hotel": 2}).model_dump(mode="json")
+    record = client.post("/api/v2/trips", json=payload).json()
+    task_id = record["task_id"]
+    with db_session_factory() as session:
+        task = session.get(TripTask, task_id)
+        task.status = "awaiting_input"
+        task.pending_input = {"code": "model_output", "provider": None}
+        session.commit()
+    endpoint = f"/api/v2/trips/tasks/{task_id}/continue"
+    assert client.post(endpoint, json={"request": payload}).status_code == 202
+    assert client.post(endpoint, json={"request": payload}).status_code == 409
+    with db_session_factory() as session:
+        persisted = session.get(TripTask, task_id).trip.request_payload
+        assert persisted["quote_revision"] == {"hotel": 2, "model": 1}
+        assert request(quote_revision=persisted["quote_revision"]).quote_revision["model"] == 1
+
+
 def test_version_and_confirmed_request_saved_together(client, db_session_factory, monkeypatch):
     configure(monkeypatch)
     payload = request().model_dump(mode="json")

@@ -79,3 +79,32 @@ def test_refresh_requires_new_consent_and_does_not_invalidate_other_providers(db
     store.request.flight_confirmed = True
     store.execute("flight", "outbound", {}, send)
     assert len(calls) == 2
+
+
+def test_explicit_model_revision_preserves_quotes_and_old_failure(db_session_factory):
+    store = ledger(db_session_factory)
+    for provider in ["train", "flight", "hotel", "amap"]:
+        store.execute(provider, "fixture", {}, lambda: {"ok": True})
+
+    def fail():
+        raise PlanningInputRequired(
+            "model_truncated",
+            "retry model",
+            provider="model",
+            diagnostics={"finish_reason": "length"},
+        )
+
+    with pytest.raises(PlanningInputRequired):
+        store.execute("model", "place_selection", {}, fail)
+    with pytest.raises(PlanningInputRequired) as caught:
+        store.execute("model", "place_selection", {}, lambda: pytest.fail("automatic retry"))
+    assert caught.value.payload["diagnostics"] == {"finish_reason": "length"}
+    store.request.quote_revision["model"] = 1
+    for provider in ["train", "flight", "hotel", "amap"]:
+        store.execute(provider, "fixture", {}, lambda: pytest.fail("quote repeated"))
+    store.execute("model", "place_selection", {}, lambda: {"ok": True})
+    with db_session_factory() as session:
+        records = session.scalars(select(TravelQuery).where(TravelQuery.provider == "model")).all()
+        assert len(records) == 2
+        assert {r.status for r in records} == {"blocked", "succeeded"}
+        assert all(r.finished_at is not None for r in records)

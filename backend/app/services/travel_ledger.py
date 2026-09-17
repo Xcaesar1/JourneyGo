@@ -12,9 +12,11 @@ from ..db.session import SessionLocal
 
 
 class PlanningInputRequired(ValueError):
-    def __init__(self, code, message, *, provider=None):
+    def __init__(self, code, message, *, provider=None, diagnostics=None):
         super().__init__(message)
         self.payload = {"code": code, "message": message, "provider": provider}
+        if diagnostics is not None:
+            self.payload["diagnostics"] = diagnostics
 
 
 class QueryLedger:
@@ -66,6 +68,7 @@ class QueryLedger:
             with self.sessions() as session:
                 row = session.get(TravelQuery, key)
                 row.status, row.result = "blocked", exc.payload
+                row.finished_at = datetime.now(timezone.utc)
                 session.commit()
             raise
         except Exception:
@@ -90,7 +93,10 @@ class QueryLedger:
     def _reuse(self, row):
         if row is not None and row.status == "blocked":
             raise PlanningInputRequired(
-                row.result["code"], row.result["message"], provider=row.provider
+                row.result["code"],
+                row.result["message"],
+                provider=row.provider,
+                diagnostics=row.result.get("diagnostics"),
             )
         if row is None or row.status != "succeeded":
             raise PlanningInputRequired(
