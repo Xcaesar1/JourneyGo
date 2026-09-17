@@ -7,7 +7,10 @@
 @import '@fontsource/nunito-sans/latin-600.css';
 @import '@fontsource/nunito-sans/latin-700.css';
 
-.journey-calendar .ant-picker-date-panel .ant-picker-content { width: 308px; table-layout: fixed; }
+.journey-calendar .ant-picker-panel .ant-picker-date-panel .ant-picker-content { width: 308px; table-layout: fixed; }
+.journey-calendar .ant-picker-date-panel .ant-picker-content th,
+.journey-calendar .ant-picker-date-panel .ant-picker-content td { width: 44px; min-width: 44px; padding-inline: 0; }
+.journey-calendar .ant-picker-cell .ant-picker-cell-inner { width: 44px; height: 44px; line-height: 44px; }
 .journey-calendar .ant-picker-date-panel .ant-picker-body { padding: 8px; }
 .journey-calendar .ant-picker-date-panel { width: 324px; }
 .journey-calendar .ant-picker-cell { padding: 2px 0; }
