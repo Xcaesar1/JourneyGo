@@ -1,5 +1,22 @@
 # Deployment And Rollback
 
+## Mobile UI Release (2026-09-17)
+
+- Source `4129750`; staging API image `journeyops-app:mobile-4129750`.
+- Release directory `/opt/tripstar/releases/mobile-4129750-20260917` contains
+  the frontend archive, layered Dockerfile, deployment script and Compose override.
+- Keeps text over the mobile hero with `cover` and `80% center` focus. Compact
+  mobile controls and white form copy are included. Desktop hero is unchanged.
+- Frontend-only release layered on `journeyops-app:one-click-f35652d`; only the
+  staging API container was recreated. Worker, production API, PostgreSQL and
+  Redis identities/start times were verified unchanged. No migration or quota change.
+- Health, authenticated ingress and feature capabilities passed. Connected Android
+  Chrome was reloaded on the actual staging URL; right-focused hero, compact
+  memories control and white hints were verified. No trip/provider query submitted.
+- Rollback: use the existing base/staging/travel/one-click Compose stack without
+  `mobile.compose.yaml`, and `up -d --no-deps --no-build trip-planner` only.
+  Keep the one-click override so enabled workflow settings are preserved.
+
 本文件描述阶段 8 多服务架构。生产环境在明确批准前不得执行本阶段部署；当前部署目标是
 Oracle staging，使用独立端口、独立 named volumes 和可回滚的镜像标签。
 
