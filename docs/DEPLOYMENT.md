@@ -508,3 +508,24 @@ this frontend rollback.
 - The investigated real task remained awaiting approval with one attempt before
   and after deployment. No real generation, retry, supplier query or review was
   triggered by this hotfix verification.
+
+## Navigation and Result Delivery Follow-up (2026-09-17)
+
+- Source: `93cdca4` (shared navigation) and `f9a281d` (result delivery states).
+- Staging API image: `journeyops-app:nav-progress-f9a281d`; release directory:
+  `/opt/tripstar/releases/nav-progress-f9a281d-20260917`. Frontend-only layer on
+  `journeyops-app:mobile-fix-a925c9d`; worker and backend remain unchanged.
+- All shared navigation menus expose Chinese/English only, hide settings by
+  default and retain the GitHub link at every viewport width. Legacy translation
+  packs remain for data compatibility.
+- Progress no longer announces 100% before a usable result arrives. Missing
+  terminal-event payloads are retrieved by GET; navigation is awaited. Connection
+  interruptions and page-open failures show status-recovery actions, not a task
+  generation-failure prompt. Recovery never automatically regenerates a trip.
+- Verification: 42 tests and production build passed; 360/390/768/1440px homepage
+  and result navigation checks passed. Simulated socket interruption recovered
+  the existing review with no POST requests. Private ingress, readiness and
+  capability checks passed. Production, worker, demo and data containers were
+  unchanged; no real supplier requests or approvals were made.
+- Roll back only staging API using this release's `previous-compose-files.txt`
+  and the compose rollback loop above. No data migration or restore is required.
