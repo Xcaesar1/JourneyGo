@@ -21,7 +21,7 @@ const fs = require('node:fs');
     cost_items: [{ category: 'hotel', amount_cents: 140000 }, { category: 'outbound', amount_cents: 66950 }, { category: 'tickets', amount_cents: null }], planning_request: request };
   const plan = { ...legacy, origin: '上海', city: '西安', travel_summary: summary };
   try {
-    for (const locale of ['zh-CN', 'en-US', 'ja-JP', 'ko-KR']) {
+    for (const locale of ['zh-CN', 'en-US']) {
       const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
       const errors = [], submissions = [];
       let paused = true;
@@ -67,6 +67,6 @@ const fs = require('node:fs');
       assert.deepEqual(errors, []);
       await page.close();
     }
-    console.log('PASS: four locales, mobile/desktop, paused refresh restoration, continue submission, quote summary, navigation and proposal editor. All providers mocked.');
+    console.log('PASS: two locales, mobile/desktop, paused refresh restoration, continue submission, quote summary, navigation and proposal editor. All providers mocked.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error.stack); process.exitCode = 1; });

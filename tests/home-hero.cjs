@@ -32,7 +32,7 @@ const crypto = require('node:crypto');
     assert.equal(iconResponse.status(), 200);
     const digest = data => crypto.createHash('sha256').update(data).digest('hex');
     assert.equal(digest(await iconResponse.body()), digest(fs.readFileSync('frontend/favicon.png')));
-    for (const [code, locale] of [['zh', 'zh-CN'], ['en', 'en-US'], ['ja', 'ja-JP'], ['ko', 'ko-KR']]) {
+    for (const [code, locale] of [['zh', 'zh-CN'], ['en', 'en-US']]) {
       const pack = JSON.parse(fs.readFileSync(`frontend/src/i18n/locales/${code}.json`, 'utf8'));
       await page.evaluate(locale => localStorage.setItem('tripstar-locale', locale), locale);
       for (const width of [390, 1440]) {
@@ -48,6 +48,17 @@ const crypto = require('node:crypto');
         if (code === 'zh') await page.screenshot({ path: `artifacts/home-hero-${width}.png` });
       }
     }
+    for (const previous of ['ja-JP', 'ko-KR']) {
+      await page.evaluate(value => localStorage.setItem('tripstar-locale', value), previous);
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.locator('#hero-title').waitFor();
+      assert.equal(await page.evaluate(() => localStorage.getItem('tripstar-locale')), 'zh-CN');
+      assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
+    }
+    await page.locator('.lang-select-nav').click();
+    await page.locator('.ant-select-dropdown:visible').waitFor();
+    assert.equal(await page.locator('.ant-select-dropdown:visible .ant-select-item-option').count(), 2);
+    await page.keyboard.press('Escape');
     await page.setViewportSize({ width: 1440, height: 900 });
     const landscape = page.locator('.journey-landscape');
     assert.match(await landscape.evaluate(el => getComputedStyle(el).animationName), /^landscape-drift/);
@@ -91,7 +102,7 @@ const crypto = require('node:crypto');
     assert.deepEqual(externalFonts, [], 'fonts must be served by this site');
     assert.deepEqual(eagerResult, [], 'result bundle must not be downloaded on the homepage');
     assert.deepEqual(errors, []);
-    console.log('PASS: 4 languages, phone/desktop, default motion without toggle, reduced motion, no hero search, explore preserves data');
+    console.log('PASS: two homepage languages, saved locale fallback, phone/desktop, motion, explore preserves data');
   } finally { await browser.close(); }
 })().catch(error => {
   // Playwright request errors can include authentication headers in call logs.

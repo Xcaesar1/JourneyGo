@@ -44,9 +44,9 @@
           <li class="nav-item landing-lang-item">
             <a-select v-model:value="locale" class="lang-select-nav" size="small" :aria-label="t('app.language.label')">
               <a-select-option value="zh-CN">{{ t('app.language.zh') }}</a-select-option>
-              <a-select-option value="ja-JP">{{ t('app.language.ja') }}</a-select-option>
+              <a-select-option v-if="!limitedLanguages" value="ja-JP">{{ t('app.language.ja') }}</a-select-option>
               <a-select-option value="en-US">{{ t('app.language.en') }}</a-select-option>
-              <a-select-option value="ko-KR">{{ t('app.language.ko') }}</a-select-option>
+              <a-select-option v-if="!limitedLanguages" value="ko-KR">{{ t('app.language.ko') }}</a-select-option>
             </a-select>
           </li>
           <li v-if="showSettings" class="nav-item">
@@ -122,14 +122,17 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { message } from 'ant-design-vue'
 import { useI18n } from 'vue-i18n'
 import type { RuntimeSettings } from '@/types'
 import { getRuntimeSettings, saveRuntimeSettings } from '@/services/api'
 
 const { t, locale } = useI18n()
-withDefaults(defineProps<{ showSettings?: boolean; showCta?: boolean; showMemories?: boolean; memoriesDisabled?: boolean }>(), { showSettings: true, showCta: true, showMemories: false, memoriesDisabled: false })
+const props = withDefaults(defineProps<{ showSettings?: boolean; showCta?: boolean; showMemories?: boolean; memoriesDisabled?: boolean; limitedLanguages?: boolean }>(), { showSettings: true, showCta: true, showMemories: false, memoriesDisabled: false, limitedLanguages: false })
+watch(() => [props.limitedLanguages, locale.value], () => {
+  if (props.limitedLanguages && !['zh-CN', 'en-US'].includes(locale.value)) locale.value = 'zh-CN'
+}, { immediate: true })
 const settingsVisible = ref(false)
 const settingsLoading = ref(false)
 const settingsSaving = ref(false)

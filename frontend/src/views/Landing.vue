@@ -1,7 +1,7 @@
 <template>
   <div class="landing-page">
     <div class="lower-shade" :style="lowerShadeStyle"></div>
-    <NavBar :show-settings="false" :show-cta="false" show-memories :memories-disabled="loading || discoveryLoading"
+    <NavBar limited-languages :show-settings="false" :show-cta="false" show-memories :memories-disabled="loading || discoveryLoading"
       @memories-click="openMemories" @brand-click="scrollToTop" @cta-click="scrollToForm" />
 
     <div class="wrapper">
