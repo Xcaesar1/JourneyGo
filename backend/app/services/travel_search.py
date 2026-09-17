@@ -15,6 +15,7 @@ from redis import Redis
 
 from ..config import Settings
 from ..domain.travel_models import TravelOffer, TravelSearchRequest, TravelSearchResponse
+from .hotel_pricing import estimate_stay
 from .task_events import redis_url
 
 SOURCES = {
@@ -222,9 +223,14 @@ def normalize(query: TravelSearchRequest, payload) -> list[TravelOffer]:
                     if price.get("hasPrice") is True
                     else None,
                     currency=text(price.get("currency") or "CNY", 8),
-                    price_basis="stay_total",
-                    fare_label=f"1 间房 · {query.adults} 位成人 · {query.nights} 晚总价",
-                    notes=["酒店展示起价；房型、餐食、税费及取消政策需在预订平台再次核实。"],
+                    price_basis="first_night_reference",
+                    estimated_stay_total=estimate_stay(price.get("lowestPrice"), query.nights)
+                    if price.get("hasPrice") is True
+                    else None,
+                    fare_label=f"1 间房 · {query.adults} 位成人 · {query.nights} 晚",
+                    notes=[
+                        "住宿估算按首夜参考价 × 晚数计算，并非逐晚核价；税费待核实，实际价格可能变化。"
+                    ],
                 )
             )
     else:
@@ -283,7 +289,8 @@ def search(query: TravelSearchRequest, settings: Settings, client=None) -> Trave
     }[query.provider]
     account = hashlib.sha256(credential.encode()).hexdigest()[:24]
     digest = hashlib.sha256(json.dumps(arguments(query), sort_keys=True).encode()).hexdigest()
-    cache_key = f"journeyops:travel:v1:{query.provider}:{account}:{digest}"
+    cache_version = "v2" if query.provider == "hotel" else "v1"
+    cache_key = f"journeyops:travel:{cache_version}:{query.provider}:{account}:{digest}"
     owns_client = client is None
     store = client or Redis.from_url(
         redis_url(), decode_responses=True, socket_timeout=3, socket_connect_timeout=3

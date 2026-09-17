@@ -2,6 +2,29 @@
 
 ## Status (2026-09-17)
 
+### Latest decision: reference estimates accepted
+
+The user explicitly accepted reference prices for accommodation budgeting.
+This supersedes the earlier whole-stay-price blocker below, not the other
+transport, inventory, occupancy, budget or recovery requirements.
+
+- Detail `averagePrice` is treated as a nightly reference by product decision,
+  not as a newly verified supplier contract. Multiply by nights once per room.
+- List `lowestPrice` remains a first-night reference. Its stay estimate assumes
+  the same nightly rate and must be displayed as estimated, never as a quote.
+- Unknown taxes remain unknown. Missing prices never become zero. No booking or
+  lock is performed. Room evidence and occupancy checks remain required to claim
+  a specific room recommendation; a list price alone cannot prove room stock.
+- Added `estimated_stay_total` distinct from the unverified `stay_total`.
+  Manual search returns `first_night_reference` and displays the estimated total.
+- Hotel cache namespace moves to v2; train/flight cache and paid counts are unchanged.
+- Historical findings below describe why this explicit product decision was needed.
+
+Reference-pricing validation: 263 backend tests passed, 4 skipped; 31 frontend
+tests passed; frontend production build passed with existing asset/chunk warnings.
+Mocked browser regression passed at 390px and 1280px, including reference-total
+display, flight consent and export. No live supplier calls or deployment occurred.
+
 Partial implementation only. The approved complete-trip workflow is NOT enabled
 and has NOT been connected to the homepage or JourneyGraph. No database changes,
 new public API, deployment, booking or paid flight request were performed.

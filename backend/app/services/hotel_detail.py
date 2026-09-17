@@ -1,18 +1,14 @@
-"""Read-only RollingGo room evidence; never promote an ambiguous price to a quote.
-
-The observed CN endpoint exposes averagePrice without a documented billing basis.
-This adapter deliberately cannot return a verified stay quote until that contract
-is established. It is not wired into the existing estimated itinerary workflow.
-"""
+"""Room evidence with user-approved reference estimates, not verified totals."""
 
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, Field
 
 from ..config import Settings
 from ..domain.travel_models import TravelSearchRequest
+from .hotel_pricing import amount, estimate_stay
 from .travel_search import capabilities, run_readonly_mcp
 
 
@@ -21,6 +17,7 @@ class RoomEvidence(BaseModel):
     room_name: str
     currency: str | None = None
     supplier_average_price: Decimal | None = None
+    estimated_stay_total: Decimal | None = None
     max_occupancy: int | None = None
     on_request: bool | None = None
 
@@ -31,29 +28,24 @@ class HotelDetailEvidence(BaseModel):
     check_out: str
     adults: int
     room_count: Literal[1] = 1
-    status: Literal["blocked"] = "blocked"
+    status: Literal["blocked", "estimated"] = "blocked"
     reason: Literal[
         "disabled",
         "provider_unavailable",
         "response_mismatch",
         "no_eligible_rooms",
         "whole_stay_price_unverified",
+        "reference_price_estimate",
     ]
     rooms: list[RoomEvidence] = Field(default_factory=list)
     stay_total: Decimal | None = None
+    estimated_stay_total: Decimal | None = None
+    selected_rate_plan_id: str | None = None
+    currency: str | None = None
+    pricing_note: str = "按房型参考均价 × 晚数估算，税费待核实；并非确定总价。"
     taxes: Decimal | None = None
     fetched_at: datetime | None = None
     source_url: str = "https://mcp.rollinggo.cn/mcp"
-
-
-def amount(value) -> Decimal | None:
-    if value is None or isinstance(value, bool):
-        return None
-    try:
-        result = Decimal(str(value))
-        return result if result.is_finite() and result >= 0 else None
-    except (InvalidOperation, ValueError, TypeError):
-        return None
 
 
 def detail_arguments(query: TravelSearchRequest, hotel_id: int) -> dict:
@@ -116,11 +108,24 @@ def inspect_detail(query: TravelSearchRequest, hotel_id: int, payload) -> HotelD
                 room_name=row["roomName"][:200],
                 currency=row.get("currency") if isinstance(row.get("currency"), str) else None,
                 supplier_average_price=amount(row.get("averagePrice")),
+                estimated_stay_total=estimate_stay(row.get("averagePrice"), query.nights),
                 max_occupancy=capacity,
                 on_request=False,
             )
         )
     result.reason = "whole_stay_price_unverified" if result.rooms else "no_eligible_rooms"
+    eligible = [
+        room
+        for room in result.rooms
+        if room.currency == "CNY" and room.estimated_stay_total is not None
+    ]
+    if eligible:
+        selected = min(eligible, key=lambda room: room.estimated_stay_total)
+        result.status = "estimated"
+        result.reason = "reference_price_estimate"
+        result.estimated_stay_total = selected.estimated_stay_total
+        result.selected_rate_plan_id = selected.rate_plan_id
+        result.currency = selected.currency
     return result
 
 

@@ -46,7 +46,8 @@ class TravelOffer(BaseModel):
     arrival: str = ""
     price: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     currency: str = "CNY"
-    price_basis: Literal["per_person", "stay_total"]
+    price_basis: Literal["per_person", "stay_total", "first_night_reference"]
+    estimated_stay_total: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     fare_label: str = ""
     availability: str = ""
     booking_url: str = ""

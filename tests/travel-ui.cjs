@@ -39,8 +39,9 @@ const assert = require('node:assert/strict');
           message: responseStatus === 'ok' ? '查询完成，报价及库存以预订平台为准。' : '没有符合条件的可用结果。',
           offers: responseStatus !== 'ok' ? [] : [{ offer_id: 'fixture-1', title: request.provider === 'hotel' ? '测试酒店' : '测试班次',
             subtitle: '测试路线或地址', departure: '', arrival: '', price: request.provider === 'hotel' ? 600 : 350,
-            currency: 'CNY', price_basis: request.provider === 'hotel' ? 'stay_total' : 'per_person',
-            fare_label: request.provider === 'hotel' ? '1 间房 · 2 位成人 · 2 晚总价' : '经济舱',
+            currency: 'CNY', price_basis: request.provider === 'hotel' ? 'first_night_reference' : 'per_person',
+            estimated_stay_total: request.provider === 'hotel' ? 1200 : null,
+            fare_label: request.provider === 'hotel' ? '1 间房 · 2 位成人 · 2 晚' : '经济舱',
             availability: '', booking_url: '', notes: ['报价需核实，非含税总价。'] }],
           source_title: '测试来源', source_url: 'https://www.12306.cn/', source_domain: '12306.cn',
           fetched_at: new Date().toISOString(), cached: false, query: request };
@@ -70,7 +71,10 @@ const assert = require('node:assert/strict');
     await panel.getByRole('button', { name: '查询酒店住宿', exact: true }).click();
     await panel.locator('.travel-offer').waitFor();
     assert.match(await panel.innerText(), /CNY 600/);
-    assert.match(await panel.innerText(), /2 晚总价/);
+    assert.match(await panel.innerText(), /首夜参考价/);
+    assert.match(await panel.innerText(), /住宿参考总额：CNY 1200/);
+    assert.match(await panel.innerText(), /税费待核实/);
+    assert.doesNotMatch(await panel.innerText(), /整段住宿总价起/);
     assert.equal(await panel.locator('.travel-offer strong').evaluate(element => getComputedStyle(element).color), 'rgb(255, 213, 161)', 'quote color must not inherit invisible parent styles');
     assert.equal(await panel.locator('.travel-offer').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(21, 35, 44)');
     assert.equal(calls[1].nights, 2);

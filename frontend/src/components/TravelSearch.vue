@@ -52,7 +52,8 @@
           <div class="travel-offer-heading"><h3>{{ offer.title }}</h3><strong>{{ offer.price === null ? '暂无报价' : `${offer.currency} ${offer.price}` }}</strong></div>
           <p>{{ offer.subtitle }}</p>
           <p v-if="offer.departure || offer.arrival">{{ offer.departure || '时间待核实' }} → {{ offer.arrival || '时间待核实' }}</p>
-          <p class="travel-fare">{{ offer.fare_label }} · {{ offer.price_basis === 'stay_total' ? '整段住宿总价起' : '每人票价' }}<span v-if="offer.availability"> · 余票：{{ offer.availability }}</span></p>
+          <p class="travel-fare">{{ offer.fare_label }} · {{ offer.price_basis === 'first_night_reference' ? '首夜参考价' : offer.price_basis === 'stay_total' ? '历史住宿报价（口径待核实）' : '每人票价' }}<span v-if="offer.availability"> · 余票：{{ offer.availability }}</span></p>
+          <p v-if="offer.price_basis === 'first_night_reference'">住宿参考总额：{{ offer.estimated_stay_total == null ? '待核实' : `${offer.currency} ${offer.estimated_stay_total}` }}（参考价 × 晚数，税费待核实）</p>
           <small v-for="note in offer.notes" :key="note">{{ note }}</small>
           <a v-if="offer.booking_url === 'https://www.12306.cn/'" :href="offer.booking_url" target="_blank" rel="noopener noreferrer">前往 12306 核实</a>
         </article>

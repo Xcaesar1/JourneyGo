@@ -122,7 +122,7 @@ def test_train_values_are_provider_facts():
     assert service.arguments(request)["format"] == "json"
 
 
-def test_hotel_total_is_not_nightly_or_multiplied_again():
+def test_hotel_first_night_reference_is_estimated_once_per_room():
     request = query("hotel", nights=2, adults=2)
     payload = {
         "success": True,
@@ -138,9 +138,11 @@ def test_hotel_total_is_not_nightly_or_multiplied_again():
         ],
     }
     offers = service.normalize(request, payload)
-    assert offers[0].price == 600 and offers[0].price_basis == "stay_total"
-    assert "2 晚总价" in offers[0].fare_label
+    assert offers[0].price == 600 and offers[0].price_basis == "first_night_reference"
+    assert offers[0].estimated_stay_total == 1200
+    assert "2 晚" in offers[0].fare_label
     assert offers[1].price is None
+    assert offers[1].estimated_stay_total is None
     assert not offers[0].booking_url
     assert "<script>" not in offers[0].model_dump_json()
     assert service.arguments(request)["place"] == "西安 中国"

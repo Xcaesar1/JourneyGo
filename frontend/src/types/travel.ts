@@ -20,7 +20,8 @@ export interface TravelOffer {
   arrival: string
   price: number | null
   currency: string
-  price_basis: 'per_person' | 'stay_total'
+  price_basis: 'per_person' | 'stay_total' | 'first_night_reference'
+  estimated_stay_total?: number | null
   fare_label: string
   availability: string
   booking_url: string

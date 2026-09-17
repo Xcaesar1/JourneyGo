@@ -57,13 +57,35 @@ def test_four_nights_and_one_room_arguments():
 
 
 @pytest.mark.parametrize("adults", [1, 2])
-def test_average_price_not_promoted_or_multiplied(adults):
+def test_reference_price_estimate_multiplies_nights_not_people(adults):
     request = query(adults=adults)
     result = service.inspect_detail(request, 123, fixture(request))
-    assert result.status == "blocked" and result.reason == "whole_stay_price_unverified"
+    assert result.status == "estimated" and result.reason == "reference_price_estimate"
+    assert result.estimated_stay_total == Decimal("1400.48")
+    assert result.selected_rate_plan_id == "fixture-room"
     assert result.rooms[0].supplier_average_price == Decimal("350.12")
     assert result.stay_total is None and result.taxes is None
     assert result.fetched_at is not None
+
+
+@pytest.mark.parametrize("value", [None, "", -1, "NaN", "Infinity", True])
+def test_missing_reference_price_still_blocks(value):
+    request = query()
+    payload = fixture(request)
+    payload["roomRatePlans"][0]["averagePrice"] = value
+    result = service.inspect_detail(request, 123, payload)
+    assert result.status == "blocked" and result.estimated_stay_total is None
+
+
+def test_foreign_currency_is_not_compared_as_cny():
+    request = query()
+    payload = fixture(request)
+    payload["roomRatePlans"][0]["currency"] = "USD"
+    assert service.inspect_detail(request, 123, payload).status == "blocked"
+
+
+def test_reference_calculation_uses_decimal():
+    assert service.estimate_stay("100.005", 4) == Decimal("400.02")
 
 
 @pytest.mark.parametrize("value", [None, "", True, -1, "NaN", "Infinity", {}])
