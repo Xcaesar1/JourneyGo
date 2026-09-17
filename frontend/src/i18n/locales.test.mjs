@@ -92,9 +92,10 @@ test('Korean browser language is detected and selection survives reload', () => 
   assert.equal(loadLocale('en-US', app.storage.get('tripstar-locale')).getCurrentLocale(), 'ko-KR')
 })
 
-test('homepage limits languages while other pages retain locale compatibility', () => {
-  assert.match(read('../components/NavBar.vue'), /v-if="!limitedLanguages" value="ko-KR"/)
-  assert.match(read('../components/NavBar.vue'), /v-if="!limitedLanguages" value="ja-JP"/)
+test('all navigation menus offer only Chinese and English while retaining stored data compatibility', () => {
+  assert.doesNotMatch(read('../components/NavBar.vue'), /value="(?:ko-KR|ja-JP)"/)
+  assert.match(read('../components/NavBar.vue'), /showSettings: false/)
+  assert.doesNotMatch(read('../components/NavBar.vue'), /\.landing-github-item\s*\{\s*display: none/)
   assert.match(read('../components/NavBar.vue'), /locale.value = 'zh-CN'/)
   assert.match(read('../views/Landing.vue'), /<NavBar limited-languages/)
   assert.match(read('../App.vue'), /<a-config-provider :locale="componentLocale">/)

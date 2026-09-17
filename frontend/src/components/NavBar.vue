@@ -44,9 +44,7 @@
           <li class="nav-item landing-lang-item">
             <a-select v-model:value="locale" class="lang-select-nav" size="small" :aria-label="t('app.language.label')">
               <a-select-option value="zh-CN">{{ t('app.language.zh') }}</a-select-option>
-              <a-select-option v-if="!limitedLanguages" value="ja-JP">{{ t('app.language.ja') }}</a-select-option>
               <a-select-option value="en-US">{{ t('app.language.en') }}</a-select-option>
-              <a-select-option v-if="!limitedLanguages" value="ko-KR">{{ t('app.language.ko') }}</a-select-option>
             </a-select>
           </li>
           <li v-if="showSettings" class="nav-item">
@@ -129,9 +127,9 @@ import type { RuntimeSettings } from '@/types'
 import { getRuntimeSettings, saveRuntimeSettings } from '@/services/api'
 
 const { t, locale } = useI18n()
-const props = withDefaults(defineProps<{ showSettings?: boolean; showCta?: boolean; showMemories?: boolean; memoriesDisabled?: boolean; limitedLanguages?: boolean }>(), { showSettings: true, showCta: true, showMemories: false, memoriesDisabled: false, limitedLanguages: false })
+const props = withDefaults(defineProps<{ showSettings?: boolean; showCta?: boolean; showMemories?: boolean; memoriesDisabled?: boolean; limitedLanguages?: boolean }>(), { showSettings: false, showCta: true, showMemories: false, memoriesDisabled: false, limitedLanguages: true })
 watch(() => [props.limitedLanguages, locale.value], () => {
-  if (props.limitedLanguages && !['zh-CN', 'en-US'].includes(locale.value)) locale.value = 'zh-CN'
+  if (!['zh-CN', 'en-US'].includes(locale.value)) locale.value = 'zh-CN'
 }, { immediate: true })
 const settingsVisible = ref(false)
 const settingsLoading = ref(false)
@@ -385,6 +383,17 @@ const saveSettingsNow = async () => {
   white-space: nowrap;
 }
 
+.landing-nav .landing-github-item .nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
+  color: var(--nav-text, #ecf3fa);
+}
+.landing-github-item svg { color: var(--nav-text, #ecf3fa); }
+
 .landing-nav .nav-item .memories-entry:hover:not(:disabled) {
   border-color: var(--nav-text, #ecf3fa);
   box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
@@ -533,10 +542,6 @@ const saveSettingsNow = async () => {
 }
 
 @media (max-width: 400px) {
-  .landing-nav .landing-github-item {
-    display: none !important;
-  }
-
   .lang-select-nav {
     width: 62px !important;
   }
