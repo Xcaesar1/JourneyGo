@@ -342,9 +342,9 @@
         </div>
 
         <!-- Node Loading Stepper -->
-        <div v-show="loading" class="stepper-wrapper">
+        <div v-show="loading" ref="progressRef" class="stepper-wrapper" tabindex="-1" aria-labelledby="planning-progress-title">
           <div class="stepper-header">
-            <h2 class="stepper-title">{{ t('home.loading.planCode', { code: planCode }) }}</h2>
+            <h2 id="planning-progress-title" class="stepper-title">{{ t('home.loading.planCode', { code: planCode }) }}</h2>
             <p class="stepper-subtitle">{{ t('home.loading.preparing') }}</p>
           </div>
           
@@ -513,6 +513,7 @@ const scrollY = ref(0)
 const formRef = ref<HTMLElement | null>(null)
 const panelRef = ref<HTMLElement | null>(null)
 const panelHeight = ref<number | string>('auto')
+const progressRef = ref<HTMLElement | null>(null)
 const fogEnabled = ref(true)
 const planCode = ref('')
 const loadingEvents = ref<Array<{ stage: string; progress: number; message: string }>>([])
@@ -739,6 +740,15 @@ const startTaskUi = () => {
   loadingStatus.value = t('home.loading.initializing')
   loadingEvents.value = []
   failedTask.value = null
+  nextTick(() => {
+    const progress = progressRef.value
+    if (!loading.value || !progress?.isConnected) return
+    progress.focus({ preventScroll: true })
+    progress.scrollIntoView({
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth',
+      block: 'start',
+    })
+  })
 }
 
 const taskCallbacks = () => ({
@@ -1766,6 +1776,7 @@ const handleRetry = async () => {
 
 /* 节点动画相关样式 */
 .stepper-wrapper {
+  scroll-margin-top: 96px;
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -9,6 +9,17 @@ test('touch date and time pickers suppress the software keyboard only on coarse 
   assert.equal((landingSource.match(/:input-read-only="touchPicker"/g) || []).length, 3)
 })
 
+test('starting or resuming a task brings its mounted progress panel into view', () => {
+  const start = landingSource.slice(landingSource.indexOf('const startTaskUi ='), landingSource.indexOf('const taskCallbacks ='))
+  assert.match(landingSource, /ref="progressRef"/)
+  assert.match(start, /nextTick\(/)
+  assert.match(start, /!loading.value \|\| !progress\?\.isConnected/)
+  assert.match(start, /focus\(\{ preventScroll: true \}\)/)
+  assert.match(start, /prefers-reduced-motion: reduce/)
+  assert.match(start, /'instant' : 'smooth'/)
+  assert.match(landingSource, /scroll-margin-top: 96px/)
+})
+
 test('memories are lazy and no longer fetched or rendered by the homepage', () => {
   const main = readFileSync(new URL('../main.ts', import.meta.url), 'utf8')
   const nav = readFileSync(new URL('../components/NavBar.vue', import.meta.url), 'utf8')
