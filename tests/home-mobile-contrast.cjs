@@ -23,6 +23,14 @@ const fs = require('node:fs');
       await page.reload({ waitUntil: 'networkidle' });
       await page.locator('.planning-hint').first().waitFor();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      const landscape = await page.locator('.journey-landscape').evaluate(el => {
+        const rect = el.getBoundingClientRect();
+        return { width: rect.width, height: rect.height, size: getComputedStyle(el).backgroundSize, repeat: getComputedStyle(el).backgroundRepeat, viewport: innerWidth };
+      });
+      assert.equal(landscape.size, 'contain');
+      assert.equal(landscape.repeat, 'no-repeat');
+      assert.ok(Math.abs(landscape.width - landscape.viewport) < 1);
+      assert.ok(Math.abs(landscape.width / landscape.height - 1942 / 809) < 0.01, 'full panorama keeps its original aspect ratio');
       const memories = await page.locator('.memories-entry').boundingBox();
       assert.ok(memories.height <= 32, 'memories button should be compact');
       const explore = await page.locator('.journey-explore').evaluate(el => ({ width: el.getBoundingClientRect().width, padding: parseFloat(getComputedStyle(el).paddingLeft), gap: parseFloat(getComputedStyle(el).gap) }));
@@ -42,7 +50,7 @@ const fs = require('node:fs');
       await page.screenshot({ path: `artifacts/mobile-adb/updated-submit-${locale}.png` });
     }
     assert.deepEqual(errors, []);
-    console.log(`PASS: ${remote ? 'real Android Chrome' : 'mobile viewport'}, Chinese/English, compact buttons, centered language, white form text, no overflow; APIs mocked.`);
+    console.log(`PASS: ${remote ? 'real Android Chrome' : 'mobile viewport'}, Chinese/English, complete panorama, compact buttons, centered language, white form text, no overflow; APIs mocked.`);
   } finally {
     await page.close();
     await browser.close();
