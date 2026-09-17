@@ -859,9 +859,14 @@
 import { computed, reactive, ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { message } from 'ant-design-vue'
+import {
+  message, Alert as AAlert, BackTop as ABackTop, Card as ACard,
+  Collapse as ACollapse, CollapsePanel as ACollapsePanel,
+  Descriptions as ADescriptions, DescriptionsItem as ADescriptionsItem,
+  Divider as ADivider, List as AList, ListItem as AListItem,
+  Menu as AMenu, MenuItem as AMenuItem, Space as ASpace, Switch as ASwitch,
+} from 'ant-design-vue'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import html2canvas from 'html2canvas'
 import * as echarts from 'echarts'
 import Swiper from 'swiper'
 import '@fontsource/nunito-sans/latin-400.css'
@@ -1824,7 +1829,8 @@ const goBack = () => {
 }
 
 // 滚动到指定区域
-const scrollToSection = ({ key }: { key: string }) => {
+const scrollToSection = ({ key: menuKey }: { key: string | number }) => {
+  const key = String(menuKey)
   if (key.startsWith('day-')) {
     const dayIndex = Number(key.replace('day-', ''))
     if (!Number.isNaN(dayIndex)) {
@@ -2591,6 +2597,7 @@ const captureMapScreenshot = async (): Promise<string> => {
     // 等待一帧让渲染生效
     await new Promise(resolve => setTimeout(resolve, 300))
 
+    const { default: html2canvas } = await import('html2canvas')
     const mapCanvas = await html2canvas(mapEl, {
       backgroundColor: '#1a1a2e',
       scale: 2,
@@ -2627,6 +2634,7 @@ const captureMapScreenshot = async (): Promise<string> => {
 const exportAsImage = async () => {
   try {
     message.loading({ content: t('result.messages.generatingImage'), key: 'export', duration: 0 })
+    const { default: html2canvas } = await import('html2canvas')
 
     // 1. 先捕获地图截图
     const mapDataUrl = await captureMapScreenshot()

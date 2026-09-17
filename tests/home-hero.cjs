@@ -17,6 +17,9 @@ const crypto = require('node:crypto');
       if (/\/Result[-.]/.test(request.url())) eagerResult.push(request.url());
     });
     page.on('pageerror', error => errors.push(error.message));
+    page.on('console', entry => {
+      if (entry.text().includes('Failed to resolve component')) errors.push(entry.text());
+    });
     await page.route('**/api/**', route => {
       if (route.request().method() === 'POST') writes.push(route.request().url());
       return route.fulfill({ json: { success: true, data: [], items: [] } });
@@ -74,6 +77,9 @@ const crypto = require('node:crypto');
     }
     assert.equal(await page.locator('.journey-motion-toggle').isVisible(), false);
     assert.equal(await page.locator('.journey-hero input, .journey-search').count(), 0);
+    await page.locator('.ant-picker input').first().click();
+    await page.locator('.ant-picker-dropdown:visible').waitFor();
+    await page.keyboard.press('Escape');
     await page.locator('.special-textarea').fill('保留已有行程需求');
     await page.locator('.journey-explore').click();
     await page.waitForTimeout(800);

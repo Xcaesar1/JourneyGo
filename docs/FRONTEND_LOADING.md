@@ -3,6 +3,8 @@
 ## Scope
 
 - Load Result.vue with a route import; keep homepage controls immediately available.
+- Register only shared/homepage Ant Design components globally; import result-only components locally. Do not restore the full Antd plugin. Browser tests detect unresolved components and exercise date selection.
+- Keep html2canvas behind dynamic imports in export actions. The result regression verifies no initial screenshot-library request and a successful PNG download after clicking export.
 - Serve fonts from pinned `@fontsource` packages. Preserve their bundled OFL licenses; do not reintroduce external font stylesheets.
 - Compress only the static asset mount, not API or SSE routes.
 - Cache hashed assets privately with immutable URLs; revalidate HTML so it discovers new hashes. Never apply immutable caching to API responses or credentials.
@@ -13,6 +15,8 @@
 2. Run `python -m pytest backend/tests` from the repository root.
 3. Serve the production build using the API static asset implementation on port 5174. With Playwright available on NODE_PATH, run `node tests/home-hero.cjs`, `node tests/travel-ui.cjs` and `node tests/frontend-loading.cjs`.
 4. The loading test uses a fresh browser and simulated 1.6 Mbps / 150 ms latency. It checks gzip, asset cache headers, no external font requests and no eager Result bundle. It measures button availability, not complete background image download. Supplier/API responses are mocked.
+
+Measured on 2026-09-17 after selective component loading: initial JS 955448 decoded bytes / 309646 gzip bytes; button available in 2777 ms in one local emulated run. The preceding local run was 1754898 decoded bytes / 547969 gzip bytes and 4274 ms. These are diagnostic samples, not production latency guarantees. The loading test enforces a 1.1 MB decoded / 350 KB encoded initial-script budget.
 
 ## Staging Publication
 

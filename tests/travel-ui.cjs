@@ -18,6 +18,14 @@ const assert = require('node:assert/strict');
     let enabled = true;
     let responseStatus = 'ok';
     page.on('pageerror', error => errors.push(error.message));
+    page.on('console', entry => {
+      if (entry.text().includes('Failed to resolve component')) errors.push(entry.text());
+    });
+    const exportRequests = [];
+    page.on('request', request => {
+      if (request.url().includes('html2canvas')) exportRequests.push(request.url());
+    });
+    await page.route('https://api.qrserver.com/**', route => route.abort());
     await page.route('**/api/**', async route => {
       const path = new URL(route.request().url()).pathname;
       if (path.includes('/versions')) versionRequests.push(path);
@@ -95,6 +103,13 @@ const assert = require('node:assert/strict');
     await page.reload();
     await panel.getByText('此服务尚未启用，请先由管理员配置。原行程仍可正常使用。').waitFor();
     assert.ok(await panel.getByRole('button', { name: '查询火车高铁', exact: true }).isDisabled());
+    assert.equal(exportRequests.length, 0, 'screenshot library must not load before export');
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: '导出攻略', exact: true }).click(),
+    ]);
+    assert.match(download.suggestedFilename(), /\.png$/);
+    assert.ok(exportRequests.length > 0, 'export must load its screenshot library on demand');
     assert.deepEqual(errors, []);
     assert.deepEqual(versionRequests, [], 'removed version panel must not fetch history');
     console.log('PASS: JourneyGo brand, removed history/source panels and requests; train/hotel/flight forms, consent reset, empty/disabled states, 390/1280 layout. All supplier responses mocked.');

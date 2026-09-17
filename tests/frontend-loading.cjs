@@ -22,7 +22,7 @@ const assert = require('node:assert/strict');
     assert.match(response.headers()['cache-control'], /private.*immutable/);
     const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(r => ({ name: r.name, encoded: r.encodedBodySize, decoded: r.decodedBodySize })));
     const main = resources.find(r => /\/assets\/index-[^/]+\.js$/.test(r.name));
-    assert.ok(main.encoded < 650000 && main.decoded < 1900000);
+    assert.ok(main.encoded < 350000 && main.decoded < 1100000);
     assert.equal(resources.some(r => /\/Result-|fonts\.googleapis|fonts\.gstatic/.test(r.name)), false);
     assert.deepEqual(errors, []);
     console.log(JSON.stringify({ simulatedMbps: 1.6, latencyMs: 150, interactiveMs, scriptEncodedBytes: main.encoded, scriptDecodedBytes: main.decoded }));

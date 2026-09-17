@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import Antd from 'ant-design-vue'
+import { Button, Checkbox, ConfigProvider, DatePicker, Empty, Form, Input, InputNumber, Layout, Modal, Select, Spin, TimePicker } from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 import '@fontsource/outfit/latin-300.css'
 import '@fontsource/outfit/latin-400.css'
@@ -33,7 +33,9 @@ const router = createRouter({
 const app = createApp(App)
 
 app.use(router)
-app.use(Antd)
+for (const component of [Button, Checkbox, ConfigProvider, DatePicker, Empty, Form, Input, InputNumber, Layout, Modal, Select, Spin, TimePicker]) {
+  app.use(component)
+}
 app.use(i18n)
 
 app.mount('#app')
