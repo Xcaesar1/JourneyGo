@@ -495,6 +495,8 @@ onMounted(async () => {
         preferences: request.interests, free_text_input: request.free_text_input,
         daily_start_time: dayjs(request.start_date + 'T' + request.daily_start_time),
         daily_end_time: dayjs(request.start_date + 'T' + request.daily_end_time) })
+    } else if (task.status === 'awaiting_approval' && task.result) {
+      applyGeneratedPlan({ ...task.result, task_id: taskId, trip_id: task.trip_id, review: task.review ?? undefined })
     } else if (['queued', 'processing', 'retrying'].includes(task.status)) {
       startTaskUi()
       try { applyGeneratedPlan(await resumeTripPlan(taskId, taskCallbacks())) }
@@ -918,7 +920,9 @@ const handleRetry = async () => {
   startTaskUi()
   planCode.value = task.taskId
   try {
-    applyGeneratedPlan(await retryTripPlan(task.taskId, taskCallbacks()))
+    applyGeneratedPlan(await (['websocket_error', 'websocket_closed', 'status_connection_lost'].includes(task.code)
+      ? resumeTripPlan(task.taskId, taskCallbacks())
+      : retryTripPlan(task.taskId, taskCallbacks())))
   } catch (error: unknown) {
     captureTaskFailure(error)
     if (!failedTask.value) failedTask.value = task

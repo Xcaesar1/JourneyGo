@@ -380,6 +380,7 @@ const watchTripPlanTask = (
 
   return new Promise((resolve, reject) => {
     let settled = false
+    let recovering = false
     const socket = new WebSocket(wsUrl)
 
     const safeResolve = (value: TripPlanResponse) => {
@@ -396,9 +397,8 @@ const watchTripPlanTask = (
       reject(error)
     }
 
-    socket.onmessage = (ev) => {
+    const acceptEvent = (rawEvent: Omit<TripTaskEvent, 'plan_id'> & { plan_id?: string }) => {
       try {
-        const rawEvent = JSON.parse(ev.data) as Omit<TripTaskEvent, 'plan_id'> & { plan_id?: string }
         const event: TripTaskEvent = {
           ...rawEvent,
           plan_id: rawEvent.plan_id || rawEvent.task_id,
@@ -453,25 +453,36 @@ const watchTripPlanTask = (
       }
     }
 
-    socket.onerror = () => {
-      safeReject(new TripTaskFailure(
-        t('api.generateTripPlanFailed'),
-        task.task_id,
-        task.trace_id,
-        'websocket_error',
-      ))
+    socket.onmessage = (ev) => {
+      try { acceptEvent(JSON.parse(ev.data)) }
+      catch (error) { safeReject(error) }
     }
 
-    socket.onclose = () => {
-      if (!settled) {
-        safeReject(new TripTaskFailure(
-          t('api.generateTripPlanFailed'),
-          task.task_id,
-          task.trace_id,
-          'websocket_closed',
-        ))
+    const recoverStatus = async () => {
+      if (settled || recovering) return
+      recovering = true
+      socket.close()
+      let failures = 0
+      const deadline = Date.now() + 10 * 60 * 1000
+      while (!settled && Date.now() < deadline) {
+        try {
+          // Losing a mobile connection does not mean the durable task failed.
+          const record = await getTripTask(task.task_id)
+          failures = 0
+          acceptEvent({ ...record, stage: record.stage as TripTaskEvent['stage'],
+            result: record.result ?? undefined, review: record.review ?? undefined })
+        } catch {
+          if (++failures >= 3) break
+        }
+        if (!settled) await new Promise(resolve => window.setTimeout(resolve, 2000))
       }
+      if (!settled) safeReject(new TripTaskFailure(
+        '暂时无法获取任务进度，任务可能仍在运行。请恢复网络后重新查看，无需重新提交。',
+        task.task_id, task.trace_id, 'status_connection_lost',
+      ))
     }
+    socket.onerror = () => { void recoverStatus() }
+    socket.onclose = () => { void recoverStatus() }
   })
 }
 
@@ -509,7 +520,7 @@ export async function retryTripPlan(
 }
 
 export async function getTripTask(taskId: string): Promise<TripTaskRecord> {
-  const response = await apiClient.get<TripTaskRecord>(`/api/v2/trips/tasks/${taskId}`)
+  const response = await apiClient.get<TripTaskRecord>(`/api/v2/trips/tasks/${taskId}`, { timeout: 15000 })
   return response.data
 }
 
