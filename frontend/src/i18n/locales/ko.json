@@ -1,4 +1,7 @@
 {
+  "travelUnits": {"perPerson":"인","stay":"객실 {rooms}개 · {nights}박 · 성인 {adults}명"},
+  "travelCosts": {"outbound":"가는 교통편","return":"오는 교통편","hotel":"전체 숙박","meals":"식비 추정","local_transport":"시내 교통 추정","tickets":"입장료 미확인"},
+  "oneClick": {"train":"고속철도","flight":"항공","economy":"실속형","business":"비즈니스","premium":"프리미엄","more":"추가 설정","budgetHint":"예산은 전체 성인 합계이며 왕복 날짜와 객실 1개 기준입니다.","flightConsent":"이번 왕복 항공편은 방향별 최대 1회 조회합니다. 비용이 발생할 수 있으며 예약하지 않습니다.","paused":"수정 후 계속","retained":"저장된 조회 기록","refresh":"요금 업데이트","continue":"입력 내용으로 계속","query_transport":"왕복 교통 조회","query_hotel":"호텔 객실 조회","plan_places":"관광과 식사 계획","check_trip":"시간 및 예산 확인","total":"예상 합계","unknown":"미포함: 입장료, 호텔 세금 및 미확인 항공 세금","notBooked":"일정 확인은 예약 완료가 아닙니다","outbound":"가는 편","inbound":"오는 편","hotel":"연박 호텔","optional":"관광지 선택은 선택 사항입니다. 바로 생성할 수 있습니다.","returnDate":"귀환일","quoted":"조회된 요금","estimated":"참고 견적","replace":"변경 / 요금 업데이트"},
   "memories": {
     "title": "추억",
     "description": "최근 업데이트 순으로 최대 50개의 여행 일정 표시",

@@ -248,9 +248,14 @@ export async function saveRuntimeSettings(settings: RuntimeSettings): Promise<Ru
 /**
  * 提交旅行规划任务（立即返回 task_id）
  */
-export async function submitTripPlan(formData: TripFormData): Promise<SubmitTripPlanResponse> {
+export async function submitTripPlan(formData: TripFormData, continueTaskId?: string, refresh?: string): Promise<SubmitTripPlanResponse> {
   try {
-    const response = await apiClient.post<TripTaskRecord>('/api/v2/trips', {
+    const payload = {
+      planning_mode: formData.planning_mode || 'classic',
+      round_trip: true,
+      intercity_mode: formData.intercity_mode || 'train',
+      hotel_tier: formData.hotel_tier || 'business',
+      flight_confirmed: formData.flight_confirmed || false,
       origin: formData.origin,
       destinations: formData.cities?.length
         ? formData.cities
@@ -274,7 +279,10 @@ export async function submitTripPlan(formData: TripFormData): Promise<SubmitTrip
       free_text_input: formData.free_text_input,
       language: formData.language || 'zh',
       timezone: 'Asia/Shanghai',
-    })
+    }
+    const response = await apiClient.post<TripTaskRecord>(continueTaskId
+      ? `/api/v2/trips/tasks/${continueTaskId}/continue` : '/api/v2/trips',
+      continueTaskId ? { request: payload, refresh: refresh || null } : payload)
     const task = response.data
     return {
       task_id: task.task_id,
@@ -393,6 +401,12 @@ const watchTripPlanTask = (
         }
         options?.onTaskEvent?.(event)
 
+        if (event.status === 'awaiting_input') {
+          safeReject(new TripTaskFailure(event.pending_input?.message || event.message, event.task_id,
+            event.trace_id || task.trace_id, 'awaiting_input'))
+          return
+        }
+
         if (event.status === 'completed') {
           if (!event.result) {
             safeReject(new Error(t('api.generateTripPlanFailed')))
@@ -495,6 +509,27 @@ export async function getTripTask(taskId: string): Promise<TripTaskRecord> {
   return response.data
 }
 
+export async function continueTripPlan(form: TripFormData, taskId: string, refresh: string | undefined, options?: GenerateTripPlanOptions) {
+  const task = await submitTripPlan(form, taskId, refresh)
+  options?.onTaskCreated?.(task)
+  return watchTripPlanTask(task, options)
+}
+
+export async function readPlanningInput(tripId: string) {
+  return (await apiClient.get(`/api/v2/trips/${tripId}`)).data.request
+}
+
+export async function readTravelQueries(taskId: string) {
+  return (await apiClient.get(`/api/v2/trips/tasks/${taskId}/travel-queries`)).data
+}
+
+export async function resumeTripPlan(taskId: string, options?: GenerateTripPlanOptions) {
+  const task = await getTripTask(taskId)
+  return watchTripPlanTask({ task_id: taskId, trip_id: task.trip_id, trace_id: task.trace_id,
+    plan_id: taskId, status: 'processing', message: task.message,
+    ws_url: `/api/v2/trips/tasks/${taskId}/ws` }, options)
+}
+
 export async function submitTripReview(
   taskId: string,
   decision: ReviewDecision
@@ -515,7 +550,7 @@ export async function waitForTripTask(
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     const task = await getTripTask(taskId)
-    if (['awaiting_approval', 'completed', 'rejected', 'failed', 'cancelled'].includes(task.status)) {
+    if (['awaiting_input', 'awaiting_approval', 'completed', 'rejected', 'failed', 'cancelled'].includes(task.status)) {
       return task
     }
     await new Promise(resolve => window.setTimeout(resolve, intervalMs))

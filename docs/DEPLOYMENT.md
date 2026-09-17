@@ -5,6 +5,33 @@ Oracle staging，使用独立端口、独立 named volumes 和可回滚的镜像
 
 ## Keyless Demo
 
+### One-click Travel Release Gate
+
+`ONE_CLICK_TRAVEL_ENABLED` defaults to `false` in the shared API/Worker environment.
+Keep it off until separately approved isolated staging acceptance. Migration
+`20260917_07` is additive: `trip_tasks.pending_input` and `travel_queries`.
+Apply it using the existing `migrate` service before enabling the flag; do not run
+an automatic downgrade or delete query/authorization records when rolling back.
+The current local run only verified PostgreSQL SQL generation, not an online
+PostgreSQL/Celery migration. Docker's Linux engine was unavailable.
+
+Release checklist:
+
+1. Confirm staging target, independent database/Redis volumes and backups.
+2. Run backend tests, frontend tests/build and `tests/one-click-ui.cjs` with mocked
+   providers; verify `tests/travel-ui.cjs` still covers legacy export/navigation.
+3. Apply the migration in the approved staging environment and test Worker restart,
+   input pause/continue and final version approval through the real task stack.
+4. Verify train/hotel/AMap/model configuration. Keep `TRAVEL_FLIGHT_ENABLED=false`
+   and do not change `TRAVEL_FLIGHT_CALL_LIMIT` without separate cost approval.
+5. Enable `ONE_CLICK_TRAVEL_ENABLED=true` on both API and Worker only after the
+   staging acceptance passes. Check mobile and desktop from a fresh browser.
+6. Roll back by setting the feature flag false and restarting API/Worker. Preserve
+   the ledger, timestamps, checkpoints, history and paid counters. Production is
+   outside this task's authorization.
+
+### Demo Environment
+
 Demo 使用独立 project name、端口和数据卷，不读取真实 Provider Secret，也不发起外部模型、搜索、
 地图 Web Service 或社区数据请求：
 

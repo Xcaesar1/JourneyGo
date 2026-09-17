@@ -23,6 +23,7 @@ class TripState(TypedDict, total=False):
     trip_id: str
     task_id: str
     request: TripRequestV2
+    one_click_plan: TripPlanV2
     traveler_profile: dict[str, Any]
     research_queries: list[ResearchQuery]
     sources: list[SourceEvidence]

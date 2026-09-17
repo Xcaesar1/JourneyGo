@@ -21,6 +21,12 @@
     <section ref="formRef" class="form-section">
       <div class="form-panel" :style="[formRevealStyle, { minHeight: panelHeight === 'auto' ? 'auto' : panelHeight + 'px' }]" ref="panelRef">
         <a-form v-show="!loading" :model="formData" layout="vertical" @finish="handleSubmit">
+          <section v-if="pausedTask" class="step" role="status">
+            <h3>{{ t('oneClick.paused') }}</h3><p>{{ pausedTask.message }}</p>
+            <p>{{ t('oneClick.retained') }}: {{ retainedQueries.length }}</p>
+            <ul><li v-for="(query, index) in retainedQueries" :key="index">{{ query.provider }} · {{ query.scope }} · {{ query.status }} · {{ query.fetched_at || query.created_at }}<p v-for="line in queryPreview(query)" :key="line">{{ line }}</p></li></ul>
+            <label v-if="['train', 'flight', 'hotel', 'amap'].includes(pausedTask.provider || '')"><input v-model="refreshQuote" type="checkbox" /> {{ t('oneClick.refresh') }}</label>
+          </section>
           <div class="step">
             <div class="step-head">
               <span>01</span>
@@ -59,7 +65,7 @@
                   </template>
                   <a-input-number
                     v-model:value="cs.days"
-                    :min="1"
+                    :min="oneClickEnabled ? 2 : 1"
                     :max="15"
                     size="large"
                     class="field-input"
@@ -67,13 +73,13 @@
                   />
                 </a-form-item>
                 <button
-                  v-if="formData.cities.length > 1"
+                  v-if="!oneClickEnabled && formData.cities.length > 1"
                   type="button"
                   class="city-remove-btn"
                   @click="removeCity(idx)"
                 >×</button>
               </div>
-              <button type="button" class="city-add-btn" @click="addCity">
+              <button v-if="!oneClickEnabled" type="button" class="city-add-btn" @click="addCity">
                 + {{ t('home.addCity') }}
               </button>
             </div>
@@ -116,10 +122,16 @@
                   <span class="field-label">{{ t('home.transportationLabel') }}</span>
                 </template>
                 <a-select v-model:value="formData.transportation" size="large" class="field-select">
+                  <template v-if="oneClickEnabled">
+                    <a-select-option value="train">{{ t('oneClick.train') }}</a-select-option>
+                    <a-select-option value="flight">{{ t('oneClick.flight') }}</a-select-option>
+                  </template>
+                  <template v-else>
                   <a-select-option value="公共交通">{{ t('home.transportation.public') }}</a-select-option>
                   <a-select-option value="自驾">{{ t('home.transportation.drive') }}</a-select-option>
                   <a-select-option value="步行">{{ t('home.transportation.walk') }}</a-select-option>
                   <a-select-option value="混合">{{ t('home.transportation.mixed') }}</a-select-option>
+                  </template>
                 </a-select>
               </a-form-item>
 
@@ -128,10 +140,15 @@
                   <span class="field-label">{{ t('home.accommodationLabel') }}</span>
                 </template>
                 <a-select v-model:value="formData.accommodation" size="large" class="field-select">
+                  <template v-if="oneClickEnabled">
+                    <a-select-option v-for="tier in ['economy', 'business', 'premium']" :key="tier" :value="tier">{{ t('oneClick.' + tier) }}</a-select-option>
+                  </template>
+                  <template v-else>
                   <a-select-option value="经济型酒店">{{ t('home.accommodation.budget') }}</a-select-option>
                   <a-select-option value="舒适型酒店">{{ t('home.accommodation.comfort') }}</a-select-option>
                   <a-select-option value="豪华酒店">{{ t('home.accommodation.luxury') }}</a-select-option>
                   <a-select-option value="民宿">{{ t('home.accommodation.homestay') }}</a-select-option>
+                  </template>
                 </a-select>
               </a-form-item>
             </div>
@@ -143,9 +160,9 @@
               </a-form-item>
               <a-form-item name="travelers">
                 <template #label><span class="field-label">{{ t('home.travelersLabel') }}</span></template>
-                <a-input-number v-model:value="formData.travelers" :min="1" :max="20" size="large" class="field-input" style="width: 100%" />
+                <a-input-number v-model:value="formData.travelers" :min="1" :max="oneClickEnabled ? 2 : 20" size="large" class="field-input" style="width: 100%" />
               </a-form-item>
-              <a-form-item name="pace">
+              <a-form-item v-if="!oneClickEnabled" name="pace">
                 <template #label><span class="field-label">{{ t('home.paceLabel') }}</span></template>
                 <a-select v-model:value="formData.pace" size="large" class="field-select">
                   <a-select-option value="relaxed">{{ t('home.paces.relaxed') }}</a-select-option>
@@ -153,12 +170,17 @@
                   <a-select-option value="intensive">{{ t('home.paces.intensive') }}</a-select-option>
                 </a-select>
               </a-form-item>
-              <a-form-item name="max_daily_walking_minutes">
+              <a-form-item v-if="!oneClickEnabled" name="max_daily_walking_minutes">
                 <template #label><span class="field-label">{{ t('home.walkingLimitLabel') }}</span></template>
                 <a-input-number v-model:value="formData.max_daily_walking_minutes" :min="0" :max="1440" :step="15" size="large" class="field-input" style="width: 100%" />
               </a-form-item>
             </div>
 
+            <p v-if="oneClickEnabled">{{ t('oneClick.budgetHint') }} {{ t('oneClick.returnDate') }}: {{ computedEndDate?.format('YYYY-MM-DD') }}</p>
+            <p v-if="oneClickEnabled">{{ t('oneClick.optional') }}</p>
+            <a-select v-if="pausedTask" v-model:value="restoredMustVisit" mode="tags" :aria-label="t('result.review.addAttractions')" style="width: 100%" />
+            <label v-if="oneClickEnabled && formData.transportation === 'flight'"><input v-model="flightConfirmed" type="checkbox" /> {{ t('oneClick.flightConsent') }}</label>
+            <details :open="!oneClickEnabled"><summary>{{ t('oneClick.more') }}</summary>
             <div class="grid grid2 daily-time-grid">
               <a-form-item name="daily_start_time">
                 <template #label><span class="field-label">{{ t('home.dailyStartLabel') }}</span></template>
@@ -170,6 +192,7 @@
               </a-form-item>
             </div>
 
+            </details>
             <a-form-item name="preferences">
               <template #label>
                 <span class="field-label">{{ t('home.interestsLabel') }}</span>
@@ -294,7 +317,7 @@
 
           <a-form-item>
             <button type="submit" class="btn btn-danger btn-round submit-btn" :class="{ loading }" :disabled="loading">
-              <span v-if="!loading">{{ t('home.submit') }}</span>
+              <span v-if="!loading">{{ t(pausedTask ? 'oneClick.continue' : 'home.submit') }}</span>
               <span v-else class="loading-row">
                 <i class="spinner"></i>
                 {{ t('home.submitting') }}
@@ -384,12 +407,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, reactive, ref, toRaw } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { message } from 'ant-design-vue'
 import {
   generateTripPlan,
+  getTravelCapabilities, getTripTask, continueTripPlan, readPlanningInput, readTravelQueries, resumeTripPlan,
   getAttractionCandidates,
   resolveAttractionImage,
   retryTripPlan,
@@ -425,6 +449,54 @@ type FailedTask = {
 
 const router = useRouter()
 const { t } = useI18n()
+const oneClickEnabled = ref(false)
+const flightConfirmed = ref(false)
+const refreshQuote = ref(false)
+const pausedTask = ref<{ taskId: string; message: string; provider?: string } | null>(null)
+const retainedQueries = ref<any[]>([])
+function queryPreview(query: any): string[] {
+  const result = query.result
+  if (!result || query.status !== 'succeeded') return []
+  if (query.provider === 'train' && Array.isArray(result)) return result.slice(0, 3).map(row => `${row.start_train_code} ${row.from_station} → ${row.to_station} ${row.start_time}–${row.arrive_time}`)
+  if (query.provider === 'flight') return (result.data || []).slice(0, 3).map((row: any) => `${row.flightno} ${row.depaptcname} → ${row.arraptcname}`)
+  if (query.provider === 'hotel') return (result.hotelInformationList || result.roomRatePlans || []).slice(0, 3).map((row: any) => row.name || row.roomName)
+  return []
+}
+const restoredMustVisit = ref<string[]>([])
+const restoredConstraints = ref<{ avoid?: string[]; accessibility_needs?: string[] }>({})
+onMounted(async () => {
+  try {
+    oneClickEnabled.value = !!(await getTravelCapabilities()).one_click?.enabled
+    if (oneClickEnabled.value) {
+      formData.cities = formData.cities.slice(0, 1)
+      formData.cities[0].days = Math.max(2, formData.cities[0].days)
+      formData.transportation = 'train'
+      formData.accommodation = 'business'
+      formData.travelers = Math.min(2, formData.travelers)
+    }
+    const taskId = sessionStorage.getItem('tripTaskId')
+    if (!taskId) return
+    const task = await getTripTask(taskId)
+    if (task.status === 'awaiting_input') {
+      pausedTask.value = { taskId, message: task.pending_input?.message || task.message, provider: task.pending_input?.provider }
+      retainedQueries.value = await readTravelQueries(taskId)
+      const request = await readPlanningInput(task.trip_id)
+      restoredMustVisit.value = request.must_visit || []
+      restoredConstraints.value = { avoid: request.avoid || [], accessibility_needs: request.accessibility_needs || [] }
+      Object.assign(formData, { origin: request.origin, cities: request.destinations,
+        start_date: dayjs(request.start_date), transportation: request.intercity_mode,
+        accommodation: request.hotel_tier, budget_total: Number(request.budget_total), travelers: request.travelers,
+        preferences: request.interests, free_text_input: request.free_text_input,
+        daily_start_time: dayjs(request.start_date + 'T' + request.daily_start_time),
+        daily_end_time: dayjs(request.start_date + 'T' + request.daily_end_time) })
+    } else if (['queued', 'processing', 'retrying'].includes(task.status)) {
+      startTaskUi()
+      try { applyGeneratedPlan(await resumeTripPlan(taskId, taskCallbacks())) }
+      catch (error) { captureTaskFailure(error) }
+      finally { finishTaskUi() }
+    }
+  } catch { /* The classic form remains available if the capability service is unavailable. */ }
+})
 
 const loading = ref(false)
 const loadingProgress = ref(0)
@@ -445,6 +517,7 @@ const candidateVisible = reactive<Record<string, number>>({})
 const discoverySignature = ref('')
 
 const getStageStatusText = (stage: TripTaskEvent['stage']) => {
+  if (stage && ['query_transport', 'query_hotel', 'plan_places', 'check_trip'].includes(stage)) return t(`oneClick.${stage}`)
   if (stage === 'submitted' || stage === 'initializing') return t('home.loading.initializing')
   if (stage === 'attraction_search') return t('home.loading.searchingAttractions')
   if (stage === 'weather_search') return t('home.loading.queryingWeather')
@@ -495,6 +568,7 @@ const formData = reactive<LandingFormData>({
 })
 
 const totalDays = computed(() => formData.cities.reduce((sum, cs) => sum + (cs.days || 1), 0))
+watch(() => [formData.origin, formData.cities[0]?.city, formData.start_date?.format(), totalDays.value, formData.travelers, formData.transportation, refreshQuote.value], () => { flightConfirmed.value = false })
 
 const computedEndDate = computed(() => {
   if (!formData.start_date) return null
@@ -673,6 +747,10 @@ const taskCallbacks = () => ({
     loadingStatus.value = t('home.loading.initializing')
   },
   onTaskEvent: (event: TripTaskEvent) => {
+    if (event.status === 'awaiting_input') {
+      pausedTask.value = { taskId: event.task_id, message: event.pending_input?.message || event.message, provider: event.pending_input?.provider }
+      readTravelQueries(event.task_id).then(value => { retainedQueries.value = value }).catch(() => {})
+    }
     if (event.plan_id) planCode.value = event.plan_id
     if (Number.isFinite(event.progress)) {
       loadingProgress.value = Math.max(0, Math.min(100, event.progress))
@@ -719,6 +797,10 @@ const applyGeneratedPlan = (response: TripPlanResponse) => {
 }
 
 const captureTaskFailure = (error: unknown) => {
+  if (error instanceof TripTaskFailure && error.code === 'awaiting_input') {
+    message.info(error.message)
+    return
+  }
   if (error instanceof TripTaskFailure) {
     failedTask.value = {
       taskId: error.taskId,
@@ -741,6 +823,11 @@ const finishTaskUi = () => {
 }
 
 const handleSubmit = async () => {
+  if (loading.value) return
+  if (oneClickEnabled.value && formData.transportation === 'flight' && !flightConfirmed.value) {
+    message.warning(t('oneClick.flightConsent'))
+    return
+  }
   if (!formData.origin.trim()) {
     message.error(t('home.originRequired'))
     return
@@ -764,7 +851,7 @@ const handleSubmit = async () => {
     return
   }
 
-  if (discoverySignature.value !== currentDiscoverySignature.value) {
+  if (!oneClickEnabled.value && discoverySignature.value !== currentDiscoverySignature.value) {
     await discoverAttractions()
     message.info(t('home.discovery.reviewBeforePlan'))
     return
@@ -777,14 +864,16 @@ const handleSubmit = async () => {
     sessionStorage.removeItem('tripPlan')
     sessionStorage.removeItem('graphData')
     sessionStorage.removeItem('planId')
-    sessionStorage.removeItem('tripTaskId')
-    sessionStorage.removeItem('tripId')
     sessionStorage.removeItem('tripReview')
 
     const citiesPayload: CityStay[] = validCities.map(cs => ({ city: cs.city.trim(), days: cs.days || 1 }))
     const endDate = computedEndDate.value!
 
     const requestData: TripFormData = {
+      planning_mode: oneClickEnabled.value ? 'one_click' : 'classic',
+      intercity_mode: formData.transportation === 'flight' ? 'flight' : 'train',
+      hotel_tier: ['economy', 'premium'].includes(formData.accommodation) ? formData.accommodation as 'economy' | 'premium' : 'business',
+      flight_confirmed: flightConfirmed.value,
       origin: formData.origin.trim(),
       city: citiesPayload[0].city,
       cities: citiesPayload,
@@ -794,25 +883,32 @@ const handleSubmit = async () => {
       transportation: formData.transportation,
       accommodation: formData.accommodation,
       preferences: formData.preferences,
-      must_visit: mustVisitNames.value,
+      must_visit: [...new Set([...mustVisitNames.value, ...restoredMustVisit.value])],
+      avoid: restoredConstraints.value.avoid,
+      accessibility_needs: restoredConstraints.value.accessibility_needs,
       free_text_input: formData.free_text_input,
       language: getCurrentLocale(),
       budget_total: formData.budget_total,
       currency: 'CNY',
       travelers: formData.travelers,
-      pace: formData.pace,
+      pace: oneClickEnabled.value ? 'balanced' : formData.pace,
       daily_start_time: formData.daily_start_time.format('HH:mm:ss'),
       daily_end_time: formData.daily_end_time.format('HH:mm:ss'),
-      max_daily_walking_minutes: formData.max_daily_walking_minutes,
+      max_daily_walking_minutes: oneClickEnabled.value ? undefined : formData.max_daily_walking_minutes,
     }
 
-    applyGeneratedPlan(await generateTripPlan(requestData, taskCallbacks()))
+    const paused = pausedTask.value
+    applyGeneratedPlan(await (paused
+      ? continueTripPlan(requestData, paused.taskId, refreshQuote.value ? paused.provider : undefined, taskCallbacks())
+      : generateTripPlan(requestData, taskCallbacks())))
+    pausedTask.value = null
   } catch (error: unknown) {
     sessionStorage.removeItem('tripPlan')
     sessionStorage.removeItem('graphData')
     sessionStorage.removeItem('planId')
     captureTaskFailure(error)
   } finally {
+    flightConfirmed.value = false
     finishTaskUi()
   }
 }

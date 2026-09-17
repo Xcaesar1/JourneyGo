@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
+from uuid import uuid4
 
 from fastapi import (
     APIRouter,
@@ -17,10 +18,13 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
+from pydantic import BaseModel
 from redis.asyncio import Redis as AsyncRedis
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ...db.models import TripTask
+from ...config import get_settings
+from ...db.models import TravelQuery, TripTask
 from ...db.repository import (
     IdempotencyConflictError,
     attach_celery_task,
@@ -28,6 +32,7 @@ from ...db.repository import (
     create_replan_review_request,
     create_trip_feedback,
     get_active_trip_version,
+    get_current_review,
     get_task,
     get_task_for_trip,
     get_trip,
@@ -63,8 +68,9 @@ from ...domain.review_models import (
 from ...domain.task_models import TRIP_TASK_RECORD_V2_EXAMPLE, TripTaskRecordV2
 from ...domain.trip_models import TRIP_REQUEST_V2_EXAMPLE, TripPlanV2, TripRequestV2
 from ...domain.trip_resource_models import TripResourceV2
-from ...services.guardrails import enforce_spend_guardrails
+from ...services.guardrails import enforce_spend_guardrails, enforce_travel_guardrails
 from ...services.observability import sanitize_metadata
+from ...services.one_click_travel import preflight
 from ...services.replanning import diff_plans
 from ...services.task_events import (
     TASK_STREAM_STOP_STATUSES,
@@ -127,6 +133,12 @@ def create_trip(
 ) -> TripTaskRecordV2:
     """Persist before dispatch so an API restart cannot lose accepted work."""
     payload = request.model_dump(mode="json")
+    try:
+        preflight(request, get_settings())
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if request.planning_mode == "one_click" and request.intercity_mode == "flight":
+        enforce_travel_guardrails(http_request, get_settings(), paid=True)
     enforce_spend_guardrails(http_request, session, payload)
     try:
         task, created = create_or_get_task(
@@ -151,6 +163,73 @@ def create_trip(
 def read_task(task_id: str, session: DbSession) -> TripTaskRecordV2:
     """Read current state from PostgreSQL, never from process memory."""
     return _response(_required_task(session, task_id))
+
+
+class ContinueTripInput(BaseModel):
+    request: TripRequestV2
+    refresh: Literal["train", "flight", "hotel", "amap"] | None = None
+
+
+@router.post("/tasks/{task_id}/continue", response_model=TripTaskRecordV2, status_code=202)
+def continue_trip(task_id: str, body: ContinueTripInput, session: DbSession, http_request: Request):
+    task = get_task(session, task_id, for_update=True)
+    if task is None:
+        raise HTTPException(404, "Task not found.")
+    if task.status != "awaiting_input":
+        raise HTTPException(409, "Only input-paused tasks can be continued.")
+    old = TripRequestV2.model_validate(task.trip.request_payload)
+    request = body.request
+    if old.planning_mode != "one_click" or request.planning_mode != "one_click":
+        raise HTTPException(422, "One-click request required.")
+    request.quote_revision = dict(old.quote_revision)
+    if body.refresh:
+        request.quote_revision[body.refresh] = request.quote_revision.get(body.refresh, 0) + 1
+    try:
+        preflight(request, get_settings())
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if request.intercity_mode == "flight":
+        enforce_travel_guardrails(http_request, get_settings(), paid=True)
+    enforce_spend_guardrails(http_request, session, request.model_dump(mode="json"))
+    task.trip.request_payload = request.model_dump(mode="json")
+    review = get_current_review(session, task)
+    if review is not None and review.workflow_type == "replan":
+        task.trip.request_payload = old.model_dump(mode="json")
+        review.change_request = {
+            **(review.change_request or {}),
+            "travel_request": request.model_dump(mode="json"),
+            "refresh_travel": body.refresh,
+            "confirm_flight_queries": request.flight_confirmed,
+            "refresh_token": uuid4().hex
+            if body.refresh
+            else (review.change_request or {}).get("refresh_token"),
+        }
+    task.pending_input = None
+    task.status, task.stage = "queued", "queued"
+    task.attempt_count = 0
+    task.celery_task_id = None
+    task.error_code = task.error_message = None
+    session.commit()
+    task = _dispatch_or_fail(session, task)
+    publish_task_event(task)
+    return _response(task)
+
+
+@router.get("/tasks/{task_id}/travel-queries")
+def read_travel_queries(task_id: str, session: DbSession):
+    task = _required_task(session, task_id)
+    return [
+        {
+            "provider": q.provider,
+            "scope": q.scope,
+            "status": q.status,
+            "created_at": q.created_at,
+            "fetched_at": q.finished_at,
+            "arguments": q.arguments,
+            "result": q.result,
+        }
+        for q in session.scalars(select(TravelQuery).where(TravelQuery.trip_id == task.trip_id))
+    ]
 
 
 @router.get(
@@ -199,9 +278,13 @@ def read_trip(trip_id: str, session: DbSession) -> TripResourceV2:
     task = get_task_for_trip(session, trip_id)
     if trip is None or task is None:
         raise HTTPException(status_code=404, detail="Trip not found.")
+    request_payload = trip.request_payload
+    review = get_current_review(session, task)
+    if task.status == "awaiting_input" and review is not None:
+        request_payload = (review.change_request or {}).get("travel_request") or request_payload
     return TripResourceV2(
         trip_id=trip.id,
-        request=trip.request_payload,
+        request=request_payload,
         task=_response(task),
         active_version=trip.active_version,
         created_at=trip.created_at,
@@ -258,7 +341,10 @@ def submit_trip_feedback(
     session: DbSession,
 ) -> TripFeedbackRecordV2:
     task = _required_trip_task(session, trip_id)
-    if feedback.version is not None and get_trip_version(session, trip_id, feedback.version) is None:
+    if (
+        feedback.version is not None
+        and get_trip_version(session, trip_id, feedback.version) is None
+    ):
         raise HTTPException(status_code=404, detail="Trip version not found.")
     record = create_trip_feedback(
         session,
@@ -324,6 +410,19 @@ def review_task(
 ) -> TripTaskRecordV2:
     """Persist the human decision before dispatching graph continuation."""
     task = _required_task(session, task_id)
+    original = TripRequestV2.model_validate(task.trip.request_payload)
+    if original.planning_mode == "one_click" and decision.changes is not None:
+        from ...services.one_click_travel import replan_request
+
+        try:
+            candidate = replan_request(original, decision.changes, 1)
+            preflight(candidate, get_settings())
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        if candidate.intercity_mode == "flight":
+            enforce_travel_guardrails(http_request, get_settings(), paid=True)
+        if decision.changes.refresh_travel:
+            decision.changes.refresh_token = uuid4().hex
     enforce_spend_guardrails(
         http_request,
         session,
@@ -393,7 +492,9 @@ def read_trip_version(
     if record is None:
         raise HTTPException(status_code=404, detail="Trip version not found.")
     active = get_active_trip_version(session, trip_id)
-    return _version_response(record, active_version=(active.version if active else None), detail=True)
+    return _version_response(
+        record, active_version=(active.version if active else None), detail=True
+    )
 
 
 @router.get(
@@ -459,7 +560,9 @@ async def task_events(websocket: WebSocket, task_id: str) -> None:
         with SessionLocal() as session:
             task = get_task(session, task_id)
             if task is None:
-                await websocket.send_json({"error": {"code": "not_found", "message": "Task not found."}})
+                await websocket.send_json(
+                    {"error": {"code": "not_found", "message": "Task not found."}}
+                )
                 await websocket.close(code=4404)
                 return
             initial = task_snapshot(task)

@@ -41,6 +41,7 @@ def test_trip_plan_v2_adapter_matches_current_frontend_contract() -> None:
         "research_status",
         "validation_report",
         "revision_count",
+        "travel_summary",
     }
     assert payload["origin"] == "Shanghai"
     assert "schema_version" not in payload

@@ -104,7 +104,9 @@ def _verified_attractions(state: TripState, plan: TripPlanV2) -> TripPlanV2:
                 candidate.poi_id for candidate in city_candidates if candidate.is_must_visit
             )
             visited_cities.add(canonical_city)
-        required_ids = {candidate.poi_id for candidate in city_candidates if candidate.is_must_visit}
+        required_ids = {
+            candidate.poi_id for candidate in city_candidates if candidate.is_must_visit
+        }
 
         def is_required(attraction: AttractionV2) -> bool:
             attraction_key = _place_key(attraction.name)
@@ -159,6 +161,8 @@ def build_placeholder_plan(state: TripState) -> TripPlanV2:
 
 def make_draft_node(generator: DraftGenerator) -> Callable[[TripState], dict[str, Any]]:
     def draft(state: TripState) -> dict[str, Any]:
+        if state["request"].planning_mode == "one_click":
+            return {"draft_plan": TripPlanV2.model_validate(state["one_click_plan"])}
         plan = _verified_attractions(state, TripPlanV2.model_validate(generator(state)))
         generation_metrics = getattr(generator, "last_metrics", {})
         request = state["request"]

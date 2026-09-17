@@ -53,3 +53,15 @@ def retry_task(task_id: str, session: DbSession, request: Request) -> TripTaskRe
 @router.websocket("/{task_id}/ws")
 async def task_events(websocket: WebSocket, task_id: str) -> None:
     await trips.task_events(websocket, task_id)
+
+
+@router.post("/{task_id}/continue", response_model=TripTaskRecordV2, status_code=202)
+def continue_task(
+    task_id: str, body: trips.ContinueTripInput, session: DbSession, request: Request
+):
+    return trips.continue_trip(task_id, body, session, request)
+
+
+@router.get("/{task_id}/travel-queries")
+def travel_queries(task_id: str, session: DbSession):
+    return trips.read_travel_queries(task_id, session)

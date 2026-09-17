@@ -44,7 +44,7 @@
               <a-button v-if="!editMode" type="primary" @click="scrollToSection({ key: 'days' })">
                 {{ t('navigation.title') }}
               </a-button>
-              <a-button v-if="!editMode && !taskId" @click="toggleEditMode" type="default">
+              <a-button v-if="!editMode && !taskId && !tripPlan.travel_summary" @click="toggleEditMode" type="default">
                 {{ t('result.editTrip') }}
               </a-button>
               <a-button
@@ -123,7 +123,7 @@
                 :placeholder="t('result.review.instructionPlaceholder')"
               />
             </label>
-            <label class="review-field">
+            <label v-if="!tripPlan.travel_summary" class="review-field">
               <span>{{ t('result.review.days') }}</span>
               <a-select
                 v-model:value="replanForm.day_indices"
@@ -132,7 +132,7 @@
                 :placeholder="t('result.review.allDays')"
               />
             </label>
-            <label class="review-field">
+            <label v-if="!tripPlan.travel_summary" class="review-field">
               <span>{{ t('result.review.pace') }}</span>
               <a-select
                 v-model:value="replanForm.pace"
@@ -141,7 +141,7 @@
                 :placeholder="t('result.review.keepCurrent')"
               />
             </label>
-            <label class="review-field">
+            <label v-if="!tripPlan.travel_summary" class="review-field">
               <span>{{ t('result.review.transport') }}</span>
               <a-select
                 v-model:value="replanForm.transport_preferences"
@@ -230,7 +230,8 @@
             </span>
           </div>
 
-          <TravelSearch :plan="tripPlan" />
+          <TravelSummary v-if="tripPlan.travel_summary" :summary="tripPlan.travel_summary" :city="tripPlan.city" :busy="reviewSubmitting" @change="refreshTravelProposal" />
+          <TravelSearch v-else :plan="tripPlan" />
 
           <div
             v-if="recommendedTransportOptions.length > 0 || tripPlan.validation_report"
@@ -371,6 +372,7 @@
                     <span class="budget-action-wrap">
                       <button
                         type="button"
+                        v-if="!tripPlan.travel_summary"
                         class="budget-icon-btn budget-edit-btn"
                         :title="t('result.budget.editPrice')"
                         @click="editBudgetItemAmount(item)"
@@ -381,6 +383,7 @@
                       </button>
                       <button
                         type="button"
+                        v-if="!tripPlan.travel_summary"
                         class="budget-icon-btn budget-delete-btn"
                         :title="t('common.delete')"
                         @click="deleteBudgetItem(item)"
@@ -881,6 +884,7 @@ import AIChat from '@/components/AIChat.vue'
 import PlaceNavigation from '@/components/PlaceNavigation.vue'
 import TripNavigator from '@/components/TripNavigator.vue'
 import TravelSearch from '@/components/TravelSearch.vue'
+import TravelSummary from '@/components/TravelSummary.vue'
 import { toRoutePoint } from '@/services/mapCoordinates'
 import type {
   Attraction,
@@ -1380,6 +1384,11 @@ const cancelReviewEditor = () => {
 const waitForReviewResult = async () => {
   const task = await waitForTripTask(taskId.value)
   await applyTaskRecord(task)
+  if (task.status === 'awaiting_input') {
+    message.info(task.pending_input?.message || task.message)
+    await router.push('/')
+    return
+  }
   if (task.review?.status === 'rejected') {
     message.warning(t('result.review.rejected'))
   } else if (task.status === 'awaiting_approval') {
@@ -1406,6 +1415,16 @@ const approveCurrentReview = async () => {
   } finally {
     reviewSubmitting.value = false
   }
+}
+
+const refreshTravelProposal = async (changes: Record<string, any>) => {
+  if (!taskId.value || reviewSubmitting.value) return
+  reviewSubmitting.value = true
+  try {
+    await submitTripReview(taskId.value, { action: 'modify', changes: changes as ReplanRequest, reason: changes.instruction })
+    await waitForReviewResult()
+  } catch (error: any) { message.error(error.message || t('result.review.actionFailed')) }
+  finally { reviewSubmitting.value = false }
 }
 
 const submitModification = async () => {
@@ -1962,7 +1981,7 @@ const getBudgetTypeLabel = (type: BudgetItemType): string => {
 const cloneData = <T>(data: T): T => JSON.parse(JSON.stringify(data)) as T
 
 const recalculateBudgetTotals = (transportationOverride?: number) => {
-  if (!tripPlan.value) return
+  if (!tripPlan.value || tripPlan.value.travel_summary) return
 
   let attractionTotal = 0
   let hotelTotal = 0
@@ -1997,6 +2016,13 @@ const recalculateBudgetTotals = (transportationOverride?: number) => {
 
 const budgetItems = computed<BudgetDetailItem[]>(() => {
   if (!tripPlan.value) return []
+  if (tripPlan.value.travel_summary) {
+    const types: Record<string, BudgetItemType> = { hotel: 'hotel', meals: 'meal', tickets: 'attraction' }
+    return tripPlan.value.travel_summary.cost_items
+      .filter((item: any) => item.amount_cents !== null)
+      .map((item: any) => ({ id: item.category, type: types[item.category] || 'transport',
+        dayIndex: null, dayNumber: null, name: t(`travelCosts.${item.category}`), amount: item.amount_cents / 100 }))
+  }
 
   const items: BudgetDetailItem[] = []
 
@@ -3230,6 +3256,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   margin-bottom: 16px;
   color: #f5cb87;
 }
+
 
 /* ===== Landing 同款视觉基底 - 结果页 ===== */
 

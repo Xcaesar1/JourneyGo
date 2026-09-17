@@ -1,4 +1,7 @@
 {
+  "travelUnits": {"perPerson":"人","stay":"{rooms} 间房 · {nights} 晚 · {adults} 位成人"},
+  "travelCosts": {"outbound":"去程交通","return":"返程交通","hotel":"整段住宿","meals":"餐饮估算","local_transport":"市内交通估算","tickets":"门票待核实"},
+  "oneClick": {"train":"火车高铁","flight":"飞机","economy":"经济实用","business":"商务舒适","premium":"高品质","more":"更多偏好","budgetHint":"预算为全体成人合计；天数包含往返，默认一间房。","flightConsent":"同意本次往返航班最多各查询一次，可能消耗余额；不会自动购票。","paused":"需要调整后继续","retained":"已保留查询记录","refresh":"更新该项报价","continue":"按表单继续规划","query_transport":"查往返交通","query_hotel":"查酒店房型","plan_places":"安排景点美食","check_trip":"校验时间和预算","total":"预计总额","unknown":"未计入：门票、酒店税费及未提供的机票税费","notBooked":"确认行程不代表预订成功","outbound":"去程","inbound":"返程","hotel":"连续入住酒店","optional":"景点选择为选填，可直接生成。","returnDate":"返程日期","quoted":"已知报价","estimated":"参考估算","replace":"更换方案 / 更新报价"},
   "memories": {
     "title": "回忆",
     "description": "按更新时间排序，最多显示最近 50 条行程",

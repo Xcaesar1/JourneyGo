@@ -46,9 +46,7 @@ DbSession = Annotated[Session, Depends(get_db_session)]
 @router.post(
     "/plan",
     summary="提交旅行规划任务",
-    description=(
-        "保留原响应契约，任务先写 PostgreSQL，再由 Celery Worker 调用已配置的 Planner。"
-    ),
+    description=("保留原响应契约，任务先写 PostgreSQL，再由 Celery Worker 调用已配置的 Planner。"),
 )
 def plan_trip(
     request: TripRequest,
@@ -175,6 +173,16 @@ def get_task_status(task_id: str, session: DbSession) -> dict[str, Any]:
             "status": "completed",
             "result": task.result_payload,
         }
+    if task.status == "awaiting_input":
+        return {
+            "task_id": task.id,
+            "plan_id": task.id,
+            "status": "awaiting_input",
+            "stage": task.stage,
+            "progress": task.progress,
+            "pending_input": task.pending_input,
+            "message": task.message,
+        }
     if task.status == "awaiting_approval":
         return {
             "task_id": task.id,
@@ -237,8 +245,8 @@ def _dispatch_or_fail(session: Session, task: TripTask) -> TripTask:
 def _legacy_event(task: TripTask) -> dict[str, Any]:
     if task.status == "completed":
         status = "completed"
-    elif task.status == "awaiting_approval":
-        status = "awaiting_approval"
+    elif task.status in {"awaiting_approval", "awaiting_input"}:
+        status = task.status
     elif task.status in {"failed", "cancelled", "rejected"}:
         status = "failed"
     else:
@@ -258,6 +266,8 @@ def _legacy_event(task: TripTask) -> dict[str, Any]:
         event["result"] = task.result_payload
     if task.review_payload is not None:
         event["review"] = task.review_payload
+    if task.pending_input is not None:
+        event["pending_input"] = task.pending_input
     return event
 
 

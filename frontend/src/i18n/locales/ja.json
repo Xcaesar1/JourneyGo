@@ -1,4 +1,7 @@
 {
+  "travelUnits": {"perPerson":"人","stay":"{rooms} 室 · {nights} 泊 · 大人 {adults} 名"},
+  "travelCosts": {"outbound":"往路交通","return":"復路交通","hotel":"全泊宿泊費","meals":"食事概算","local_transport":"市内交通概算","tickets":"入場料未確認"},
+  "oneClick": {"train":"高速鉄道","flight":"飛行機","economy":"エコノミー","business":"ビジネス・快適","premium":"高品質","more":"詳細設定","budgetHint":"予算は全成人の合計。日数は往復を含み、客室は1室です。","flightConsent":"今回の往復航空便は各1回まで検索します。料金が発生する場合があります。予約はしません。","paused":"変更して続行","retained":"保存済み検索記録","refresh":"この料金を更新","continue":"入力内容で続行","query_transport":"往復交通を確認","query_hotel":"ホテルの客室を確認","plan_places":"観光と食事を計画","check_trip":"時間と予算を検証","total":"予想合計","unknown":"未計上：入場料、ホテル税、未提供の航空税","notBooked":"旅程の承認は予約完了を意味しません","outbound":"往路","inbound":"復路","hotel":"連泊ホテル","optional":"観光地の選択は任意です。そのまま生成できます。","returnDate":"帰着日","quoted":"確認済み料金","estimated":"参考見積もり","replace":"変更 / 料金更新"},
   "memories": {
     "title": "思い出",
     "description": "更新日時順に、最近の旅程を最大50件表示",

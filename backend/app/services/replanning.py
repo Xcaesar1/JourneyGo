@@ -22,9 +22,7 @@ def analyze_impact(
     all_days = [day.day_index for day in plan.days]
     selected_days = set(request.day_indices or all_days)
     if request.transport_preferences is not None:
-        selected_days.update(
-            day.day_index for day in plan.days if day.is_transfer_day
-        )
+        selected_days.update(day.day_index for day in plan.days if day.is_transfer_day)
     fields: list[str] = []
     refresh_routing = request.transport_preferences is not None
     attraction_change = bool(request.add_attractions or request.remove_attractions)
@@ -158,8 +156,11 @@ def diff_plans(
     changed_days: list[int] = []
     unchanged_days: list[int] = []
 
-    _append_replace(entries, "/transport_options", before.transport_options, after.transport_options)
+    _append_replace(
+        entries, "/transport_options", before.transport_options, after.transport_options
+    )
     _append_replace(entries, "/budget", before.budget, after.budget)
+    _append_replace(entries, "/travel_summary", before.travel_summary, after.travel_summary)
     _append_replace(
         entries,
         "/overall_suggestions",
@@ -175,9 +176,7 @@ def diff_plans(
         new = after_days.get(day_index)
         if old is None:
             changed_days.append(day_index)
-            entries.append(
-                PlanDiffEntryV2(path=f"/days/{day_index}", operation="add", after=new)
-            )
+            entries.append(PlanDiffEntryV2(path=f"/days/{day_index}", operation="add", after=new))
             continue
         if new is None:
             changed_days.append(day_index)

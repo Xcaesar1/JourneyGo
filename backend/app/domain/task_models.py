@@ -33,6 +33,7 @@ TaskStatusV2 = Literal[
     "processing",
     "retrying",
     "awaiting_approval",
+    "awaiting_input",
     "cancel_requested",
     "cancelled",
     "completed",
@@ -55,7 +56,9 @@ class TripTaskRecordV2(BaseModel):
 
     task_id: str = Field(..., description="Durable task identifier.")
     trip_id: str = Field(..., description="Durable trip identifier.")
-    trace_id: str = Field(..., description="Correlation identifier spanning API, worker, nodes, and tools.")
+    trace_id: str = Field(
+        ..., description="Correlation identifier spanning API, worker, nodes, and tools."
+    )
     status: TaskStatusV2
     stage: str
     progress: int = Field(..., ge=0, le=100)
@@ -67,5 +70,6 @@ class TripTaskRecordV2(BaseModel):
     finished_at: datetime | None = None
     message: str
     result: dict[str, Any] | None = None
+    pending_input: dict[str, Any] | None = None
     review: TripReviewRecordV2 | None = None
     error: TaskErrorV2 | None = None

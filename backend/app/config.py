@@ -83,6 +83,7 @@ class Settings(BaseSettings):
     weather_enabled: bool = False
     weather_mcp_python: str = "/opt/weather/bin/python"
     travel_train_enabled: bool = False
+    one_click_travel_enabled: bool = False
     travel_hotel_enabled: bool = False
     travel_flight_enabled: bool = False
     travel_mcp_python: str = "/opt/weather/bin/python"

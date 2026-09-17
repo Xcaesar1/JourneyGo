@@ -56,11 +56,19 @@ def build_journey_graph(
     require_human_review: bool = False,
     node_observer: NodeObserver | None = None,
     weather_settings=None,
+    one_click_planner=None,
 ):
     configured_research_provider = research_provider or NoopWebResearchProvider()
     configured_attraction_provider = attraction_provider or NoopAttractionDiscoveryProvider()
     configured_route_provider = route_provider or NoopRouteEstimateProvider()
     builder = StateGraph(TripState)
+
+    def verified_travel(state):
+        if one_click_planner is None:
+            raise ValueError("One-click provider is not configured.")
+        return {"one_click_plan": one_click_planner(state)}
+
+    builder.add_node("verified_travel", verified_travel)
     builder.add_node(
         "normalize_request",
         _observed_node("normalize_request", normalize_request, node_observer),
@@ -113,7 +121,15 @@ def build_journey_graph(
     builder.add_node("reject_plan", _observed_node("reject_plan", reject_plan, node_observer))
     builder.add_node("persist", _observed_node("persist", persist, node_observer))
     builder.add_edge(START, "normalize_request")
-    builder.add_edge("normalize_request", "prepare_research_queries")
+    builder.add_conditional_edges(
+        "normalize_request",
+        lambda state: (
+            "verified_travel"
+            if state["request"].planning_mode == "one_click"
+            else "prepare_research_queries"
+        ),
+    )
+    builder.add_edge("verified_travel", "draft")
     builder.add_edge("prepare_research_queries", "research_web")
     builder.add_edge("research_web", "collect")
     builder.add_edge("collect", "plan_intercity_transport")

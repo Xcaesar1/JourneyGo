@@ -67,7 +67,9 @@ def create_or_get_task(
         session.commit()
     except IntegrityError:
         session.rollback()
-        concurrent_trip = session.scalar(select(Trip).where(Trip.idempotency_key == idempotency_key))
+        concurrent_trip = session.scalar(
+            select(Trip).where(Trip.idempotency_key == idempotency_key)
+        )
         if concurrent_trip is None:
             raise
         _ensure_same_idempotent_request(concurrent_trip, request_payload)
@@ -192,7 +194,7 @@ def request_cancellation(session: Session, task_id: str) -> TripTask:
     task = _required_task(session, task_id, for_update=True)
     if task.status not in FINAL_TASK_STATUSES:
         task.cancel_requested = True
-        if task.status in {"queued", "retrying"}:
+        if task.status in {"queued", "retrying", "awaiting_input"}:
             task.status = "cancelled"
             task.stage = "cancelled"
             task.message = "Task cancelled before execution."
@@ -262,6 +264,9 @@ def save_trip_version(
             trip = session.get(Trip, trip_id)
             if trip is not None:
                 trip.active_version = existing.version
+                confirmed = (existing.native_payload or {}).get("travel_summary") or {}
+                if confirmed.get("planning_request"):
+                    trip.request_payload = confirmed["planning_request"]
         session.commit()
         return existing
 
@@ -293,6 +298,9 @@ def save_trip_version(
             if trip is None:
                 raise LookupError(trip_id)
             trip.active_version = version
+            confirmed = (native_payload or {}).get("travel_summary") or {}
+            if confirmed.get("planning_request"):
+                trip.request_payload = confirmed["planning_request"]
         session.commit()
     except IntegrityError:
         session.rollback()
@@ -383,9 +391,7 @@ def _save_source_links(
         source_bucket = _source_bucket(evidence)
         evidence_key = _evidence_key(evidence, source_bucket)
         source = session.scalar(
-            select(SourceEvidenceRecord).where(
-                SourceEvidenceRecord.evidence_key == evidence_key
-            )
+            select(SourceEvidenceRecord).where(SourceEvidenceRecord.evidence_key == evidence_key)
         )
         if source is None:
             source = SourceEvidenceRecord(
@@ -446,9 +452,7 @@ def list_trip_versions(session: Session, trip_id: str) -> list[TripVersion]:
     """List immutable versions in business-version order."""
     return list(
         session.scalars(
-            select(TripVersion)
-            .where(TripVersion.trip_id == trip_id)
-            .order_by(TripVersion.version)
+            select(TripVersion).where(TripVersion.trip_id == trip_id).order_by(TripVersion.version)
         )
     )
 
@@ -783,9 +787,7 @@ def rollback_trip_version(
     )
     source_ids = list(
         session.scalars(
-            select(TripSourceLink.source_id).where(
-                TripSourceLink.trip_version_id == target.id
-            )
+            select(TripSourceLink.source_id).where(TripSourceLink.trip_version_id == target.id)
         )
     )
     for source_id in source_ids:
@@ -839,10 +841,7 @@ def stale_recoverable_tasks(session: Session, stale_after_seconds: int) -> list[
                 (TripTask.status == "cancel_requested")
                 | (
                     TripTask.status.in_(["queued", "retrying"])
-                    & (
-                        TripTask.celery_task_id.is_(None)
-                        | (TripTask.updated_at < cutoff)
-                    )
+                    & (TripTask.celery_task_id.is_(None) | (TripTask.updated_at < cutoff))
                 )
                 | ((TripTask.status == "processing") & (TripTask.updated_at < cutoff))
             )

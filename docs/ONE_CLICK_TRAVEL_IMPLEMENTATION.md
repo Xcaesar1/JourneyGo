@@ -2,6 +2,59 @@
 
 ## Status (2026-09-17)
 
+### Integrated implementation, local mocked acceptance
+
+The remaining application workflow is now connected behind
+`ONE_CLICK_TRAVEL_ENABLED=false`. The earlier foundation-only status below is
+historical. No staging/production deployment or paid provider call was made.
+
+- JourneyGraph runs verified round-trip transport, bounded hotel search/detail,
+  verified POI discovery, structured model selection and deterministic scheduling.
+  The model selects only existing POI IDs; unmet hard requirements pause the task.
+- New mode supports one mainland destination, 1-2 adults, one room and 2-29 days.
+  Train dates must both be within the inclusive 15-day sale window. Flight dates
+  and city codes are validated before dispatch; supported city mappings are
+  Beijing, Shanghai, Guangzhou, Hefei and Xi'an. Never substitute airport codes
+  for city codes. Xi'an `SIA` is corroborated by the CAAC city-pair reference:
+  https://www.caac.gov.cn/PHONE/XXGK_17/XXGK/ZFGW/201601/P020160122452786310808.pdf
+  This is not a live paid-flight integration acceptance.
+- PostgreSQL migration `20260917_07` adds query intents/results/authorization and
+  task `pending_input`. Intent commits precede dispatch. Ambiguous dispatches
+  never auto-resend. Redis paid-call counters are not refunded or reset.
+- `awaiting_input` is distinct from final approval. Continue is access-protected;
+  saved requests and query snapshots support refresh/restart recovery. Explicit
+  refresh gets a new persisted intent identity; unrelated flight results remain.
+- Hotel tier reaches supplier filters and local ranking. Search is bounded to
+  10 candidates and 3 details. Reference prices are estimated once per room/stay;
+  list fallback requires eligible room evidence. No booking/locking tools exist.
+- Results preserve POI IDs, quote timestamps, source URLs and integer-cent cost
+  items through adapters/versions. Reference hotel total, daily dining allowance
+  (including travel-day meals) and local transport are estimates. Tickets and
+  unavailable taxes remain excluded/unknown. Opening hours remain unverified
+  unless separately checked; the generated visit is not an opening guarantee.
+- Homepage and result cards support four UI languages, flight consent reset,
+  simplified inputs, return date, pause recovery, navigation and quote proposals.
+  Quote changes enter existing review/version flow; confirmed requests and active
+  versions are committed together. Legacy manual queries and saved plans remain.
+
+Local checks include fixed Shanghai-Xi'an September 20-24 fixtures, four hotel
+nights, one/two adults, late arrival, early return, no seats/rooms/prices, POI
+failure, over-budget, model-invented IDs, unmet requirements, bounded hotel detail,
+round-trip flight reuse, interrupted dispatch, duplicate delivery, protected
+continue and atomic version activation. All external/model responses are mocked.
+
+PostgreSQL migration SQL generation passed. **Live PostgreSQL/Celery integration
+is not verified on this host:** Docker's Linux engine is unavailable. The existing
+four opt-in integration tests require their database/runtime environment. Keep
+the feature OFF until an approved isolated staging migration and end-to-end run.
+Real paid flight acceptance and any additional quota require separate approval.
+
+Final local verification for the integrated change: **293 backend tests passed,
+4 skipped; 31 frontend tests passed; production build, Ruff and diff whitespace
+checks passed.** Build retains the pre-existing optional asset/chunk warnings.
+`tests/one-click-ui.cjs` passed in four locales at 390/1280px; legacy
+`tests/travel-ui.cjs` passed including export. No live model/supplier call occurred.
+
 ### Latest decision: reference estimates accepted
 
 The user explicitly accepted reference prices for accommodation budgeting.
@@ -25,9 +78,8 @@ tests passed; frontend production build passed with existing asset/chunk warning
 Mocked browser regression passed at 390px and 1280px, including reference-total
 display, flight consent and export. No live supplier calls or deployment occurred.
 
-Partial implementation only. The approved complete-trip workflow is NOT enabled
-and has NOT been connected to the homepage or JourneyGraph. No database changes,
-new public API, deployment, booking or paid flight request were performed.
+Historical foundation status: the workflow was not yet connected at this point.
+The integrated implementation is described above; it remains disabled by default.
 
 The first prerequisite uncovered a supplier contract gap. Do not present the
 existing estimated planner as the approved verified-transport-and-hotel workflow.
@@ -130,7 +182,7 @@ currency, sales availability and any supplied tax/fee information. Unknown taxes
 may remain explicitly unknown; an unknown price basis cannot become a quote.
 Record the contract and add a sanitized synthetic fixture before accepting rates.
 
-## Remaining Approved Work
+## Original Implementation Checklist (Application Work Now Integrated)
 
 - Add one-click request mode, independent disabled-by-default feature flag,
   domestic round-trip validation and both-leg train-window preflight.
@@ -152,14 +204,16 @@ Record the contract and add a sanitized synthetic fixture before accepting rates
 
 ## Validation and Rollback
 
-Foundation verification on 2026-09-17: backend suite passed with 255 tests and
+Historical foundation verification on 2026-09-17: backend suite passed with 255 tests and
 4 skips; changed Python files passed Ruff and `git diff --check`. Frontend and
 mobile/desktop acceptance were not run for this backend-only foundation. The
-complete-trip acceptance matrix remains unimplemented and unverified.
+complete-trip acceptance matrix was still unimplemented at that earlier point.
 
 Run `python -m pytest backend/tests/test_hotel_detail.py backend/tests/test_travel_search.py`.
 Run `python -m pytest backend/tests` and the existing frontend tests/build before
 claiming the complete feature is ready. Supplier tests must remain mocked.
 
-This foundation has no migration or active graph/UI changes. Reverting its code
-does not affect existing versions, quotes, database contents or paid-call counters.
+Rollback the new workflow with `ONE_CLICK_TRAVEL_ENABLED=false` on API and Worker.
+Keep migration `20260917_07`, query records and paid counters. Its destructive
+downgrade is intentionally refused. Do not drop the table or stamp back the
+migration revision; re-enable only after checking retained intents and approvals.

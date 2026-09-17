@@ -55,6 +55,7 @@ def trip_plan_v2_to_legacy(plan: TripPlanV2) -> TripPlan:
         ]
         meals = [
             Meal(
+                poi_id=item.poi_id,
                 type=item.type,
                 name=item.name,
                 address=item.address,
@@ -67,6 +68,7 @@ def trip_plan_v2_to_legacy(plan: TripPlanV2) -> TripPlan:
         hotel = None
         if day.hotel is not None:
             hotel = Hotel(
+                poi_id=day.hotel.poi_id,
                 name=day.hotel.name,
                 address=day.hotel.address,
                 location=_location(day.hotel.location),
@@ -122,6 +124,7 @@ def trip_plan_v2_to_legacy(plan: TripPlanV2) -> TripPlan:
             total=plan.budget.total,
         )
     return TripPlan(
+        travel_summary=plan.travel_summary,
         origin=plan.origin,
         city=plan.city,
         cities=plan.cities,

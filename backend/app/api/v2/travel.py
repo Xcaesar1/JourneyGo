@@ -1,4 +1,4 @@
-"""On-demand quotes. Never called automatically by the planner or its retries."""
+"""Manual read-only quotes and feature capabilities; one-click uses the durable ledger."""
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -12,7 +12,15 @@ router = APIRouter(prefix="/travel", tags=["API v2"])
 
 @router.get("/capabilities")
 def travel_capabilities():
-    return capabilities(get_settings())
+    settings = get_settings()
+    return {
+        **capabilities(settings),
+        "one_click": {
+            "enabled": settings.one_click_travel_enabled
+            and settings.planner_engine == "journey_graph",
+            "paid": False,
+        },
+    }
 
 
 @router.post("/search", response_model=TravelSearchResponse)

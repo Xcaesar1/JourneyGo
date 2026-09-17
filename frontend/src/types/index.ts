@@ -34,6 +34,7 @@ export interface Attraction {
 }
 
 export interface Meal {
+  poi_id?: string
   type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   name: string
   address?: string
@@ -43,6 +44,7 @@ export interface Meal {
 }
 
 export interface Hotel {
+  poi_id?: string
   name: string
   address: string
   location?: Location
@@ -180,6 +182,7 @@ export interface SourceEvidence {
 }
 
 export interface TripPlan {
+  travel_summary?: Record<string, any> | null
   origin?: string
   city: string
   cities?: string[]
@@ -199,6 +202,10 @@ export interface TripPlan {
 }
 
 export interface TripFormData {
+  planning_mode?: 'classic' | 'one_click'
+  intercity_mode?: 'train' | 'flight'
+  hotel_tier?: 'economy' | 'business' | 'premium'
+  flight_confirmed?: boolean
   origin: string
   city: string
   cities?: CityStay[]
@@ -279,6 +286,7 @@ export interface TripHistoryItem {
 }
 
 export type TripTaskStatus =
+  | 'awaiting_input'
   | 'queued'
   | 'processing'
   | 'retrying'
@@ -318,6 +326,7 @@ export type TripTaskStage =
   | 'failed'
 
 export interface TripTaskEvent {
+  pending_input?: { code: string; message: string; provider?: string }
   task_id: string
   plan_id: string
   trip_id?: string
@@ -342,6 +351,9 @@ export type ReviewStatus =
   | 'applied'
 
 export interface ReplanRequest {
+  travel_request?: Record<string, any>
+  refresh_travel?: 'train' | 'flight' | 'hotel' | 'amap'
+  confirm_flight_queries?: boolean
   instruction: string
   day_indices: number[]
   transport_preferences?: string[]
@@ -405,6 +417,7 @@ export interface TripReviewRecord {
 }
 
 export interface TripTaskRecord {
+  pending_input?: { code: string; message: string; provider?: string }
   task_id: string
   trip_id: string
   trace_id: string

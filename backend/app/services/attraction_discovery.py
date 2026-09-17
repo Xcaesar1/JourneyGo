@@ -154,7 +154,11 @@ def _matches_suggested_name(item: AttractionCandidate, suggestion: str) -> bool:
     return bool(
         item_name
         and suggested_name
-        and (item_name == suggested_name or item_name in suggested_name or suggested_name in item_name)
+        and (
+            item_name == suggested_name
+            or item_name in suggested_name
+            or suggested_name in item_name
+        )
         and item.longitude is not None
         and item.latitude is not None
     )
@@ -234,6 +238,22 @@ def parse_amap_pois(payload: dict[str, Any], city: str) -> list[AttractionCandid
             )
         )
     return parsed
+
+
+def rank_amap_pois(
+    payload: dict[str, Any], city: str, *, interests=(), must_visit=(), avoid=(), limit=25
+):
+    """Reuse homepage POI normalization and ranking for durable one-click evidence."""
+    return rank_candidates(
+        [
+            _RawCandidate(item=item, query_index=0, result_index=index)
+            for index, item in enumerate(parse_amap_pois(payload, city))
+        ],
+        interests=interests,
+        must_visit=must_visit,
+        avoid=avoid,
+        limit=limit,
+    )
 
 
 def rank_candidates(
@@ -519,9 +539,9 @@ class AmapAttractionDiscoveryProvider:
         ]
         default_source = preferred_items + items if preferred_items else items
         default_pool = list(dict.fromkeys(item.poi_id for item in default_source))
-        defaults = list(
-            dict.fromkeys(required_ids + default_pool)
-        )[: max(default_count, len(required_ids))]
+        defaults = list(dict.fromkeys(required_ids + default_pool))[
+            : max(default_count, len(required_ids))
+        ]
         return AttractionCandidatePage(
             city=normalized_city,
             items=items,
@@ -530,9 +550,7 @@ class AmapAttractionDiscoveryProvider:
             degraded=bool(primary_issues) or not items,
             issues=list(
                 dict.fromkeys(
-                    primary_issues
-                    + supplemental_issues
-                    + (["no_candidates"] if not items else [])
+                    primary_issues + supplemental_issues + (["no_candidates"] if not items else [])
                 )
             ),
         )

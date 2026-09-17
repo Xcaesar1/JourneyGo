@@ -42,4 +42,4 @@ export interface TravelSearchResponse {
   query: TravelSearchRequest
 }
 
-export type TravelCapabilities = Record<TravelProvider, { enabled: boolean; paid: boolean }>
+export type TravelCapabilities = Record<TravelProvider, { enabled: boolean; paid: boolean }> & { one_click?: { enabled: boolean; paid: boolean } }

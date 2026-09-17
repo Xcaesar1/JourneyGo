@@ -8,6 +8,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from .trip_models import TripRequestV2
 from .validation_models import ValidationReportV2
 
 ReviewActionV2 = Literal["approve", "modify", "reject"]
@@ -29,6 +30,12 @@ class ReplanRequestV2(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     instruction: str = Field(..., min_length=1, max_length=2000)
+    travel_request: TripRequestV2 | None = None
+    refresh_travel: Literal["train", "flight", "hotel", "amap"] | None = None
+    confirm_flight_queries: bool = False
+    refresh_token: str | None = Field(
+        default=None, max_length=64, description="Server-assigned refresh intent identity."
+    )
     day_indices: list[int] = Field(default_factory=list, max_length=30)
     transport_preferences: list[BoundedChangeText] | None = Field(default=None, max_length=8)
     budget_total: Decimal | None = Field(default=None, gt=0)

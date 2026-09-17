@@ -126,7 +126,11 @@ def _build_day_timeline(
     day_offset = 0
     for destination_index, destination in enumerate(request.destinations):
         if day.day_index == day_offset:
-            previous_city = request.origin if destination_index == 0 else request.destinations[destination_index - 1].city
+            previous_city = (
+                request.origin
+                if destination_index == 0
+                else request.destinations[destination_index - 1].city
+            )
             if previous_city != destination.city:
                 transfer_leg_index = destination_index
             break
@@ -268,24 +272,22 @@ def _calculate_budget(
 ) -> BudgetV2:
     request = state["request"]
     travelers = request.travelers
-    attraction_cost = sum(
-        attraction.ticket_price
-        for day in plan.days
-        for attraction in day.attractions
-    ) * travelers
+    attraction_cost = (
+        sum(attraction.ticket_price for day in plan.days for attraction in day.attractions)
+        * travelers
+    )
     meal_cost = sum(meal.estimated_cost for day in plan.days for meal in day.meals) * travelers
     hotel_nights = plan.days[:-1]
     rooms = ceil(travelers / 2)
     hotel_cost = sum(day.hotel.estimated_cost for day in hotel_nights if day.hotel) * rooms
     local_transport_cost = local_transport_per_person * travelers
     recommended_by_leg = {
-        option.leg_index: option
-        for option in plan.transport_options
-        if option.recommended
+        option.leg_index: option for option in plan.transport_options if option.recommended
     }
-    intercity_cost = sum(
-        option.estimated_cost_per_person or 0 for option in recommended_by_leg.values()
-    ) * travelers
+    intercity_cost = (
+        sum(option.estimated_cost_per_person or 0 for option in recommended_by_leg.values())
+        * travelers
+    )
     total = attraction_cost + hotel_cost + meal_cost + local_transport_cost + intercity_cost
     return BudgetV2(
         total_attractions=attraction_cost,
@@ -298,6 +300,8 @@ def _calculate_budget(
 
 
 def enrich_plan(state: TripState) -> dict[str, Any]:
+    if state["request"].planning_mode == "one_click":
+        return {"draft_plan": state["draft_plan"]}
     """Replace model timelines and totals with deterministic program output."""
     plan = state["draft_plan"]
     days: list[DayPlanV2] = []
@@ -313,7 +317,8 @@ def enrich_plan(state: TripState) -> dict[str, Any]:
             "days": days,
             "weather_info": [
                 WeatherInfoV2.model_validate(row)
-                for rows in state.get("weather", {}).values() for row in rows
+                for rows in state.get("weather", {}).values()
+                for row in rows
             ],
             "route_matrix": [*state.get("route_estimates", []), *daily_routes],
         }

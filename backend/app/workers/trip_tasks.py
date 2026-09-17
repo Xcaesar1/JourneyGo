@@ -7,7 +7,7 @@ import logging
 import os
 import re
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from time import perf_counter, sleep
 from typing import Any, Literal
@@ -47,7 +47,9 @@ from ..services.observability import (
     WORKFLOW_VERSION,
     sanitize_metadata,
 )
+from ..services.one_click_travel import OneClickPlanner
 from ..services.task_events import publish_task_event, redis_url, task_snapshot
+from ..services.travel_ledger import PlanningInputRequired
 from .celery_app import celery_app
 
 LOGGER = logging.getLogger(__name__)
@@ -294,7 +296,7 @@ def _execute_task(self: Any, task_id: str, lock: Any, lock_timeout: int) -> dict
         task = get_task(session, task_id, for_update=True)
         if task is None:
             return {"task_id": task_id, "status": "missing"}
-        if task.status in FINAL_TASK_STATUSES:
+        if task.status in FINAL_TASK_STATUSES or task.status == "awaiting_input":
             return task_snapshot(task)
         if task.cancel_requested:
             task = update_task_state(
@@ -561,6 +563,20 @@ def _execute_task(self: Any, task_id: str, lock: Any, lock_timeout: int) -> dict
             )
             publish_task_event(completed)
             return task_snapshot(completed)
+    except PlanningInputRequired as exc:
+        with SessionLocal() as session:
+            current = get_task(session, task_id, for_update=True)
+            current.pending_input = exc.payload
+            waiting = update_task_state(
+                session,
+                task_id,
+                status="cancelled" if current.cancel_requested else "awaiting_input",
+                stage="cancelled" if current.cancel_requested else "awaiting_input",
+                message=exc.payload["message"],
+                finished=current.cancel_requested,
+            )
+            publish_task_event(waiting)
+            return task_snapshot(waiting)
     except TaskCancelled:
         with SessionLocal() as session:
             cancelled = update_task_state(
@@ -651,7 +667,11 @@ async def _run_configured_planners(
         progress_callback,
         **review_kwargs,
     )
-    if review_context is not None or not settings.planner_compare_engines:
+    if (
+        review_context is not None
+        or not settings.planner_compare_engines
+        or payload.get("planning_mode") == "one_click"
+    ):
         return PlannerRunSet(primary=await primary_call)
 
     comparison_engine: PlannerEngine = "journey_graph" if primary_engine == "legacy" else "legacy"
@@ -761,6 +781,7 @@ async def _run_journey_graph_planner(
     progress_callback: Any,
     *,
     review_context: ReviewContext | None = None,
+    checkpoint_thread: str | None = None,
 ) -> PlannerExecution:
     """Run or resume the typed graph and adapt its result for existing clients."""
     from langgraph.types import Command
@@ -779,7 +800,12 @@ async def _run_journey_graph_planner(
 
     request = _to_v2_request(payload)
     settings = get_settings()
-    draft_generator = build_configured_plan_generator()
+    if request.planning_mode == "one_click":
+        from ..agents.journey_graph.nodes.draft import build_placeholder_plan
+
+        draft_generator = build_placeholder_plan
+    else:
+        draft_generator = build_configured_plan_generator()
     research_provider = (
         NoopWebResearchProvider()
         if settings.demo_mode
@@ -796,6 +822,10 @@ async def _run_journey_graph_planner(
         else build_configured_attraction_discovery_provider()
     )
     node_progress = {
+        "query_transport": ("query_transport", "查往返交通", 15),
+        "query_hotel": ("query_hotel", "查酒店房型", 35),
+        "plan_places": ("plan_places", "安排景点美食", 55),
+        "check_trip": ("check_trip", "校验时间和预算", 75),
         "normalize_request": ("normalize_request", "Normalizing the trip request.", 12),
         "prepare_research_queries": ("prepare_research", "Preparing bounded research queries.", 20),
         "research_web": ("research_web", "Collecting source evidence.", 30),
@@ -818,7 +848,14 @@ async def _run_journey_graph_planner(
             sleep(settings.demo_node_delay_seconds)
 
     def invoke_graph() -> tuple[dict[str, Any], bool, bool]:
-        config = {"configurable": {"thread_id": task_id}}
+        graph_thread = checkpoint_thread or task_id
+        if request.planning_mode == "one_click":
+            import hashlib
+
+            graph_thread += (
+                ":" + hashlib.sha256(request.model_dump_json().encode()).hexdigest()[:16]
+            )
+        config = {"configurable": {"thread_id": graph_thread}}
         model_invoked = False
         initial_state = {
             "trip_id": trip_id,
@@ -827,6 +864,9 @@ async def _run_journey_graph_planner(
         }
         with open_postgres_checkpointer() as checkpointer:
             graph = build_journey_graph(
+                one_click_planner=lambda state: OneClickPlanner(
+                    trip_id, request, settings, progress=observe_node
+                ).run(),
                 draft_generator=draft_generator,
                 research_provider=research_provider,
                 attraction_provider=attraction_provider,
@@ -852,10 +892,16 @@ async def _run_journey_graph_planner(
                     config,
                 )
             elif snapshot.next:
-                state = snapshot.values
+                state = (
+                    snapshot.values
+                    if snapshot.values.get("draft_plan") and "human_review" in snapshot.next
+                    else graph.invoke(None, config)
+                )
             else:
                 state = graph.invoke(initial_state, config)
-                model_invoked = bool(getattr(draft_generator, "uses_provider", True))
+                model_invoked = request.planning_mode != "one_click" and bool(
+                    getattr(draft_generator, "uses_provider", True)
+                )
             waiting = bool(graph.get_state(config).next)
         return dict(state), waiting, model_invoked
 
@@ -929,6 +975,48 @@ async def _run_replan_planner(
 
     base_plan = load_base_plan()
     change_request = ReplanRequestV2.model_validate(review_context.change_request)
+
+    if request.planning_mode == "one_click":
+        import hashlib
+
+        from ..services.one_click_travel import replan_request
+        from ..services.replanning import diff_plans
+
+        request = replan_request(
+            request,
+            change_request,
+            int(
+                hashlib.sha256(
+                    (review_context.thread_id + change_request.model_dump_json()).encode()
+                ).hexdigest()[:8],
+                16,
+            ),
+        )
+        execution = await _run_journey_graph_planner(
+            task_id,
+            trip_id,
+            request.model_dump(mode="json"),
+            progress_callback,
+            review_context=None
+            if review_context.status in {"requested", "changes_requested"}
+            else review_context,
+            checkpoint_thread=review_context.thread_id,
+        )
+        diff = diff_plans(
+            base_plan,
+            TripPlanV2.model_validate(execution.native_payload),
+            from_version=review_context.base_version,
+            to_version=review_context.proposed_version,
+        )
+        return replace(
+            execution,
+            review_workflow_type="replan",
+            review_thread_id=review_context.thread_id,
+            review_base_version=review_context.base_version,
+            review_proposed_version=review_context.proposed_version,
+            review_reason=review_context.reason,
+            diff_payload=diff.model_dump(mode="json"),
+        )
 
     def invoke_graph() -> tuple[dict[str, Any], bool]:
         config = {"configurable": {"thread_id": review_context.thread_id}}

@@ -14,7 +14,7 @@ from ..db.models import TripTask
 
 LOGGER = logging.getLogger(__name__)
 FINAL_TASK_STATUSES = frozenset({"completed", "rejected", "failed", "cancelled"})
-TASK_STREAM_STOP_STATUSES = FINAL_TASK_STATUSES | {"awaiting_approval"}
+TASK_STREAM_STOP_STATUSES = FINAL_TASK_STATUSES | {"awaiting_approval", "awaiting_input"}
 
 
 def redis_url() -> str:
@@ -45,8 +45,12 @@ def task_snapshot(task: TripTask) -> dict[str, Any]:
         "finished_at": _iso(task.finished_at),
         "result": task.result_payload,
         "review": task.review_payload,
+        "pending_input": getattr(task, "pending_input", None),
         "error": (
-            {"code": task.error_code or "task_failed", "message": task.error_message or task.message}
+            {
+                "code": task.error_code or "task_failed",
+                "message": task.error_message or task.message,
+            }
             if task.status == "failed"
             else None
         ),
@@ -58,7 +62,9 @@ def publish_task_event(task: TripTask, client: Redis | None = None) -> None:
     owns_client = client is None
     redis_client = client or Redis.from_url(redis_url(), decode_responses=True)
     try:
-        redis_client.publish(task_channel(task.id), json.dumps(task_snapshot(task), ensure_ascii=False))
+        redis_client.publish(
+            task_channel(task.id), json.dumps(task_snapshot(task), ensure_ascii=False)
+        )
     except Exception as exc:  # Pub/Sub loss must not roll back durable state.
         LOGGER.warning("Unable to publish task event: %s", type(exc).__name__)
     finally:

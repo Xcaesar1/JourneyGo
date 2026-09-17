@@ -155,3 +155,40 @@ V2 保持统一 envelope，内部异常、数据库 URL、Redis URL、Cookie 和
   }
 }
 ```
+# One-click Travel Extension (2026-09-17)
+
+`POST /api/v2/trips` accepts `planning_mode: "one_click"`, `round_trip: true`,
+`intercity_mode: "train" | "flight"`, `hotel_tier: "economy" | "business" | "premium"`,
+and `flight_confirmed`. Classic requests retain their existing behavior.
+The new mode requires one destination, 1-2 adults, 2-29 inclusive days, a CNY budget
+and Asia/Shanghai time. Both train dates must be within the current 15-day window.
+The feature is disabled unless `ONE_CLICK_TRAVEL_ENABLED=true` and JourneyGraph
+is configured. Flight use additionally requires existing service/access/quota gates.
+
+Tasks may stop at `awaiting_input` with `pending_input: {code, message, provider}`.
+This is not `awaiting_approval` and must not display an itinerary approval button.
+Polling/WebSocket snapshots retain the state across browser refresh and workers.
+
+- `GET /api/v2/trips/tasks/{task_id}/travel-queries` returns persisted query scope,
+  provider, arguments, status, timestamps and partial result snapshots.
+- `POST /api/v2/trips/tasks/{task_id}/continue` accepts
+  `{ "request": <full TripRequestV2>, "refresh": "hotel" }`; refresh is optional
+  and permits train/flight/hotel/amap. Requires existing spend/access protection.
+  Only input-paused tasks can continue; concurrent/repeated submissions return 409.
+- The canonical `/api/v2/tasks/{task_id}/continue` and `/travel-queries` aliases
+  have identical behavior. Existing cancellation applies to input-paused tasks.
+- Review/replan accepts `travel_request`, `refresh_travel`, and
+  `confirm_flight_queries`. `refresh_token` is assigned by the server for explicit
+  refreshes; clients must not use it to authorize costs. Changed flight conditions
+  or refreshing flights require new consent. Proposal generation does not replace
+  the active saved version; only final approval activates it.
+
+`TripPlanV2.travel_summary` and the legacy result's same field preserve selected
+outbound/return/hotel objects, `cost_items`, `known_cents`, `estimated_cents`,
+`expected_cents`, currency, query receipts and `planning_request`. Hotel cost is
+the one-room full-stay reference estimate, not a confirmed room total. Unknown
+items use `amount_cents: null` and are excluded, never zeroed. Meal/hotel POI IDs
+and coordinates survive the legacy adapter. Confirmation is not a booking.
+
+Migration `20260917_07` must precede enabling the flag. Disabling the feature does
+not erase query ledgers, consumed paid-call counters, checkpoints or old versions.

@@ -41,5 +41,6 @@ test('result removes version history and source panels without removing review o
   assert.match(result, /submitTripReview/)
   assert.match(result, /currentReview\.proposed_version/)
   assert.match(result, /Weather data by Open-Meteo \(CC BY 4\.0\)/)
-  assert.match(result, /<TravelSearch :plan="tripPlan"/)
+  assert.match(result, /<TravelSearch v-else :plan="tripPlan"/)
+  assert.match(result, /<TravelSummary v-if="tripPlan.travel_summary"/)
 })

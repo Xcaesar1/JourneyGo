@@ -1,4 +1,7 @@
 {
+  "travelUnits": {"perPerson":"person","stay":"{rooms} room · {nights} nights · {adults} adults"},
+  "travelCosts": {"outbound":"Outbound","return":"Return","hotel":"Full hotel stay","meals":"Dining estimate","local_transport":"Local transport estimate","tickets":"Tickets unverified"},
+  "oneClick": {"train":"High-speed rail","flight":"Flight","economy":"Economy","business":"Business comfort","premium":"Premium","more":"More preferences","budgetHint":"Total budget for all adults; dates include the round trip. One room.","flightConsent":"Allow at most one query per flight direction for this request. Fees may apply; no booking.","paused":"Adjust to continue","retained":"Saved query records","refresh":"Refresh this quote","continue":"Continue with this form","query_transport":"Check round-trip transport","query_hotel":"Check hotel rooms","plan_places":"Arrange sights and dining","check_trip":"Validate time and budget","total":"Expected total","unknown":"Excluded: tickets, hotel taxes and unavailable flight taxes","notBooked":"Approving a plan does not make a booking","outbound":"Outbound","inbound":"Return","hotel":"Continuous hotel stay","optional":"Selecting attractions is optional. Generate directly.","returnDate":"Return date","quoted":"Known quotes","estimated":"Estimates","replace":"Replace / refresh quote"},
   "memories": {
     "title": "Memories",
     "description": "Up to 50 recent trips, ordered by last update",

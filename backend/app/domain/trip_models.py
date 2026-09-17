@@ -60,6 +60,12 @@ class TripRequestV2(BaseModel):
     )
 
     origin: str = Field(..., min_length=1, max_length=120, description="Trip origin.")
+    planning_mode: Literal["classic", "one_click"] = "classic"
+    round_trip: bool = True
+    intercity_mode: Literal["train", "flight"] = "train"
+    hotel_tier: Literal["economy", "business", "premium"] = "business"
+    flight_confirmed: bool = False
+    quote_revision: dict[str, int] = Field(default_factory=dict)
     destinations: list[CityStayV2] = Field(
         ...,
         min_length=1,
@@ -85,9 +91,15 @@ class TripRequestV2(BaseModel):
         max_length=120,
         description="Accommodation preference.",
     )
-    interests: list[PreferenceText] = Field(default_factory=list, max_length=30, description="Interest tags.")
-    must_visit: list[PlaceText] = Field(default_factory=list, max_length=30, description="Must-visit places.")
-    avoid: list[PlaceText] = Field(default_factory=list, max_length=30, description="Items to avoid.")
+    interests: list[PreferenceText] = Field(
+        default_factory=list, max_length=30, description="Interest tags."
+    )
+    must_visit: list[PlaceText] = Field(
+        default_factory=list, max_length=30, description="Must-visit places."
+    )
+    avoid: list[PlaceText] = Field(
+        default_factory=list, max_length=30, description="Items to avoid."
+    )
 
     pace: Literal["relaxed", "balanced", "intensive"] = Field(
         default="balanced",
@@ -106,8 +118,12 @@ class TripRequestV2(BaseModel):
     )
 
     free_text_input: str = Field(default="", max_length=2000, description="Extra planning context.")
-    language: str = Field(default="zh", min_length=2, max_length=8, description="Response language.")
-    timezone: str = Field(default="Asia/Shanghai", min_length=1, max_length=64, description="Trip timezone.")
+    language: str = Field(
+        default="zh", min_length=2, max_length=8, description="Response language."
+    )
+    timezone: str = Field(
+        default="Asia/Shanghai", min_length=1, max_length=64, description="Trip timezone."
+    )
 
     @field_validator("currency")
     @classmethod
@@ -131,6 +147,27 @@ class TripRequestV2(BaseModel):
 
         if self.daily_end_time <= self.daily_start_time:
             raise ValueError("daily_end_time must be after daily_start_time")
+
+        if self.planning_mode == "one_click":
+            if not self.round_trip:
+                raise ValueError("One-click planning currently requires a round trip.")
+            if self.timezone != "Asia/Shanghai":
+                raise ValueError("Domestic one-click planning uses Asia/Shanghai time.")
+            if len(self.destinations) != 1 or self.travelers > 2 or self.travel_days < 2:
+                raise ValueError(
+                    "One-click planning supports one destination, 1-2 adults and 2-29 days."
+                )
+            if self.travel_days > 29 or self.currency != "CNY" or self.budget_total is None:
+                raise ValueError(
+                    "One-click planning requires a CNY total budget and at most 28 nights."
+                )
+            if self.origin == self.destinations[0].city:
+                raise ValueError("Origin and destination must differ.")
+            if any(
+                k not in {"train", "flight", "hotel", "amap"} or v < 0
+                for k, v in self.quote_revision.items()
+            ):
+                raise ValueError("Invalid quote revision")
 
         return self
 
@@ -179,6 +216,7 @@ class MealV2(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     type: Literal["breakfast", "lunch", "dinner", "snack"]
+    poi_id: str | None = None
     name: str = Field(..., min_length=1, max_length=200)
     address: str | None = Field(default=None, max_length=500)
     location: LocationV2 | None = None
@@ -192,6 +230,7 @@ class HotelV2(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     name: str = Field(..., min_length=1, max_length=200)
+    poi_id: str | None = None
     address: str = Field(default="", max_length=500)
     location: LocationV2 | None = None
     price_range: str = Field(default="", max_length=120)
@@ -316,6 +355,7 @@ class TripPlanV2(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
     schema_version: Literal["2.0"] = "2.0"
+    travel_summary: dict[str, Any] | None = None
     origin: str = Field(..., min_length=1, max_length=120)
     city: str = Field(..., min_length=1, max_length=120)
     cities: list[str] = Field(..., min_length=1)

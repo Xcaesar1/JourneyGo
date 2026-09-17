@@ -132,7 +132,7 @@ def _validate_time(state: TripState, plan: TripPlanV2) -> list[ValidationIssueV2
                 )
             )
             continue
-        if day.timeline[0].start != expected_start:
+        if request.planning_mode != "one_click" and day.timeline[0].start != expected_start:
             issues.append(
                 _issue(
                     "timeline_start_mismatch",
@@ -180,7 +180,14 @@ def _validate_time(state: TripState, plan: TripPlanV2) -> list[ValidationIssueV2
                         action="Rebuild the day as a contiguous sequence.",
                     )
                 )
-        if day.timeline[-1].end > expected_end:
+        timed_items = [
+            item
+            for item in day.timeline
+            if request.planning_mode != "one_click" or item.item_type in {"attraction", "meal"}
+        ]
+        if timed_items and (
+            timed_items[-1].end > expected_end or timed_items[0].start < expected_start
+        ):
             issues.append(
                 _issue(
                     "daily_window_exceeded",
@@ -510,6 +517,12 @@ def validate_plan(state: TripState) -> dict[str, Any]:
         *_validate_intensity(state, plan),
     ]
     report = ValidationReportV2(issues=issues)
+    if state["request"].planning_mode == "one_click" and report.has_critical:
+        from ....services.travel_ledger import PlanningInputRequired
+
+        raise PlanningInputRequired(
+            "validation_conflict", "行程时间或费用校验未通过，请调整条件后继续。"
+        )
     validated_plan = plan.model_copy(
         update={
             "validation_report": report,
