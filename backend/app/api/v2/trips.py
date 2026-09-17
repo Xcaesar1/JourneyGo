@@ -198,15 +198,30 @@ def continue_trip(task_id: str, body: ContinueTripInput, session: DbSession, htt
     task.trip.request_payload = request.model_dump(mode="json")
     review = get_current_review(session, task)
     if review is not None and review.workflow_type == "replan":
-        task.trip.request_payload = old.model_dump(mode="json")
+        base_request = old.model_copy(deep=True)
+        previous_change = review.change_request or {}
+        if previous_change:
+            from ...services.one_click_travel import preserve_replan_quote_revisions
+
+            base_request = preserve_replan_quote_revisions(
+                base_request,
+                ReplanRequestV2.model_validate(previous_change),
+                review.thread_id,
+            )
+        if request.quote_revision.get("model", 0) > old.quote_revision.get("model", 0):
+            # The continuation endpoint, not the submitted request, authorized this model retry.
+            base_request.quote_revision["model"] = request.quote_revision["model"]
+        task.trip.request_payload = base_request.model_dump(mode="json")
         review.change_request = {
-            **(review.change_request or {}),
+            **previous_change,
             "travel_request": request.model_dump(mode="json"),
-            "refresh_travel": body.refresh,
+            "refresh_travel": body.refresh
+            if body.refresh is not None
+            else previous_change.get("refresh_travel"),
             "confirm_flight_queries": request.flight_confirmed,
             "refresh_token": uuid4().hex
             if body.refresh
-            else (review.change_request or {}).get("refresh_token"),
+            else previous_change.get("refresh_token"),
         }
     task.pending_input = None
     task.status, task.stage = "queued", "queued"
@@ -425,7 +440,7 @@ def review_task(
             raise HTTPException(422, str(exc)) from exc
         if candidate.intercity_mode == "flight":
             enforce_travel_guardrails(http_request, get_settings(), paid=True)
-        if decision.changes.refresh_travel:
+        if decision.changes.refresh_travel or decision.changes.refresh_sources:
             decision.changes.refresh_token = uuid4().hex
     enforce_spend_guardrails(
         http_request,

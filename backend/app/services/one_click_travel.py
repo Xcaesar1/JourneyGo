@@ -3,6 +3,9 @@
 import hashlib
 from datetime import datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
+from math import asin, cos, radians, sin, sqrt
+from statistics import median
+from unicodedata import normalize
 from zoneinfo import ZoneInfo
 
 import httpx
@@ -74,6 +77,61 @@ def cents(value):
         if parsed is None
         else int((parsed * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
     )
+
+
+def place_name_key(value):
+    return "".join(
+        character for character in normalize("NFKC", value).casefold() if character.isalnum()
+    )
+
+
+def place_distance_meters(left, right):
+    """Return a stable straight-line distance between two verified POIs."""
+    left_location = left["location"]
+    right_location = right["location"]
+    left_latitude = radians(float(left_location["latitude"]))
+    right_latitude = radians(float(right_location["latitude"]))
+    latitude_delta = right_latitude - left_latitude
+    longitude_delta = radians(
+        float(right_location["longitude"]) - float(left_location["longitude"])
+    )
+    value = sin(latitude_delta / 2) ** 2 + (
+        cos(left_latitude) * cos(right_latitude) * sin(longitude_delta / 2) ** 2
+    )
+    return int(12_742_000 * asin(sqrt(min(1.0, value))))
+
+
+def hotel_location_score(hotel, attractions, restaurants):
+    """Prefer hotels near one fixed relevance-ranked reference set."""
+
+    def reference_median(places, limit):
+        distances = [place_distance_meters(hotel, place) for place in places[:limit]]
+        return int(median(distances)) if distances else 0
+
+    required = [place for place in attractions if place.get("required")]
+    required_distance = (
+        sum(place_distance_meters(hotel, place) for place in required) // len(required)
+        if required
+        else 0
+    )
+    activity_distance = reference_median(attractions, min(10, len(attractions)))
+    meal_distance = reference_median(restaurants, min(5, len(restaurants)))
+    return required_distance + activity_distance + meal_distance // 2, hotel["cost_cents"]
+
+
+def replan_quote_revision(thread_id, refresh_token):
+    identity = f"{thread_id}:{refresh_token or 'no-explicit-refresh'}"
+    return int(hashlib.sha256(identity.encode()).hexdigest()[:8], 16)
+
+
+def preserve_replan_quote_revisions(request, changes, thread_id):
+    preserved = request.model_copy(deep=True)
+    revision = replan_quote_revision(thread_id, changes.refresh_token)
+    if changes.refresh_travel:
+        preserved.quote_revision[changes.refresh_travel] = revision
+    if changes.refresh_sources:
+        preserved.quote_revision["amap"] = revision
+    return preserved
 
 
 def replan_request(original, changes, revision):
@@ -288,19 +346,22 @@ class OneClickPlanner:
             lambda: self.maps(city, keyword, kind),
         )
         ranked = {}
+        rank_position = {}
         if kind == "110000":
-            ranked = {
-                p.poi_id: p
-                for p in rank_amap_pois(
-                    raw,
-                    city,
-                    interests=self.request.interests,
-                    must_visit=self.request.must_visit,
-                    avoid=self.request.avoid,
-                )
-            }
+            ranked_places = rank_amap_pois(
+                raw,
+                city,
+                interests=self.request.interests,
+                must_visit=self.request.must_visit,
+                avoid=self.request.avoid,
+            )
+            ranked = {p.poi_id: p for p in ranked_places}
+            rank_position = {p.poi_id: index for index, p in enumerate(ranked_places)}
         results = []
-        for row in raw.get("pois", []) if str(raw.get("status")) == "1" else []:
+        keyword_key = place_name_key(keyword)
+        for provider_index, row in enumerate(
+            raw.get("pois", []) if str(raw.get("status")) == "1" else []
+        ):
             try:
                 lon, lat = map(float, row["location"].split(","))
                 if not row["id"].startswith("B") or not 73 <= lon <= 136 or not 18 <= lat <= 54:
@@ -354,7 +415,8 @@ class OneClickPlanner:
                     and row["cityname"].removesuffix("市") != city.removesuffix("市")
                 ):
                     continue
-                if exact and keyword not in name and name not in keyword:
+                name_key = place_name_key(name)
+                if exact and keyword_key not in name_key and name_key not in keyword_key:
                     continue
                 results.append(
                     {
@@ -366,6 +428,7 @@ class OneClickPlanner:
                         "image": ranked[row["id"]].image.model_dump()
                         if row["id"] in ranked
                         else {},
+                        "_provider_index": provider_index,
                     }
                 )
             except (ValueError, TypeError, KeyError):
@@ -374,6 +437,19 @@ class OneClickPlanner:
             raise PlanningInputRequired(
                 "poi_unmatched", "无法核实地点，请调整目的地或偏好。", provider="amap"
             )
+        results.sort(
+            key=lambda place: (
+                0
+                if exact and place_name_key(place["name"]) == keyword_key
+                else 1
+                if exact
+                else 0,
+                rank_position.get(place["poi_id"], len(rank_position)),
+                place["_provider_index"],
+            )
+        )
+        for place in results:
+            place.pop("_provider_index", None)
         return results
 
     def run(self):
@@ -504,8 +580,42 @@ class OneClickPlanner:
             and low <= float(h["starRating"]) <= high
         ]
         hotels.sort(key=lambda h: amount(h.get("price", {}).get("lowestPrice")) or Decimal("1e9"))
-        chosen = None
-        for hotel in hotels[:3]:
+        self.progress("plan_places")
+        attractions = []
+        for name in r.must_visit:
+            candidate = self.pois(city, name, "110000", exact=True)[0]
+            candidate["required"] = True
+            attractions.append(candidate)
+        attractions.extend(self.pois(city, " ".join(r.interests[:3]) or "景点", "110000"))
+        unique_attractions = {}
+        for place in attractions:
+            unique_attractions.setdefault(place["poi_id"], place)
+        attractions = list(unique_attractions.values())
+        attractions = [p for p in attractions if not any(name in p["name"] for name in r.avoid)]
+        if not attractions:
+            raise PlanningInputRequired(
+                "no_places", "没有满足偏好的景点，请调整偏好。", provider="amap"
+            )
+        restaurants = self.pois(city, "当地美食", "050100")
+        mapped_hotels = []
+        for hotel in hotels[:10]:
+            list_total = estimate_stay(
+                hotel.get("price", {}).get("lowestPrice"), hotel_query.nights
+            )
+            list_cost = cents(list_total)
+            if list_cost is not None and list_cost > hotel_allowance:
+                continue
+            try:
+                poi = self.pois(city, hotel["name"], "100100", exact=True)[0]
+            except PlanningInputRequired:
+                continue
+            provisional = {**poi, "cost_cents": list_cost or hotel_allowance}
+            mapped_hotels.append(
+                (hotel_location_score(provisional, attractions, restaurants), hotel, poi)
+            )
+        mapped_hotels.sort(key=lambda item: item[0])
+        hotel_candidates = []
+        for _score, hotel, poi in mapped_hotels[:3]:
             detail = self.query(
                 "hotel", "detail", "getHotelDetail", detail_arguments(hotel_query, hotel["hotelId"])
             )
@@ -525,16 +635,12 @@ class OneClickPlanner:
                     evidence.pricing_note = "房型已匹配，价格按酒店列表首夜参考价 × 晚数估算，不是该房型确定报价；税费待核实。"
             if evidence.status != "estimated":
                 continue
-            try:
-                poi = self.pois(city, hotel["name"], "100100", exact=True)[0]
-            except PlanningInputRequired:
-                continue
             cost = cents(evidence.estimated_stay_total)
-            if chosen is None or cost < chosen["cost_cents"]:
-                room = next(
-                    x for x in evidence.rooms if x.rate_plan_id == evidence.selected_rate_plan_id
-                )
-                chosen = {
+            if cost is None or cost > hotel_allowance:
+                continue
+            room = next(x for x in evidence.rooms if x.rate_plan_id == evidence.selected_rate_plan_id)
+            hotel_candidates.append(
+                {
                     **poi,
                     "hotel_id": hotel["hotelId"],
                     "room_name": room.room_name,
@@ -547,27 +653,19 @@ class OneClickPlanner:
                     "rooms": 1,
                     "pricing_note": evidence.pricing_note,
                 }
-        if chosen is None:
+            )
+        if not hotel_candidates:
             raise PlanningInputRequired(
                 "no_hotel",
                 "没有可核实人数、房型和参考价的同档酒店，请调整日期或住宿偏好。",
                 provider="hotel",
             )
-        self.progress("plan_places")
-        attractions = []
-        for name in r.must_visit:
-            candidate = self.pois(city, name, "110000", exact=True)[0]
-            candidate["required"] = True
-            attractions.append(candidate)
-        attractions.extend(self.pois(city, " ".join(r.interests[:3]) or "景点", "110000"))
-        attractions = list({p["poi_id"]: p for p in reversed(attractions)}.values())
-        attractions = [p for p in attractions if not any(name in p["name"] for name in r.avoid)]
-        if not attractions:
-            raise PlanningInputRequired(
-                "no_places", "没有满足偏好的景点，请调整偏好。", provider="amap"
-            )
-        restaurants = self.pois(city, "当地美食", "050100")
+        chosen = min(
+            hotel_candidates,
+            key=lambda hotel: hotel_location_score(hotel, attractions, restaurants),
+        )
         context = {
+            "selection_contract_version": 2,
             "request": r.model_dump(mode="json"),
             "attractions": attractions,
             "restaurants": restaurants,
@@ -594,8 +692,16 @@ class OneClickPlanner:
             )
         ):
             raise PlanningInputRequired("invalid_selection", "规划地点未通过核验，请调整偏好。")
-        attractions = [attr_by_id[key] for key in dict.fromkeys(selected.attraction_ids)]
-        restaurants = [meal_by_id[key] for key in dict.fromkeys(selected.restaurant_ids)]
+        selected_attractions = set(selected.attraction_ids)
+        selected_restaurants = set(selected.restaurant_ids)
+        attractions = [
+            {**place, "selected": key in selected_attractions}
+            for key, place in attr_by_id.items()
+        ]
+        restaurants = [
+            {**place, "selected": key in selected_restaurants}
+            for key, place in meal_by_id.items()
+        ]
         self.selection_notes = selected.notes
         self.progress("check_trip")
         failure = None
@@ -617,17 +723,15 @@ class OneClickPlanner:
         raise failure or PlanningInputRequired("no_transport", "没有可行的交通组合。")
 
     def schedule(self, outbound, inbound, hotel, attractions, restaurants, known_cents):
-        from ..agents.journey_graph.nodes.enrich import _haversine_meters
-
         r = self.request
         city = r.destinations[0].city
         arrival = datetime.fromisoformat(outbound["arrival"])
         departure = datetime.fromisoformat(inbound["departure"])
         buffer = 60 if r.intercity_mode == "train" else 120
-        days, items, routes = [], [], []
+        days, routes = [], []
 
         def transfer(a, b):
-            meters = _haversine_meters(LocationV2(**a["location"]), LocationV2(**b["location"]))
+            meters = place_distance_meters(a, b)
             return max(20, int(meters * 1.5 / 20000 * 60) + 20)
 
         def entry(day, title, start, duration, kind="transport", poi=None):
@@ -661,12 +765,16 @@ class OneClickPlanner:
             )
 
         remaining = list(attractions)
+        scheduled_restaurant_ids = set()
+        scheduled_attraction_count = 0
         meals_cents = local_cents = 0
         for i in range(r.travel_days):
             day = r.start_date + timedelta(days=i)
             start = datetime.combine(day, r.daily_start_time)
             end = datetime.combine(day, r.daily_end_time)
             timeline, day_attractions, meals = [], [], []
+            commute_limit = 240 if i in {0, r.travel_days - 1} else 180
+            local_minutes = 0
             if i == 0:
                 dep = datetime.fromisoformat(outbound["departure"])
                 timeline.append(
@@ -678,6 +786,7 @@ class OneClickPlanner:
                         poi=outbound["origin_location"],
                     )
                 )
+                local_minutes += 60
                 timeline.append(
                     entry(
                         i,
@@ -702,26 +811,47 @@ class OneClickPlanner:
                         "late_arrival", "抵达酒店已跨日，请选择更早到达的交通方案。"
                     )
                 timeline.append(entry(i, "到站后接驳至酒店（估算）", arrival, minutes, poi=hotel))
+                local_minutes += minutes
                 start = max(start, arrival + timedelta(minutes=minutes + 30))
             return_minutes = transfer(hotel, inbound["location"])
+            reserved_return_minutes = return_minutes if i == r.travel_days - 1 else 0
+            if local_minutes + reserved_return_minutes > commute_limit:
+                raise PlanningInputRequired(
+                    "local_transfer_excessive",
+                    "酒店与交通枢纽距离过远，无法在合理接驳时间内完成行程。",
+                )
             if i == r.travel_days - 1:
                 end = min(end, departure - timedelta(minutes=buffer + return_minutes + 30))
             current, previous = start, hotel
             for slot in range(3):
                 if remaining:
-                    remaining.sort(
-                        key=lambda p: (
-                            not p.get("required"),
-                            _haversine_meters(
-                                LocationV2(**previous["location"]), LocationV2(**p["location"])
-                            ),
-                        )
-                    )
-                    poi = remaining[0]
-                    travel = transfer(previous, poi)
-                    if current + timedelta(minutes=travel + 90 + transfer(poi, hotel)) <= end:
-                        remaining.pop(0)
+                    feasible = []
+                    for poi in remaining:
+                        travel = transfer(previous, poi)
+                        return_to_hotel = transfer(poi, hotel)
+                        if (
+                            local_minutes
+                            + travel
+                            + return_to_hotel
+                            + reserved_return_minutes
+                            <= commute_limit
+                            and current + timedelta(minutes=travel + 90 + return_to_hotel)
+                            <= end
+                        ):
+                            feasible.append(
+                                (
+                                    not poi.get("required"),
+                                    not poi.get("selected"),
+                                    travel,
+                                    poi["name"],
+                                    poi,
+                                )
+                            )
+                    if feasible:
+                        *_, travel, _name, poi = min(feasible, key=lambda item: item[:-1])
+                        remaining.remove(poi)
                         timeline.append(entry(i, "市内接驳（估算）", current, travel, poi=poi))
+                        local_minutes += travel
                         current += timedelta(minutes=travel)
                         timeline.append(entry(i, poi["name"], current, 90, "attraction", poi))
                         current += timedelta(minutes=90)
@@ -739,39 +869,64 @@ class OneClickPlanner:
                                 description="营业时间、门票与预约要求待核实。",
                             )
                         )
+                        scheduled_attraction_count += 1
                         previous = poi
                 options = [
                     p for p in restaurants if p["poi_id"] not in {meal.poi_id for meal in meals}
                 ] or restaurants
-                restaurant = min(
-                    options,
-                    key=lambda p: _haversine_meters(
-                        LocationV2(**previous["location"]), LocationV2(**p["location"])
-                    ),
-                )
-                travel = transfer(previous, restaurant)
-                meal_start = current + timedelta(minutes=travel)
-                meal_type = (
-                    "breakfast"
-                    if meal_start.hour < 11
-                    else "lunch"
-                    if meal_start.hour < 16
-                    else "dinner"
-                )
-                served = {meal.type for meal in meals}
-                if meal_type in served:
-                    meal_type = "lunch" if meal_type == "breakfast" else "dinner"
-                if meal_type in served:
-                    continue
-                earliest_hour = {"breakfast": 7, "lunch": 11, "dinner": 17}[meal_type]
-                meal_start = max(
-                    meal_start,
-                    datetime.combine(day, r.daily_start_time).replace(
-                        hour=earliest_hour, minute=0, second=0
-                    ),
-                )
-                if meal_start + timedelta(minutes=60 + transfer(restaurant, hotel)) <= end:
+                feasible_meals = []
+                for restaurant in options:
+                    travel = transfer(previous, restaurant)
+                    return_to_hotel = transfer(restaurant, hotel)
+                    meal_start = current + timedelta(minutes=travel)
+                    meal_type = (
+                        "breakfast"
+                        if meal_start.hour < 11
+                        else "lunch"
+                        if meal_start.hour < 16
+                        else "dinner"
+                    )
+                    served = {meal.type for meal in meals}
+                    if meal_type in served:
+                        meal_type = "lunch" if meal_type == "breakfast" else "dinner"
+                    if meal_type in served:
+                        continue
+                    earliest_hour = {"breakfast": 7, "lunch": 11, "dinner": 17}[meal_type]
+                    meal_start = max(
+                        meal_start,
+                        datetime.combine(day, r.daily_start_time).replace(
+                            hour=earliest_hour, minute=0, second=0
+                        ),
+                    )
+                    if (
+                        local_minutes
+                        + travel
+                        + return_to_hotel
+                        + reserved_return_minutes
+                        <= commute_limit
+                        and meal_start + timedelta(minutes=60 + return_to_hotel) <= end
+                    ):
+                        feasible_meals.append(
+                            (
+                                not restaurant.get("selected"),
+                                travel,
+                                restaurant["name"],
+                                restaurant,
+                                meal_type,
+                                meal_start,
+                            )
+                        )
+                if feasible_meals:
+                    (
+                        _,
+                        travel,
+                        _,
+                        restaurant,
+                        meal_type,
+                        meal_start,
+                    ) = min(feasible_meals, key=lambda item: item[:3])
                     timeline.append(entry(i, "前往餐厅（估算）", current, travel, poi=restaurant))
+                    local_minutes += travel
                     current += timedelta(minutes=travel)
                     if meal_start > current:
                         timeline.append(
@@ -798,10 +953,12 @@ class OneClickPlanner:
                             description="每人餐费估算，营业时间待核实。",
                         )
                     )
+                    scheduled_restaurant_ids.add(restaurant["poi_id"])
                     previous = restaurant
             if previous != hotel:
                 minutes = transfer(previous, hotel)
                 timeline.append(entry(i, "返回酒店（估算）", current, minutes, poi=hotel))
+                local_minutes += minutes
             if i == r.travel_days - 1:
                 station_start = departure - timedelta(minutes=buffer + return_minutes)
                 if station_start.date() != day:
@@ -817,6 +974,7 @@ class OneClickPlanner:
                         poi=inbound["location"],
                     )
                 )
+                local_minutes += return_minutes
                 timeline.append(
                     entry(
                         i,
@@ -835,6 +993,11 @@ class OneClickPlanner:
                         departure,
                         int((arr - departure).total_seconds() / 60),
                     )
+                )
+            if local_minutes > commute_limit:
+                raise PlanningInputRequired(
+                    "local_transfer_excessive",
+                    f"第 {i + 1} 天市内接驳超过合理范围，请调整景点或住宿。",
                 )
             timeline.sort(key=lambda item: item.start)
             if any(a.end > b.start for a, b in zip(timeline, timeline[1:])):
@@ -869,6 +1032,24 @@ class OneClickPlanner:
             raise PlanningInputRequired(
                 "must_visit_unplaced",
                 "交通和活动时间内无法安排全部必去景点，请减少景点或调整日期。",
+            )
+        if scheduled_attraction_count == 0:
+            raise PlanningInputRequired(
+                "no_schedulable_places",
+                "已核实的景点均无法在合理接驳时间内安排，请调整住宿或景点偏好。",
+            )
+        omitted_places = [p["name"] for p in remaining if p.get("selected")]
+        omitted_places.extend(
+            p["name"]
+            for p in restaurants
+            if p.get("selected") and p["poi_id"] not in scheduled_restaurant_ids
+        )
+        schedule_notes = self.selection_notes
+        if omitted_places:
+            schedule_notes += (
+                " 为控制每日市内接驳和时间冲突，以下偏好候选未排入时间线："
+                + "、".join(dict.fromkeys(omitted_places))
+                + "。"
             )
         estimated_cents = hotel["cost_cents"] + meals_cents + local_cents
         if known_cents + estimated_cents > cents(r.budget_total):
@@ -906,6 +1087,10 @@ class OneClickPlanner:
             "currency": "CNY",
             "quotes": [q for q in self.ledger.records if q["provider"] != "model"],
             "booking_status": "not_booked",
+            "selection_adjustments": {
+                "omitted_preferred_places": list(dict.fromkeys(omitted_places)),
+                "reason": "daily_time_and_local_commute_limits" if omitted_places else None,
+            },
         }
         # Legacy integer display is rounded; the authoritative ledger retains exact cents.
         components = [
@@ -923,7 +1108,7 @@ class OneClickPlanner:
             days=days,
             route_matrix=routes,
             travel_summary=summary,
-            overall_suggestions=self.selection_notes
+            overall_suggestions=schedule_notes
             + " 费用为已知报价与参考估算之和，未含待核实项目；确认行程不代表已预订。",
             budget=BudgetV2(
                 total_hotels=components[0],

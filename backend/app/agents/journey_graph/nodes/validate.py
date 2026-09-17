@@ -255,13 +255,9 @@ def _validate_routes(state: TripState, plan: TripPlanV2) -> list[ValidationIssue
     for day in plan.days:
         transport_minutes = 0
         walking_minutes = 0
-        normalized_transport = day.transportation.casefold()
         for item in day.timeline:
             if item.item_type != "transport":
                 continue
-            transport_minutes += item.duration_minutes
-            if "walk" in normalized_transport or "步行" in normalized_transport:
-                walking_minutes += item.duration_minutes
             route = route_by_id.get(item.route_estimate_id or "")
             if route is None:
                 issues.append(
@@ -275,6 +271,10 @@ def _validate_routes(state: TripState, plan: TripPlanV2) -> list[ValidationIssue
                     )
                 )
                 continue
+            if route.provider not in {"train", "flight"}:
+                transport_minutes += item.duration_minutes
+                if route.mode == "walking":
+                    walking_minutes += item.duration_minutes
             if route.status == "unavailable":
                 issues.append(
                     _issue(
@@ -316,7 +316,13 @@ def _validate_routes(state: TripState, plan: TripPlanV2) -> list[ValidationIssue
                         action="Move the activity to another city/day or replace it.",
                     )
                 )
-        commute_limit = 600 if day.is_transfer_day else 180
+        commute_limit = (
+            240
+            if request.planning_mode == "one_click" and day.is_transfer_day
+            else 600
+            if day.is_transfer_day
+            else 180
+        )
         if transport_minutes > commute_limit:
             issues.append(
                 _issue(
@@ -520,8 +526,19 @@ def validate_plan(state: TripState) -> dict[str, Any]:
     if state["request"].planning_mode == "one_click" and report.has_critical:
         from ....services.travel_ledger import PlanningInputRequired
 
+        critical = [issue for issue in report.issues if issue.severity == "critical"]
+        first = critical[0]
+        message = {
+            "daily_commute_excessive": "市内接驳时间过长，请调整住宿或景点后继续。",
+            "budget_exceeded": "当前交通、住宿与活动费用超过总预算，请调整条件后继续。",
+            "time_conflict": "行程时间存在冲突，请调整条件后继续。",
+        }.get(first.code, "行程时间或费用校验未通过，请调整条件后继续。")
         raise PlanningInputRequired(
-            "validation_conflict", "行程时间或费用校验未通过，请调整条件后继续。"
+            "validation_conflict",
+            message,
+            diagnostics={
+                "issues": [issue.model_dump(mode="json") for issue in critical[:10]],
+            },
         )
     validated_plan = plan.model_copy(
         update={

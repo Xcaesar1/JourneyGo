@@ -977,20 +977,13 @@ async def _run_replan_planner(
     change_request = ReplanRequestV2.model_validate(review_context.change_request)
 
     if request.planning_mode == "one_click":
-        import hashlib
-
-        from ..services.one_click_travel import replan_request
+        from ..services.one_click_travel import replan_quote_revision, replan_request
         from ..services.replanning import diff_plans
 
         request = replan_request(
             request,
             change_request,
-            int(
-                hashlib.sha256(
-                    (review_context.thread_id + change_request.model_dump_json()).encode()
-                ).hexdigest()[:8],
-                16,
-            ),
+            replan_quote_revision(review_context.thread_id, change_request.refresh_token),
         )
         execution = await _run_journey_graph_planner(
             task_id,

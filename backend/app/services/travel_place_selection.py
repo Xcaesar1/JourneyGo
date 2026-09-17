@@ -13,8 +13,16 @@ logger = logging.getLogger(__name__)
 
 class PlaceSelection(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    attraction_ids: list[str] = Field(min_length=1, max_length=30)
-    restaurant_ids: list[str] = Field(min_length=1, max_length=25)
+    attraction_ids: list[str] = Field(
+        min_length=1,
+        max_length=30,
+        description="Ranked preferred shortlist; optional places may be omitted by hard time/commute rules.",
+    )
+    restaurant_ids: list[str] = Field(
+        min_length=1,
+        max_length=25,
+        description="Ranked preferred shortlist; verified nearby candidates may be used as fallback.",
+    )
     notes: str = Field(max_length=2000)
     unmet_requirements: list[str] = Field(max_length=20)
 
@@ -40,8 +48,11 @@ def select_places(settings, context):
                     "content": (
                         "Return JSON matching this schema: "
                         + json.dumps(PlaceSelection.model_json_schema())
-                        + " Choose and order only supplied POI IDs. Group by area and honor interests, must_visit, "
-                        "free_text_input and accessibility_needs. Keep enough sights for all days. "
+                        + " Choose and order only supplied POI IDs as ranked preferred shortlists. Group by area "
+                        "and honor interests, must_visit, free_text_input and accessibility_needs. Include every "
+                        "must_visit POI and keep enough nearby sights for all days. The deterministic scheduler may "
+                        "omit optional shortlist entries or use other supplied POIs when required by verified travel "
+                        "times and commute limits; it will disclose those omissions. "
                         "Do not invent places, opening hours, prices, facilities or dietary guarantees. "
                         "Put requirements that cannot be supported by supplied evidence in unmet_requirements. "
                         "Ordinary preferences may affect ranking; hard safety/accessibility/dietary needs require evidence. "

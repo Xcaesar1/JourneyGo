@@ -251,6 +251,205 @@ def test_hotel_detail_bound_and_list_reference_fallback():
     assert "首夜参考价" in result.travel_summary["hotel"]["pricing_note"]
 
 
+def test_hotel_location_and_compact_schedule_beat_cheaper_outskirts():
+    detailed = []
+
+    def four_hotels(provider, tool, args):
+        data = supplier(provider, tool, args)
+        if tool == "searchHotels":
+            data["hotelInformationList"] = [
+                {
+                    "hotelId": 1,
+                    "name": "远郊商务酒店一",
+                    "starRating": 4,
+                    "price": {"lowestPrice": 180},
+                },
+                {
+                    "hotelId": 2,
+                    "name": "远郊商务酒店二",
+                    "starRating": 4,
+                    "price": {"lowestPrice": 200},
+                },
+                {
+                    "hotelId": 3,
+                    "name": "远郊商务酒店三",
+                    "starRating": 4,
+                    "price": {"lowestPrice": 220},
+                },
+                {
+                    "hotelId": 4,
+                    "name": "市区商务酒店",
+                    "starRating": 4,
+                    "price": {"lowestPrice": 420},
+                },
+            ]
+        elif tool == "getHotelDetail":
+            detailed.append(args["hotelId"])
+            data["hotelId"] = args["hotelId"]
+            data["roomRatePlans"][0]["averagePrice"] = {
+                1: 180,
+                2: 200,
+                3: 220,
+                4: 420,
+            }[args["hotelId"]]
+        return data
+
+    def spread_maps(city, keyword, kind):
+        if kind == "100100":
+            longitude, latitude = (
+                (109.30, 34.42) if keyword.startswith("远郊商务酒店") else (108.95, 34.26)
+            )
+            names = [keyword]
+            locations = [(longitude, latitude)]
+        elif kind == "110000":
+            names = [
+                *[f"市区景点{i}" for i in range(8)],
+                *[f"远郊景点{i}" for i in range(6)],
+            ]
+            locations = [
+                *[(108.94 + i * 0.002, 34.25 + i * 0.001) for i in range(8)],
+                *[(109.31 + i * 0.001, 34.43) for i in range(6)],
+            ]
+        elif kind == "050100":
+            names = [*[f"市区餐厅{i}" for i in range(4)], *[f"远郊餐厅{i}" for i in range(3)]]
+            locations = [
+                *[(108.95 + i * 0.001, 34.26) for i in range(4)],
+                *[(109.31 + i * 0.001, 34.43) for i in range(3)],
+            ]
+        else:
+            names = [keyword]
+            locations = [(108.94, 34.27)]
+        return {
+            "status": "1",
+            "pois": [
+                {
+                    "name": name,
+                    "id": f"B{kind}{index}",
+                    "address": "模拟地址",
+                    "adcode": "610100" if city == "西安" else "310000",
+                    "location": f"{longitude},{latitude}",
+                }
+                for index, (name, (longitude, latitude)) in enumerate(zip(names, locations))
+            ],
+        }
+
+    def ranked_shortlist(ctx):
+        return {
+            "attraction_ids": [place["poi_id"] for place in ctx["attractions"]],
+            "restaurant_ids": [place["poi_id"] for place in ctx["restaurants"]],
+            "notes": "模拟规划",
+            "unmet_requirements": [],
+        }
+
+    plan = planner(supplier=four_hotels, maps=spread_maps, selector=ranked_shortlist).run()
+
+    assert len(detailed) == 3 and 4 in detailed
+    assert plan.travel_summary["hotel"]["name"] == "市区商务酒店"
+    assert plan.travel_summary["hotel"]["cost_cents"] == 168000
+    scheduled = [place.name for day in plan.days for place in day.attractions]
+    assert scheduled
+    assert not any(name.startswith("远郊景点") for name in scheduled)
+    omitted = plan.travel_summary["selection_adjustments"]["omitted_preferred_places"]
+    assert "远郊景点0" in omitted
+    assert "远郊景点0" in plan.overall_suggestions
+
+
+def test_intercity_train_and_local_transit_do_not_count_as_walking():
+    from backend.app.agents.journey_graph.nodes.validate import _validate_routes
+
+    r = request(max_daily_walking_minutes=1)
+    plan = planner(r).run()
+    train_route = next(route for route in plan.route_matrix if route.provider == "train")
+    extended_route = train_route.model_copy(update={"duration_minutes": 900})
+    days = []
+    for day in plan.days:
+        days.append(
+            day.model_copy(
+                update={
+                    "timeline": [
+                        item.model_copy(update={"duration_minutes": 900})
+                        if item.route_estimate_id == train_route.estimate_id
+                        else item
+                        for item in day.timeline
+                    ]
+                }
+            )
+        )
+    plan = plan.model_copy(
+        update={
+            "days": days,
+            "route_matrix": [
+                extended_route if route.estimate_id == train_route.estimate_id else route
+                for route in plan.route_matrix
+            ],
+        }
+    )
+
+    codes = {issue.code for issue in _validate_routes({"request": r}, plan)}
+    assert "daily_commute_excessive" not in codes
+    assert "walking_limit_exceeded" not in codes
+
+
+def test_exact_poi_name_wins_over_fuzzy_provider_order():
+    def fuzzy_first(city, keyword, kind):
+        return {
+            "status": "1",
+            "pois": [
+                {
+                    "name": "大雁塔北广场",
+                    "id": "BFUZZY",
+                    "address": "模拟地址",
+                    "adcode": "610100",
+                    "location": "108.96,34.22",
+                },
+                {
+                    "name": "大 雁 塔",
+                    "id": "BEXACT",
+                    "address": "模拟地址",
+                    "adcode": "610100",
+                    "location": "108.96,34.21",
+                },
+            ],
+        }
+
+    result = planner(maps=fuzzy_first).pois("西安", "大雁塔", "110000", exact=True)
+    assert result[0]["poi_id"] == "BEXACT"
+
+
+def test_replan_quote_revision_changes_only_with_refresh_token():
+    from backend.app.domain.review_models import ReplanRequestV2
+    from backend.app.services.one_click_travel import (
+        preserve_replan_quote_revisions,
+        replan_quote_revision,
+        replan_request,
+    )
+
+    first = replan_quote_revision("thread-1", "refresh-1")
+    assert first == replan_quote_revision("thread-1", "refresh-1")
+    assert first != replan_quote_revision("thread-1", "refresh-2")
+    base = request()
+    hotel_change = ReplanRequestV2(
+        instruction="更新酒店",
+        refresh_travel="hotel",
+        refresh_token="refresh-1",
+    )
+    carried = preserve_replan_quote_revisions(base, hotel_change, "thread-1")
+    amap_change = ReplanRequestV2(
+        instruction="更新地点",
+        refresh_travel="amap",
+        refresh_token="refresh-2",
+    )
+    updated = replan_request(
+        carried,
+        amap_change,
+        replan_quote_revision("thread-1", "refresh-2"),
+    )
+    assert updated.quote_revision == {
+        "hotel": replan_quote_revision("thread-1", "refresh-1"),
+        "amap": replan_quote_revision("thread-1", "refresh-2"),
+    }
+
+
 def test_replan_flight_refresh_requires_new_consent():
     from backend.app.domain.review_models import ReplanRequestV2
     from backend.app.services.one_click_travel import replan_request
@@ -267,6 +466,18 @@ def test_replan_flight_refresh_requires_new_consent():
         old, ReplanRequestV2(instruction="Refresh travel proposal", refresh_travel="hotel"), 2
     )
     assert hotel_only.quote_revision == {"hotel": 2}
+    secured_original = old.model_copy(update={"quote_revision": {"hotel": 2, "model": 3}})
+    replacement = request(
+        intercity_mode="flight",
+        flight_confirmed=True,
+        quote_revision={"train": 99, "model": 99},
+    )
+    preserved = replan_request(
+        secured_original,
+        ReplanRequestV2(instruction="调整景点", travel_request=replacement),
+        4,
+    )
+    assert preserved.quote_revision == {"hotel": 2, "model": 3}
 
 
 def test_flight_roundtrip_once_each_and_unknown_taxes():
