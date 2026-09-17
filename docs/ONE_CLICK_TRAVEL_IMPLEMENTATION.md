@@ -61,6 +61,46 @@ examples with different fields are not evidence of the live CN API contract.
 
 ## Unblocking Requirement
 
+### Follow-up verification (2026-09-17)
+
+The official website's rendered documentation showed a load failure. Its public
+documentation API, discovered from the site's own JavaScript, successfully served
+the current tool reference:
+
+- https://rollinggo.store/api/public/docs/spaces/mcp-docs/pages/mcp-tool-reference
+- https://rollinggo.store/api/public/docs/spaces/faq/pages/faq
+- https://raw.githubusercontent.com/RollingGo-AI/rollinggo-hotel-skill-cn/main/skills/rollinggo-hotel-booking/references/cli-params.md
+
+Confirmed facts:
+
+- The current tool reference explicitly describes `searchHotels.price` as a
+  first-night estimated minimum display price, NOT a complete-stay total.
+- Its API-key `getHotelDetail` example matches the observed `averagePrice` shape,
+  but still does not define its billing basis, rounding or included taxes.
+- The official CLI parameter reference defines `averagePrice` as nightly average
+  in the price-confirm response, while its detail response describes different
+  fields (`totalPrice`, `totalSalesRate`). Do not transfer that definition to the
+  current API-key detail response without confirmation.
+- A fresh read-only `tools/list` description promises room/price/tax detail but
+  provides no field-level billing definition or output schema.
+- The FAQ states search and detail prices are reference prices; final booking
+  prices require the separate locking tool. Planning does not require a locked
+  final price, but it does require a known quote basis and explicit unknown fees.
+
+Correction required in the existing manual search: `travel_search.normalize`
+currently marks hotel list `lowestPrice` as `stay_total` and labels it a multi-night
+total. This is contradicted by the official reference. Correct the response basis,
+frontend display/types, fixtures and any cache interpretation before reuse in the
+new planner. This follow-up only verifies the contract; it has not changed that
+runtime behaviour or deployed a correction.
+
+Supplier clarification to request (not sent): For API-key `getHotelDetail`, one
+room, one/two adults, four nights: is `averagePrice` the arithmetic nightly average
+over the entire requested stay? Is it rounded, and to what precision? Which taxes
+and mandatory fees are included/excluded? Can this read-only interface return the
+unrounded whole-stay total or daily price breakdown without price locking or an
+order? Official support: contact@rollinggo.ai. Never include credentials.
+
 Obtain authoritative documentation or a verified read-only response for the CN
 endpoint that specifies the whole-stay rate for the requested one-room occupancy,
 currency, sales availability and any supplied tax/fee information. Unknown taxes
