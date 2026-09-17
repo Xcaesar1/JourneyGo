@@ -491,7 +491,23 @@ const saveSettingsNow = async () => {
   }
 
   .lang-select-nav :deep(.ant-select-selector) {
-    padding: 0 4px !important;
+    padding: 0 8px !important;
+  }
+
+  .lang-select-nav :deep(.ant-select-selection-item) {
+    padding-inline-end: 14px !important;
+    text-align: center;
+  }
+
+  .lang-select-nav :deep(.ant-select-arrow) {
+    inset-inline-end: 7px;
+  }
+
+  .landing-nav .nav-item .memories-entry {
+    min-width: 0;
+    min-height: 30px;
+    padding: 0 8px !important;
+    color: #fff;
   }
 
   .landing-cta {

@@ -176,11 +176,11 @@
               </a-form-item>
             </div>
 
-            <p v-if="oneClickEnabled">{{ t('oneClick.budgetHint') }} {{ t('oneClick.returnDate') }}: {{ computedEndDate?.format('YYYY-MM-DD') }}</p>
-            <p v-if="oneClickEnabled">{{ t('oneClick.optional') }}</p>
+            <p v-if="oneClickEnabled" class="planning-hint">{{ t('oneClick.budgetHint') }} {{ t('oneClick.returnDate') }}: {{ computedEndDate?.format('YYYY-MM-DD') }}</p>
+            <p v-if="oneClickEnabled" class="planning-hint">{{ t('oneClick.optional') }}</p>
             <a-select v-if="pausedTask" v-model:value="restoredMustVisit" mode="tags" :aria-label="t('result.review.addAttractions')" style="width: 100%" />
             <label v-if="oneClickEnabled && formData.transportation === 'flight'"><input v-model="flightConfirmed" type="checkbox" /> {{ t('oneClick.flightConsent') }}</label>
-            <details :open="!oneClickEnabled"><summary>{{ t('oneClick.more') }}</summary>
+            <details class="planning-preferences" :open="!oneClickEnabled"><summary>{{ t('oneClick.more') }}</summary>
             <div class="grid grid2 daily-time-grid">
               <a-form-item name="daily_start_time">
                 <template #label><span class="field-label">{{ t('home.dailyStartLabel') }}</span></template>
@@ -1048,6 +1048,7 @@ const handleRetry = async () => {
 .journey-hero button:disabled { opacity: .55; cursor: wait; }
 @keyframes trail-reveal { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 760px) {
+  .journey-explore { gap: 10px; padding: 10px 14px; font-size: 14px; }
   .journey-landscape { animation: none; background-position: 63% center; }
   .journey-mist { inset: 35% -8% 42% 15%; }
   .journey-hero { min-height: 760px; height: 100svh; background-position: 63% center; align-items: flex-start; }
@@ -1187,7 +1188,7 @@ const handleRetry = async () => {
   justify-content: center;
   background: rgba(215, 110, 66, 0.2);
   border: 1.2px solid rgba(215, 110, 66, 0.4);
-  color: rgba(253, 225, 211, 0.95);
+  color: #fff;
   font-size: 12px;
   font-weight: 700;
 }
@@ -1196,7 +1197,7 @@ const handleRetry = async () => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: rgba(240, 246, 252, 0.94);
+  color: #fff;
 }
 
 .grid {
@@ -1292,8 +1293,17 @@ const handleRetry = async () => {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(228, 236, 245, 0.72);
+  color: #fff;
 }
+
+.planning-hint,
+.planning-preferences,
+.planning-preferences summary {
+  color: #fff;
+}
+
+.planning-hint { line-height: 1.7; }
+.planning-preferences summary { cursor: pointer; padding: 10px 0; }
 
 .field-input.ant-input,
 .field-input.ant-input-lg,
@@ -1410,7 +1420,7 @@ const handleRetry = async () => {
   border-radius: 10px;
   border: 1.2px solid rgba(236, 243, 250, 0.16);
   background: rgba(15, 28, 38, 0.6);
-  color: rgba(232, 239, 247, 0.84);
+  color: #fff;
   font-size: 12px;
   display: inline-flex;
   align-items: center;
@@ -1462,7 +1472,7 @@ const handleRetry = async () => {
 
 .discovery-heading > div > p {
   margin: -2px 0 0;
-  color: rgba(228, 236, 245, 0.58);
+  color: #fff;
   font-size: 12px;
 }
 
@@ -1472,7 +1482,7 @@ const handleRetry = async () => {
   border: 1px solid rgba(215, 110, 66, 0.55);
   border-radius: 10px;
   background: rgba(215, 110, 66, 0.16);
-  color: #f8d8c9;
+  color: #fff;
   padding: 9px 14px;
   font-size: 12px;
   font-weight: 700;
@@ -1638,6 +1648,7 @@ const handleRetry = async () => {
 }
 
 .submit-btn {
+  color: #fff !important;
   width: 100%;
   min-height: 48px;
   border-radius: 12px;
