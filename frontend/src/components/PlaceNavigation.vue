@@ -47,11 +47,11 @@ async function copyAddress() {
 <style scoped>
 .place-navigation { margin-top: 12px; }
 .navigation-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-a, button { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid #8a6b56; border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; text-decoration: none; }
-a:hover, button:hover { background: #ad784b26; }
+a, button { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border: 1px solid var(--jg-border); border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; text-decoration: none; }
+a:hover, button:hover { background: var(--jg-surface); }
 a:focus-visible, button:focus-visible { outline: 2px solid #df9766; outline-offset: 2px; }
-.navigation-help { margin-top: 8px; padding: 12px; border-left: 2px solid #b88158; }
+.navigation-help { margin-top: 8px; padding: 12px; border-left: 2px solid var(--jg-border); }
 .navigation-help a, .navigation-help button { margin: 4px; }
-.navigation-help p { margin: 8px 0; font-size: 13px; }
+.navigation-help p { margin: 8px 0; font-size: 16px; }
 input { width: 100%; color: inherit; background: transparent; }
 </style>

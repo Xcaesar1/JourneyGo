@@ -8,11 +8,13 @@
     "dev:mobile": "vite --mode mobile --host 127.0.0.1 --port 5173 --strictPort",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "test": "node --test src/services/attractionSelection.test.mjs src/services/navigation.test.mjs src/services/mapCoordinates.test.mjs src/views/Landing.mobile-layout.test.mjs src/views/Result.mobile-layout.test.mjs src/views/Result.images.test.mjs src/views/Result.weather.test.mjs src/i18n/locales.test.mjs"
+    "test": "node --test src/services/attractionSelection.test.mjs src/services/navigation.test.mjs src/services/mapCoordinates.test.mjs src/views/Landing.mobile-layout.test.mjs src/views/Result.mobile-layout.test.mjs src/views/Result.images.test.mjs src/views/Result.weather.test.mjs src/i18n/locales.test.mjs src/styles/journeyTheme.test.mjs"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@ant-design/icons-vue": "^7.0.1",
+    "@fontsource-variable/noto-sans-sc": "5.3.0",
+    "@fontsource-variable/noto-serif-sc": "5.3.0",
     "@fontsource/nunito-sans": "5.3.0",
     "@fontsource/outfit": "5.3.0",
     "@fontsource/raleway": "5.3.0",

@@ -225,8 +225,8 @@ const saveSettingsNow = async () => {
   z-index: 1030 !important;
   min-height: 70px;
   padding: 0 !important;
-  background: transparent !important;
-  background-color: transparent !important;
+  background: var(--nav-bg, transparent) !important;
+  background-color: var(--nav-bg, transparent) !important;
   background-image: none !important;
   box-shadow: none !important;
   border: none !important;
@@ -292,11 +292,11 @@ const saveSettingsNow = async () => {
 .landing-brand {
   background: transparent !important;
   border: 0;
-  color: #f4f8fc !important;
+  color: var(--nav-text, #f4f8fc) !important;
   font-weight: 700 !important;
   letter-spacing: 0.12em !important;
   text-transform: uppercase;
-  font-size: 13px !important;
+  font-size: var(--nav-font-size, 13px) !important;
   cursor: pointer;
   min-height: 34px;
   display: inline-flex;
@@ -354,8 +354,8 @@ const saveSettingsNow = async () => {
 
 .landing-nav-btn {
   border: 1.2px solid rgba(236, 243, 250, 0.24);
-  background: rgba(12, 23, 32, 0.56);
-  color: #ecf3fa;
+  background: var(--nav-control, rgba(12, 23, 32, 0.56));
+  color: var(--nav-text, #ecf3fa);
   border-radius: 999px;
   padding: 0 12px;
   min-height: 34px;
@@ -371,11 +371,26 @@ const saveSettingsNow = async () => {
 
 .landing-nav .nav-item .memories-entry {
   min-width: 64px;
-  min-height: 44px;
-  border-radius: 0;
+  min-height: var(--nav-control-height, 34px);
+  border-radius: 999px;
+  border: 1.2px solid rgba(236, 243, 250, 0.24);
+  background: var(--nav-control, rgba(12, 23, 32, 0.56));
+  color: var(--nav-text, #ecf3fa);
+  font-size: var(--nav-font-size, 12px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
   padding: 0 12px !important;
   text-transform: none;
   white-space: nowrap;
+}
+
+.landing-nav .nav-item .memories-entry:hover:not(:disabled) {
+  border-color: var(--nav-text, #ecf3fa);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-nav .nav-item .memories-entry { transition: none; }
 }
 
 .landing-nav .nav-item .memories-entry:disabled { opacity: 0.5 !important; cursor: wait; }
@@ -403,10 +418,10 @@ const saveSettingsNow = async () => {
 }
 
 .lang-select-nav :deep(.ant-select-selector) {
-  height: 34px !important;
+  height: var(--nav-control-height, 34px) !important;
   padding: 0 12px !important;
   border: 1.2px solid rgba(236, 243, 250, 0.24) !important;
-  background: rgba(12, 23, 32, 0.56) !important;
+  background: var(--nav-control, rgba(12, 23, 32, 0.56)) !important;
   border-radius: 999px !important;
   display: flex !important;
   align-items: center !important;
@@ -414,18 +429,18 @@ const saveSettingsNow = async () => {
 
 .lang-select-nav :deep(.ant-select-selection-item) {
   line-height: 32px !important;
-  font-size: 12px !important;
+  font-size: var(--nav-font-size, 12px) !important;
 }
 
 .lang-select-nav :deep(.ant-select-selection-item),
 .lang-select-nav :deep(.ant-select-arrow) {
-  color: #ecf3fa !important;
+  color: var(--nav-text, #ecf3fa) !important;
 }
 
 .landing-cta {
   min-height: 32px;
   padding: 0 14px !important;
-  font-size: 12px !important;
+  font-size: var(--nav-font-size, 12px) !important;
   border: none !important;
   letter-spacing: 0.06em;
   display: inline-flex !important;
@@ -474,9 +489,9 @@ const saveSettingsNow = async () => {
   }
 
   .landing-brand {
-    font-size: 10px !important;
+    font-size: var(--nav-font-size, 10px) !important;
     letter-spacing: 0.05em !important;
-    max-width: 70px;
+    max-width: var(--nav-brand-width, 70px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -505,15 +520,14 @@ const saveSettingsNow = async () => {
 
   .landing-nav .nav-item .memories-entry {
     min-width: 0;
-    min-height: 30px;
+    min-height: var(--nav-control-height, 34px);
     padding: 0 8px !important;
-    color: #fff;
   }
 
   .landing-cta {
     padding: 0 8px !important;
-    font-size: 10px !important;
-    min-height: 30px !important;
+    font-size: var(--nav-font-size, 10px) !important;
+    min-height: var(--nav-control-height, 30px) !important;
     margin-right: 0 !important;
   }
 }
@@ -577,4 +591,8 @@ const saveSettingsNow = async () => {
     grid-template-columns: 1fr;
   }
 }
+
+.journey-navbar-light { --nav-font-size: 14px; --nav-control-height: 44px; --nav-brand-width: 108px; --nav-text: var(--jg-text, #18343e); --nav-control: var(--jg-soft, #e5f3f7); --nav-bg: var(--jg-bg, #f4f8fa); }
+.journey-navbar-light .landing-brand { color: var(--nav-text); }
+.journey-navbar-light .btn-danger { background: var(--jg-accent, #087e9a); border-color: var(--jg-accent, #087e9a); color: white; }
 </style>

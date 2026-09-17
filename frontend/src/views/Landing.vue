@@ -1,7 +1,7 @@
 <template>
   <div class="landing-page">
     <div class="lower-shade" :style="lowerShadeStyle"></div>
-    <NavBar limited-languages :show-settings="false" :show-cta="false" show-memories :memories-disabled="loading || discoveryLoading"
+    <NavBar limited-languages :style="journeyVariables" :class="{ 'journey-navbar-light': scrollY > (formRef?.offsetTop ?? Infinity) - 70 }" :show-settings="false" :show-cta="false" show-memories :memories-disabled="loading || discoveryLoading"
       @memories-click="openMemories" @brand-click="scrollToTop" @cta-click="scrollToForm" />
 
     <div class="wrapper">
@@ -18,8 +18,9 @@
       </section>
     </div>
 
-    <section ref="formRef" class="form-section">
-      <div class="form-panel" :style="[formRevealStyle, { minHeight: panelHeight === 'auto' ? 'auto' : panelHeight + 'px' }]" ref="panelRef">
+    <a-config-provider :theme="journeyTheme">
+    <section ref="formRef" class="form-section journey-theme" :data-journey-theme="journeyThemeName" :style="journeyVariables">
+      <div class="form-panel" :style="{ minHeight: panelHeight === 'auto' ? 'auto' : panelHeight + 'px' }" ref="panelRef">
         <a-form v-show="!loading" :model="formData" layout="vertical" @finish="handleSubmit">
           <section v-if="pausedTask" class="step" role="status">
             <h3>{{ t('oneClick.paused') }}</h3><p>{{ pausedTask.message }}</p>
@@ -91,6 +92,7 @@
                   <span class="field-label">{{ t('home.startDateLabel') }}</span>
                 </template>
                 <a-date-picker
+                  popup-class-name="journey-calendar"
                   v-model:value="formData.start_date"
                   :input-read-only="touchPicker"
                   style="width: 100%"
@@ -403,11 +405,13 @@
         </div>
       </div>
     </section>
+    </a-config-provider>
 
   </div>
 </template>
 
 <script setup lang="ts">
+import { journeyTheme, journeyThemeName, journeyVariables } from '@/styles/journeyTheme'
 import { computed, nextTick, onMounted, onUnmounted, reactive, ref, toRaw, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -669,13 +673,6 @@ const toneProgress = computed(() => Math.min(Math.max((scrollY.value - 20) / 360
 const lowerShadeStyle = computed(() => ({
   opacity: `${(0.34 + toneProgress.value * 0.52) * (fogEnabled.value ? 1 : 0)}`,
 }))
-const formRevealStyle = computed(() => {
-  const progress = Math.min(Math.max((scrollY.value - 80) / 340, 0), 1)
-  return {
-    opacity: `${0.2 + progress * 0.8}`,
-    transform: `translate3d(0, ${(1 - progress) * 56}px, 0)`,
-  }
-})
 
 const togglePreference = (value: string) => {
   const index = formData.preferences.indexOf(value)
@@ -1165,33 +1162,44 @@ const handleRetry = async () => {
 
 
 .form-section {
-  margin-top: -112px;
-  padding: 0 20px 86px;
+  margin-top: 0;
+  padding: 48px 24px 86px;
   position: relative;
   z-index: 3;
+  isolation: isolate;
+  scroll-margin-top: 84px;
+}
+
+.form-section::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(ellipse at 10% 10%, var(--jg-soft), transparent 45%), var(--jg-bg); }
+@media (min-width: 1081px) {
+  .form-panel :deep(.ant-form) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 36px; }
+  .form-panel :deep(.ant-form) > * { grid-column: 1 / -1; min-width: 0; }
+  .form-panel :deep(.ant-form) > .step:has(.city-list), .form-panel :deep(.ant-form) > .step:has(.constraint-grid) { grid-column: auto; }
 }
 
 .form-panel {
-  max-width: 1000px;
+  max-width: 1120px;
   margin: 0 auto;
-  border: 1.2px solid rgba(236, 243, 250, 0.2);
-  border-radius: 22px;
-  background: rgba(12, 23, 32, 0.56);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 24px 80px rgba(4, 11, 18, 0.52);
-  padding: 20px;
-  transition: 0.25s;
+  border: 1.2px solid var(--jg-border);
+  border-radius: 20px;
+  background: var(--jg-surface);
+  backdrop-filter: none;
+  box-shadow: var(--jg-shadow);
+  padding: clamp(20px, 4vw, 48px);
+  transition: box-shadow 180ms ease;
 }
 
 .step {
-  margin-bottom: 8px;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--jg-border);
 }
 
 .step-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .step-head span {
@@ -1201,18 +1209,18 @@ const handleRetry = async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(215, 110, 66, 0.2);
-  border: 1.2px solid rgba(215, 110, 66, 0.4);
-  color: #fff;
-  font-size: 12px;
+  background: var(--jg-soft);
+  border: 1.2px solid var(--jg-border);
+  color: var(--jg-text);
+  font-size: 16px;
   font-weight: 700;
 }
 
 .step-head h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 600;
-  color: #fff;
+  color: var(--jg-text);
 }
 
 .grid {
@@ -1266,55 +1274,55 @@ const handleRetry = async () => {
   width: 36px;
   height: 40px;
   margin-bottom: 0;
-  border: 1.2px solid rgba(236, 243, 250, 0.2);
+  border: 1.2px solid var(--jg-border);
   border-radius: 10px;
-  background: rgba(14, 27, 38, 0.66);
-  color: rgba(236, 243, 250, 0.6);
+  background: var(--jg-surface);
+  color: var(--jg-text);
   font-size: 18px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .city-remove-btn:hover {
-  border-color: rgba(255, 100, 100, 0.6);
-  color: #ff6464;
-  background: rgba(255, 100, 100, 0.1);
+  border-color: var(--jg-border);
+  color: var(--jg-danger);
+  background: var(--jg-surface);
 }
 
 .city-add-btn {
   align-self: flex-start;
   padding: 6px 16px;
-  border: 1.2px dashed rgba(215, 110, 66, 0.5);
+  border: 1.2px dashed var(--jg-border);
   border-radius: 10px;
   background: transparent;
-  color: rgba(215, 110, 66, 0.85);
-  font-size: 13px;
+  color: var(--jg-text);
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .city-add-btn:hover {
-  border-color: rgba(215, 110, 66, 0.9);
-  background: rgba(215, 110, 66, 0.1);
-  color: #d76e42;
+  border-color: var(--jg-border);
+  background: var(--jg-soft);
+  color: var(--jg-accent-strong);
 }
 
 .field-label {
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--jg-text);
 }
 
 .planning-hint,
 .planning-preferences,
 .planning-preferences summary {
-  color: #fff;
+  color: var(--jg-text);
 }
 
 .planning-hint { line-height: 1.7; }
@@ -1330,12 +1338,12 @@ const handleRetry = async () => {
 .field-textarea :deep(.ant-input),
 .field-textarea.ant-input,
 .special-textarea.ant-input {
-  border: 1.2px solid rgba(236, 243, 250, 0.2) !important;
+  border: 1.2px solid var(--jg-border);
   border-radius: 12px !important;
-  background: rgba(14, 27, 38, 0.66) !important;
-  background-color: rgba(14, 27, 38, 0.66) !important;
+  background: var(--jg-surface);
+  background-color: var(--jg-surface);
   background-image: none !important;
-  color: #ecf3fa !important;
+  color: var(--jg-text);
 }
 
 /* 浏览器自动填充（Autofill）背景色修复 */
@@ -1346,21 +1354,21 @@ const handleRetry = async () => {
 :deep(.field-input .ant-picker-input > input:-webkit-autofill),
 :deep(.field-textarea textarea:-webkit-autofill),
 :deep(.special-textarea:-webkit-autofill) {
-  -webkit-box-shadow: 0 0 0 1000px #0e1b26 inset !important;
-  -webkit-text-fill-color: #ecf3fa !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--jg-surface) inset;
+  -webkit-text-fill-color: var(--jg-text);
   transition: background-color 5000s ease-in-out 0s !important;
 }
 
 .field-input.ant-input-number :deep(.ant-input-number-input),
 .field-input.ant-input-number :deep(.ant-input-number-handler-wrap) {
-  color: #ecf3fa !important;
+  color: var(--jg-text);
 }
 
 .field-input.ant-input::placeholder,
 :deep(.field-input .ant-picker-input > input::placeholder),
 .field-textarea :deep(textarea::placeholder),
 .field-textarea.ant-input::placeholder {
-  color: rgba(228, 236, 245, 0.4) !important;
+  color: var(--jg-text);
 }
 
 .field-input.ant-input:hover,
@@ -1368,17 +1376,17 @@ const handleRetry = async () => {
 .field-select:hover :deep(.ant-select-selector),
 .field-textarea :deep(textarea:hover),
 .field-textarea.ant-input:hover {
-  border-color: rgba(236, 243, 250, 0.42) !important;
+  border-color: var(--jg-border);
 }
 
 .field-input.ant-input:focus,
 .field-input.ant-picker-focused,
 .field-textarea :deep(textarea:focus),
 .field-textarea.ant-input:focus {
-  border-color: rgba(215, 110, 66, 0.88) !important;
-  box-shadow: 0 0 0 3px rgba(215, 110, 66, 0.2) !important;
-  background: rgba(14, 27, 38, 0.66) !important;
-  outline: none !important;
+  border-color: var(--jg-accent-strong);
+  box-shadow: 0 0 0 3px var(--jg-soft);
+  background: var(--jg-surface);
+  outline: 2px solid var(--jg-accent);
 }
 
 :deep(.field-input .ant-picker-input > input),
@@ -1386,14 +1394,14 @@ const handleRetry = async () => {
 :deep(.field-input .ant-picker-suffix),
 :deep(.field-input .ant-picker-clear),
 .field-select :deep(.ant-select-arrow) {
-  color: #ecf3fa !important;
+  color: var(--jg-text);
 }
 
 .days-chip {
   min-height: 40px;
   border-radius: 12px;
-  border: 1.2px solid rgba(215, 110, 66, 0.42);
-  background: rgba(19, 34, 46, 0.8);
+  border: 1.2px solid var(--jg-border);
+  background: var(--jg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1401,7 +1409,7 @@ const handleRetry = async () => {
 }
 
 .days-number {
-  color: rgba(236, 243, 250, 0.72);
+  color: var(--jg-text);
   font-size: 18px;
   line-height: 1;
   font-weight: 700;
@@ -1411,7 +1419,7 @@ const handleRetry = async () => {
   font-size: 16px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(224, 233, 242, 0.74);
+  color: var(--jg-text);
   font-weight: 700;
 }
 
@@ -1433,46 +1441,46 @@ const handleRetry = async () => {
 .interest-pill {
   min-height: 38px;
   border-radius: 10px;
-  border: 1.2px solid rgba(236, 243, 250, 0.16);
-  background: rgba(15, 28, 38, 0.6);
-  color: #fff;
-  font-size: 12px;
+  border: 1.2px solid var(--jg-border);
+  background: var(--jg-surface);
+  color: var(--jg-text);
+  font-size: 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   user-select: none;
-  transition: all 0.55s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .interest-pill:hover {
-  background: rgba(236, 243, 250, 0.08);
-  border-color: rgba(236, 243, 250, 0.3);
+  background: var(--jg-surface);
+  border-color: var(--jg-border);
   /* transform: translateY(-2px); */
-  box-shadow: 0 4px 12px rgba(4, 11, 18, 0.3);
+  box-shadow: var(--jg-shadow);
 }
 
 .interest-pill:active {
   transform: translateY(1px) scale(0.96);
-  box-shadow: 0 2px 4px rgba(4, 11, 18, 0.2);
+  box-shadow: var(--jg-shadow);
 }
 
 .interest-pill.active {
-  border-color: rgba(215, 110, 66, 0.8);
-  background: rgba(215, 110, 66, 0.2);
+  border-color: var(--jg-border);
+  background: var(--jg-soft);
 }
 
 .interest-pill.active:hover {
-  background: rgba(215, 110, 66, 0.28);
-  border-color: rgba(215, 110, 66, 1);
+  background: var(--jg-soft);
+  border-color: var(--jg-border);
 }
 
 .attraction-discovery-step {
   margin: 18px 0 22px;
   padding: 18px;
-  border: 1px solid rgba(215, 110, 66, 0.3);
+  border: 1px solid var(--jg-border);
   border-radius: 16px;
-  background: rgba(7, 17, 24, 0.42);
+  background: var(--jg-surface);
 }
 
 .discovery-heading,
@@ -1487,19 +1495,19 @@ const handleRetry = async () => {
 
 .discovery-heading > div > p {
   margin: -2px 0 0;
-  color: #fff;
-  font-size: 12px;
+  color: var(--jg-text);
+  font-size: 16px;
 }
 
 .discovery-load-btn,
 .candidate-more {
   flex: 0 0 auto;
-  border: 1px solid rgba(215, 110, 66, 0.55);
+  border: 1px solid var(--jg-border);
   border-radius: 10px;
-  background: rgba(215, 110, 66, 0.16);
-  color: #fff;
+  background: var(--jg-soft);
+  color: var(--jg-text);
   padding: 9px 14px;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -1517,7 +1525,7 @@ const handleRetry = async () => {
 
 .candidate-city-section {
   padding-top: 15px;
-  border-top: 1px solid rgba(236, 243, 250, 0.12);
+  border-top: 1px solid var(--jg-border);
 }
 
 .candidate-city-head {
@@ -1529,13 +1537,13 @@ const handleRetry = async () => {
 }
 
 .candidate-city-head strong {
-  color: #f4f8fc;
-  font-size: 15px;
+  color: var(--jg-text);
+  font-size: 16px;
 }
 
 .candidate-city-head span {
-  color: #e79a78;
-  font-size: 12px;
+  color: var(--jg-accent-strong);
+  font-size: 16px;
 }
 
 .candidate-search {
@@ -1544,9 +1552,9 @@ const handleRetry = async () => {
 
 .candidate-search :deep(.ant-input),
 .candidate-search :deep(.ant-input-affix-wrapper) {
-  background: rgba(14, 27, 38, 0.72) !important;
-  border-color: rgba(236, 243, 250, 0.18) !important;
-  color: #ecf3fa !important;
+  background: var(--jg-surface);
+  border-color: var(--jg-border);
+  color: var(--jg-text);
 }
 
 .candidate-grid {
@@ -1558,9 +1566,9 @@ const handleRetry = async () => {
 .candidate-card {
   overflow: hidden;
   padding: 0;
-  border: 1px solid rgba(236, 243, 250, 0.14);
+  border: 1px solid var(--jg-border);
   border-radius: 13px;
-  background: rgba(14, 27, 38, 0.72);
+  background: var(--jg-surface);
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -1569,12 +1577,12 @@ const handleRetry = async () => {
 
 .candidate-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(236, 243, 250, 0.34);
+  border-color: var(--jg-border);
 }
 
 .candidate-card.selected {
-  border-color: rgba(215, 110, 66, 0.9);
-  background: rgba(69, 38, 28, 0.72);
+  border-color: var(--jg-accent);
+  background: var(--jg-soft);
 }
 
 .candidate-image-wrap {
@@ -1584,9 +1592,9 @@ const handleRetry = async () => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: linear-gradient(135deg, #1b2b36, #0c151c);
-  color: rgba(236, 243, 250, 0.42);
-  font-size: 12px;
+  background: var(--jg-surface);
+  color: var(--jg-text);
+  font-size: 16px;
 }
 
 .candidate-image-wrap img {
@@ -1604,14 +1612,15 @@ const handleRetry = async () => {
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(5, 13, 19, 0.8);
-  color: #fff;
+  background: var(--jg-surface);
+  color: var(--jg-text);
   font-style: normal;
   font-weight: 800;
 }
 
 .candidate-card.selected .candidate-image-wrap i {
-  background: #d76e42;
+  background: var(--jg-accent);
+  color: white;
 }
 
 .candidate-copy {
@@ -1620,15 +1629,15 @@ const handleRetry = async () => {
 
 .candidate-copy strong {
   overflow: hidden;
-  color: #f4f8fc;
-  font-size: 13px;
+  color: var(--jg-text);
+  font-size: 16px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .candidate-copy > div > span {
-  color: #f4b08d;
-  font-size: 12px;
+  color: var(--jg-text);
+  font-size: 16px;
 }
 
 .candidate-copy p,
@@ -1637,23 +1646,23 @@ const handleRetry = async () => {
   display: block;
   overflow: hidden;
   margin: 5px 0 0;
-  color: rgba(228, 236, 245, 0.58);
-  font-size: 11px;
+  color: var(--jg-text);
+  font-size: 16px;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .candidate-copy a {
-  color: rgba(231, 154, 120, 0.78);
+  color: var(--jg-text);
 }
 
 .candidate-empty {
   padding: 28px 12px;
-  border: 1px dashed rgba(236, 243, 250, 0.16);
+  border: 1px dashed var(--jg-border);
   border-radius: 12px;
-  color: rgba(228, 236, 245, 0.54);
+  color: var(--jg-text);
   text-align: center;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .candidate-more {
@@ -1663,14 +1672,13 @@ const handleRetry = async () => {
 }
 
 .submit-btn {
-  color: #fff !important;
+  color: #ffffff;
+  background: var(--jg-accent);
+  border: 1px solid var(--jg-accent);
   width: 100%;
   min-height: 48px;
   border-radius: 12px;
-  /* border: 1px solid rgba(236, 243, 250, 0.28);
-  background: linear-gradient(135deg, #d76e42, #a14625);
-  color: #fff; */
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1678,7 +1686,7 @@ const handleRetry = async () => {
 }
 
 .submit-btn.loading {
-  background: rgba(14, 27, 38, 0.66);
+  background: var(--jg-surface);
   cursor: wait;
 }
 
@@ -1689,31 +1697,31 @@ const handleRetry = async () => {
   gap: 24px;
   margin: 8px 0 22px;
   padding: 22px;
-  border: 1px solid rgba(255, 148, 120, 0.48);
+  border: 1px solid var(--jg-border);
   border-radius: 16px;
-  background: rgba(96, 35, 28, 0.26);
+  background: var(--jg-surface);
 }
 
 .failure-eyebrow {
-  color: #ff9478;
-  font-size: 11px;
+  color: var(--jg-text);
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.12em;
 }
 
 .failure-recovery h3 {
   margin: 5px 0 6px;
-  color: #fff;
+  color: var(--jg-text);
 }
 
 .failure-recovery p {
   margin: 0 0 8px;
-  color: rgba(236, 243, 250, 0.72);
+  color: var(--jg-text);
 }
 
 .failure-recovery code {
-  color: #ffd6cc;
-  font-size: 12px;
+  color: var(--jg-accent-strong);
+  font-size: 16px;
   overflow-wrap: anywhere;
 }
 
@@ -1731,8 +1739,8 @@ const handleRetry = async () => {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 2px solid rgba(236, 243, 250, 0.24);
-  border-top-color: #fff;
+  border: 2px solid var(--jg-border);
+  border-top-color: var(--jg-border);
   animation: spin 0.8s linear infinite;
 }
 
@@ -1740,8 +1748,8 @@ const handleRetry = async () => {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  border: 2.5px solid rgba(215, 110, 66, 0.24);
-  border-top-color: #d76e42;
+  border: 2.5px solid var(--jg-border);
+  border-top-color: var(--jg-accent);
   animation: spin 0.8s linear infinite;
 }
 
@@ -1753,7 +1761,7 @@ const handleRetry = async () => {
   justify-content: center;
   height: 100%;
   min-height: 480px;
-  animation: fadeIn 0.4s ease;
+  animation: fadeIn 200ms ease;
   padding: 30px 20px;
   box-sizing: border-box;
 }
@@ -1771,14 +1779,14 @@ const handleRetry = async () => {
 .stepper-title {
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: var(--jg-text);
   margin-bottom: 8px;
   letter-spacing: 0.05em;
 }
 
 .stepper-subtitle {
-  font-size: 15px;
-  color: rgba(236, 243, 250, 0.54);
+  font-size: 16px;
+  color: var(--jg-text);
 }
 
 .stepper-container {
@@ -1802,51 +1810,51 @@ const handleRetry = async () => {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: rgba(14, 27, 38, 0.8);
-  border: 1.5px solid rgba(236, 243, 250, 0.16);
+  background: var(--jg-surface);
+  border: 1.5px solid var(--jg-border);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
-  color: rgba(236, 243, 250, 0.4);
-  transition: all 0.35s ease;
+  color: var(--jg-text);
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .step-node.active .node-icon {
-  border-color: #d76e42;
-  background: rgba(215, 110, 66, 0.14);
-  color: #d76e42;
-  box-shadow: 0 0 16px rgba(215, 110, 66, 0.25);
+  border-color: var(--jg-border);
+  background: var(--jg-soft);
+  color: var(--jg-accent-strong);
+  box-shadow: var(--jg-shadow);
 }
 
 .step-node.completed .node-icon {
-  background: #d76e42;
-  border-color: #d76e42;
-  color: #fff;
-  box-shadow: 0 0 12px rgba(215, 110, 66, 0.3);
+  background: var(--jg-soft);
+  border-color: var(--jg-border);
+  color: var(--jg-text);
+  box-shadow: var(--jg-shadow);
 }
 
 .node-text {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
-  color: rgba(236, 243, 250, 0.4);
+  color: var(--jg-text);
   text-align: center;
   transition: color 0.35s ease;
   line-height: 1.3;
 }
 
 .step-node.active .node-text {
-  color: #d76e42;
+  color: var(--jg-accent-strong);
 }
 
 .step-node.completed .node-text {
-  color: rgba(236, 243, 250, 0.85);
+  color: var(--jg-text);
 }
 
 .step-divider {
   flex: 1;
   height: 3px;
-  background: rgba(236, 243, 250, 0.08);
+  background: var(--jg-surface);
   margin-top: 25px; /* (52px / 2) - 1.5px */
   border-radius: 2px;
   position: relative;
@@ -1857,7 +1865,7 @@ const handleRetry = async () => {
   content: '';
   position: absolute;
   top: 0; left: 0; bottom: 0; width: 0%;
-  background: #d76e42;
+  background: var(--jg-soft);
   transition: width 0.45s ease;
 }
 
@@ -1873,13 +1881,13 @@ const handleRetry = async () => {
 .stepper-footer h3 {
   font-size: 20px;
   font-weight: 600;
-  color: #d76e42;
+  color: var(--jg-accent-strong);
   margin-bottom: 8px;
 }
 
 .stepper-footer p {
-  font-size: 14px;
-  color: rgba(236, 243, 250, 0.54);
+  font-size: 16px;
+  color: var(--jg-text);
 }
 
 .node-event-log {
@@ -1895,22 +1903,22 @@ const handleRetry = async () => {
   grid-template-columns: 44px 1fr;
   gap: 10px;
   padding: 6px 0;
-  border-bottom: 1px solid rgba(236, 243, 250, 0.08);
-  color: rgba(236, 243, 250, 0.68);
-  font-size: 12px;
+  border-bottom: 1px solid var(--jg-border);
+  color: var(--jg-text);
+  font-size: 16px;
 }
 
 .node-event-log span {
-  color: #d76e42;
+  color: var(--jg-accent-strong);
   font-variant-numeric: tabular-nums;
 }
 
 :deep(.ant-form-item-label > label) {
-  color: transparent !important;
+  color: var(--jg-text);
 }
 
 :deep(.ant-form-item-explain-error) {
-  color: #ff9478 !important;
+  color: var(--jg-danger);
 }
 
 /* @keyframes cloudLoop {
@@ -1944,7 +1952,7 @@ const handleRetry = async () => {
 
 @media (max-width: 991px) {
   .form-section {
-    padding: 0 14px 72px;
+    padding: 28px 14px 72px;
   }
 
   .form-panel {
@@ -1959,6 +1967,14 @@ const handleRetry = async () => {
 }
 
 @media (max-width: 520px) {
+  .stepper-wrapper { padding: 20px 0; }
+  .stepper-header { margin-bottom: 28px; }
+  .stepper-title { font-size: 22px; overflow-wrap: anywhere; }
+  .stepper-container { flex-direction: column; gap: 8px; margin-bottom: 24px; }
+  .step-node { flex-direction: row; width: 100%; gap: 16px; }
+  .node-icon { width: 44px; height: 44px; flex-shrink: 0; margin: 0; }
+  .node-text { text-align: left; margin: 0; }
+  .step-divider { flex: none; width: 2px; height: 16px; margin: 0 0 0 21px; background: var(--jg-border); }
   .failure-recovery {
     align-items: stretch;
     flex-direction: column;
@@ -1969,7 +1985,7 @@ const handleRetry = async () => {
   }
 
   .landing-header .presentation-subtitle {
-    font-size: 14px;
+    font-size: 16px;
     padding: 0 10px;
   }
 

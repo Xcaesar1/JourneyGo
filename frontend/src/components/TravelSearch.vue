@@ -139,37 +139,37 @@ async function submit() {
 </script>
 
 <style scoped>
-.travel-search { margin: 24px 0; padding: 24px; border: 1px solid rgba(255,255,255,.12); border-radius: 16px; background: linear-gradient(135deg, #101d24, #071016 65%); color: #ecf3fa; color-scheme: dark; }
+.travel-search { margin: 24px 0; padding: 24px; border: 1px solid var(--jg-border); border-radius: 16px; background: var(--jg-surface); color: var(--jg-text); color-scheme: light; }
 .travel-heading, .travel-offer-heading { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; flex-wrap: wrap; }
-.travel-heading h2 { margin: 4px 0; font-size: 24px; color: #fff3eb; font-family: Georgia, 'Times New Roman', serif; }
-.travel-eyebrow { font-size: 11px; letter-spacing: .14em; color: #e79069; }
-.travel-badge { font-size: 12px; color: #ffd5c6; }
-.travel-search .travel-intro, .travel-search .travel-note { color: #b3c2cc; font-size: 13px; line-height: 1.7; }
+.travel-heading h2 { margin: 4px 0; font-size: 24px; color: var(--jg-text); }
+.travel-eyebrow { font-size: 16px; letter-spacing: .14em; color: var(--jg-accent-strong); }
+.travel-badge { font-size: 16px; color: var(--jg-accent-strong); }
+.travel-search .travel-intro, .travel-search .travel-note { color: var(--jg-text); font-size: 16px; line-height: 1.7; }
 .travel-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
-.travel-tabs button { background: rgba(255,255,255,.04); border: 1px solid #41515c; border-radius: 20px; padding: 8px 18px; cursor: pointer; color: #c9d6df; }
-.travel-tabs button[aria-pressed="true"] { background: #a34c2a; color: #fff3eb; border-color: #e79069; }
+.travel-tabs button { background: var(--jg-surface); border: 1px solid var(--jg-border); border-radius: 20px; padding: 8px 18px; cursor: pointer; color: var(--jg-text); }
+.travel-tabs button[aria-pressed="true"] { background: var(--jg-surface); color: var(--jg-text); border-color: var(--jg-border); }
 fieldset { padding: 0; margin: 0; border: 0; min-width: 0; }
 .travel-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-.travel-fields label, .travel-access { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.travel-fields label, .travel-access { display: flex; flex-direction: column; gap: 6px; font-size: 16px; }
 .travel-access { max-width: 320px; }
-input:not([type="checkbox"]) { min-width: 0; width: 100%; box-sizing: border-box; padding: 10px 12px; background: #15232c; border: 1px solid #41515c; border-radius: 8px; color: #ecf3fa; font: inherit; }
+input:not([type="checkbox"]) { min-width: 0; width: 100%; box-sizing: border-box; padding: 10px 12px; background: var(--jg-surface); border: 1px solid var(--jg-border); border-radius: 8px; color: var(--jg-text); font: inherit; }
 input:focus-visible, button:focus-visible { outline: 2px solid #e79069; outline-offset: 3px; }
-.travel-check { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0; font-size: 13px; line-height: 1.6; }
+.travel-check { display: flex; align-items: flex-start; gap: 8px; margin: 14px 0; font-size: 16px; line-height: 1.6; }
 .travel-check input { margin-top: 4px; }
-.travel-submit { margin-top: 14px; border: 0; border-radius: 9px; padding: 10px 24px; background: #a34c2a; color: white; cursor: pointer; }
+.travel-submit { margin-top: 14px; border: 0; border-radius: 9px; padding: 10px 24px; background: var(--jg-surface); color: var(--jg-text); cursor: pointer; }
 button:disabled, fieldset:disabled { opacity: .6; cursor: not-allowed; }
-.travel-search .travel-notice { color: #f4c56c; background: #2b251c; border-radius: 8px; padding: 12px; }
-.travel-search .travel-error { color: #ff9e8c; }
-.travel-results { border-top: 1px solid #41515c; margin-top: 20px; padding-top: 12px; }
+.travel-search .travel-notice { color: var(--jg-warning); background: var(--jg-surface); border-radius: 8px; padding: 12px; }
+.travel-search .travel-error { color: var(--jg-text); }
+.travel-results { border-top: 1px solid var(--jg-border); margin-top: 20px; padding-top: 12px; }
 .travel-offers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.travel-offer { padding: 16px; background: #15232c; border: 1px solid #41515c; border-radius: 12px; overflow-wrap: anywhere; }
-.travel-offer h3 { margin: 0; font-size: 16px; color: #fff3eb; }
-.travel-search .travel-offer strong { color: #ffd5a1; white-space: nowrap; }
-.travel-search .travel-offer p { margin: 8px 0; font-size: 13px; color: #c9d6df; }
-.travel-offer small { display: block; color: #a5b6c1; line-height: 1.6; }
-.travel-offer a, .travel-source { font-size: 12px; }
-.travel-source { margin-top: 16px; color: #a5b6c1; }
-.travel-search a { color: #eab69b; }
+.travel-offer { padding: 16px; background: var(--jg-surface); border: 1px solid var(--jg-border); border-radius: 12px; overflow-wrap: anywhere; }
+.travel-offer h3 { margin: 0; font-size: 16px; color: var(--jg-text); }
+.travel-search .travel-offer strong { color: var(--jg-accent-strong); white-space: nowrap; }
+.travel-search .travel-offer p { margin: 8px 0; font-size: 16px; color: var(--jg-text); }
+.travel-offer small { display: block; color: var(--jg-text); line-height: 1.6; }
+.travel-offer a, .travel-source { font-size: 16px; }
+.travel-source { margin-top: 16px; color: var(--jg-text); }
+.travel-search a { color: var(--jg-text); }
 @media (max-width: 640px) {
   .travel-search { padding: 16px; border-radius: 14px; }
   .travel-fields, .travel-offers { grid-template-columns: 1fr; }

@@ -1,0 +1,60 @@
+@import '@fontsource-variable/noto-sans-sc';
+@import '@fontsource-variable/noto-serif-sc';
+@import './journey-outdoor.css';
+@import '@fontsource/raleway/latin-600.css';
+@import '@fontsource/raleway/latin-700.css';
+@import '@fontsource/nunito-sans/latin-400.css';
+@import '@fontsource/nunito-sans/latin-600.css';
+@import '@fontsource/nunito-sans/latin-700.css';
+
+.journey-calendar .ant-picker-date-panel .ant-picker-content { width: 308px; table-layout: fixed; }
+.journey-calendar .ant-picker-date-panel .ant-picker-body { padding: 8px; }
+.journey-calendar .ant-picker-date-panel { width: 324px; }
+.journey-calendar .ant-picker-cell { padding: 2px 0; }
+.journey-calendar .ant-picker-header > button { min-width: 44px; min-height: 44px; }
+
+.journey-theme {
+  --jg-bg: #f5f2e9;
+  --jg-surface: #fffef8;
+  --jg-soft: #e5ebdf;
+  --jg-accent: #315b45;
+  --jg-accent-strong: #244735;
+  --jg-text: #263b30;
+  --jg-muted: #5d6b5c;
+  --jg-border: #d4d8c8;
+  --jg-success: #22724f;
+  --jg-warning: #8b590d;
+  --jg-danger: #b13d42;
+  --jg-shadow: 0 8px 32px rgb(24 52 62 / 6%);
+  --jg-font: 'Nunito Sans', 'Noto Sans SC Variable', 'Microsoft YaHei', sans-serif;
+  --jg-heading: Georgia, 'Noto Serif SC Variable', 'Songti SC', serif;
+  color: var(--jg-text);
+  color-scheme: light;
+  font-family: var(--jg-font);
+  font-size: 16px;
+  line-height: 1.65;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.journey-theme :where(p, span, a, label, input, textarea, select, button, td, small, strong, summary) {
+  font-family: var(--jg-font);
+}
+.journey-theme :where(p, input, textarea, select) { font-weight: 400; }
+.journey-theme :where(strong) { font-weight: 700; }
+.journey-theme :where(h1, h2, h3, h4) { font-family: var(--jg-heading); font-weight: 700; letter-spacing: -.025em; }
+.journey-theme :where(input, select, textarea) { font-size: 16px; }
+.journey-theme :where(button, a, input, textarea, select) { touch-action: manipulation; }
+.journey-theme :where(button, summary, select) { min-height: 44px; }
+.journey-theme :where(button, a, input, textarea, select, summary):focus-visible { outline: 3px solid var(--jg-accent); outline-offset: 3px; }
+.journey-theme :where(button:disabled) { opacity: .55; cursor: not-allowed; }
+.journey-theme :where(a) { color: var(--jg-accent-strong); }
+.journey-theme :where(details) { border-top: 1px solid var(--jg-border); }
+.journey-theme :where(summary) { cursor: pointer; padding: 10px 0; color: var(--jg-accent-strong); }
+.journey-theme :where(.ant-input, .ant-input-number, .ant-picker, .ant-select-selector) { min-height: 44px; }
+.journey-theme :where(.ant-input-number-input, .ant-select-selection-item) { line-height: 42px; }
+.journey-theme :where(.ant-btn) { height: auto; min-height: 44px; white-space: normal; }
+.journey-theme :where(.ant-form-item-explain-error) { color: var(--jg-danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-theme *, .journey-theme *::before, .journey-theme *::after { animation: none; transition: none; scroll-behavior: auto; }
+}

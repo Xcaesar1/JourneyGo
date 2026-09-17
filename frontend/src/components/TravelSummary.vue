@@ -3,7 +3,7 @@
     <p>{{ t('oneClick.notBooked') }}</p>
     <div class="logistics-grid">
       <article v-for="direction in ['outbound', 'return']" :key="direction">
-        <h3>{{ t(direction === 'outbound' ? 'oneClick.outbound' : 'oneClick.inbound') }} · {{ summary[direction].number }}</h3>
+        <h3>{{ t(direction === 'outbound' ? 'oneClick.outbound' : 'oneClick.inbound') }} · <span class="train-number">{{ summary[direction].number }}</span></h3>
         <p>{{ summary[direction].from_name }} → {{ summary[direction].to_name }}</p>
         <p>{{ summary[direction].departure.replace('T', ' ') }} → {{ summary[direction].arrival.replace('T', ' ') }}</p>
         <p>{{ summary[direction].seat }} · CNY {{ money(summary[direction].price_cents) }} / {{ t('travelUnits.perPerson') }} × {{ summary.planning_request.travelers }}</p>
@@ -73,10 +73,13 @@ function submit() {
 </script>
 
 <style scoped>
-.trip-logistics { margin: 24px 0; padding: 20px; border: 1px solid #41515c; border-radius: 12px; background: #101d24; color: #ecf3fa; }
+.trip-logistics { margin: 24px 0; padding: 24px; border: 1px solid var(--jg-border); border-radius: 20px; background: var(--jg-surface); color: var(--jg-text); }
 .logistics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-article { padding: 16px; background: #15232c; border-radius: 8px; overflow-wrap: anywhere; }
-h3, p { color: inherit; } a { color: #ffd5a1; } button { display: block; margin-top: 12px; padding: 10px 16px; color: white; background: #a34c2a; border: 1px solid #e79069; cursor: pointer; }
-.quote-editor { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; } label { display: grid; gap: 6px; } input, select { min-height: 40px; max-width: 100%; color: #ecf3fa; background: #15232c; border: 1px solid #41515c; }
-@media(max-width:640px) { .logistics-grid { grid-template-columns: 1fr; } .quote-editor { display: grid; } }
+article { padding: 20px; background: var(--jg-bg); border-radius: 20px; overflow-wrap: anywhere; border: 1px solid var(--jg-border); }
+article:last-child { background: var(--jg-soft); }
+h3 { font-size: 20px; line-height: 1.5; margin: 0 0 16px; }
+p { font-size: 16px; margin-bottom: 12px; }
+h3, p { color: inherit; } a { color: var(--jg-accent-strong); } button { display: block; margin-top: 16px; padding: 10px 16px; border-radius: 12px; color: var(--jg-accent-strong); background: var(--jg-surface); border: 1px solid var(--jg-border); cursor: pointer; }
+.quote-editor { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; } label { display: grid; gap: 6px; } input, select { min-height: 40px; max-width: 100%; color: var(--jg-text); background: var(--jg-surface); border: 1px solid var(--jg-border); }
+@media(max-width:640px) { .trip-logistics { padding: 16px; } .logistics-grid { grid-template-columns: 1fr; } .quote-editor { display: grid; min-width: 0; } .quote-editor input, .quote-editor select { width: 100%; min-width: 0; } }
 </style>

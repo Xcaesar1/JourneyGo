@@ -1,0 +1,24 @@
+.journey-theme[data-journey-theme='outdoor'] { font-variant-numeric: lining-nums tabular-nums; }
+.journey-theme .train-number { font-family: var(--jg-font); font-variant-numeric: lining-nums tabular-nums; }
+.journey-theme[data-journey-theme='outdoor'].result-container,
+.journey-theme[data-journey-theme='outdoor'].form-section::before {
+  background: repeating-radial-gradient(ellipse at 105% 0%, transparent 0 38px, rgb(49 91 69 / 3%) 39px 40px, transparent 41px 70px), repeating-linear-gradient(95deg, rgb(49 91 69 / 1%) 0 1px, transparent 1px 5px), var(--jg-bg);
+}
+.journey-theme[data-journey-theme='outdoor'] :is(.form-panel, .execution-panel, .transport-option-card, .hotel-card, .journey-trip-heading, .review-console, .ant-card, .timeline-content) { border-radius: 16px; box-shadow: var(--jg-shadow); }
+.journey-theme[data-journey-theme='outdoor'] :is(h1, h2, h3, .day-title, .stepper-title) { font-family: var(--jg-heading); letter-spacing: .02em; }
+.journey-theme[data-journey-theme='outdoor'] .step-head { padding-bottom: 16px; border-bottom: 1px solid var(--jg-border); align-items: baseline; }
+.journey-theme[data-journey-theme='outdoor'] .step-head > span { background: transparent; color: var(--jg-accent); border-bottom: 3px solid var(--jg-gold); border-radius: 0; font: 30px Georgia, serif; }
+.journey-theme[data-journey-theme='outdoor'] .transport-option-card { position: relative; border: 1px solid var(--jg-border); border-left: 5px solid var(--jg-accent); background: var(--jg-surface); }
+.journey-theme[data-journey-theme='outdoor'] .transport-option-topline { padding-bottom: 14px; border-bottom: 1px dashed var(--jg-border); }
+.journey-theme[data-journey-theme='outdoor'] .transport-leg-index { border-radius: 4px; border-bottom: 2px solid var(--jg-gold); font-family: Georgia, serif; }
+.journey-theme[data-journey-theme='outdoor'] .transport-facts { padding-top: 14px; border-top: 1px dashed var(--jg-border); }
+.journey-theme[data-journey-theme='outdoor'] .timeline-marker { border-radius: 3px; transform: rotate(45deg); background: var(--jg-accent); border: 2px solid var(--jg-surface); }
+.journey-theme[data-journey-theme='outdoor'] .timeline-content { background: var(--jg-surface); }
+.journey-theme[data-journey-theme='outdoor'] .timeline-time { font-weight: 700; color: var(--jg-accent); }
+.journey-theme[data-journey-theme='outdoor'] .day-header { border-bottom: 1px solid var(--jg-border); padding-bottom: 16px; }
+.journey-theme[data-journey-theme='outdoor'] .step-divider { border-top: 2px dashed var(--jg-border); background: none; }
+.journey-theme[data-journey-theme='outdoor'] .step-node .node-circle { border-radius: 8px; }
+.journey-theme[data-journey-theme='outdoor'] .journey-trip-heading { border-top: 3px solid var(--jg-accent); }
+.journey-theme[data-journey-theme='outdoor'] .trip-logistics { border-radius: 16px; }
+.journey-theme[data-journey-theme='outdoor'] .logistics-grid > article:nth-child(-n+2) { border-left: 5px solid var(--jg-accent); background: var(--jg-surface); border-radius: 16px; }
+.journey-theme[data-journey-theme='outdoor'] .logistics-grid > article:nth-child(-n+2) h3 { padding-bottom: 14px; border-bottom: 1px dashed var(--jg-border); }
