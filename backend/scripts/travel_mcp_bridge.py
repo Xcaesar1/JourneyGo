@@ -1,4 +1,4 @@
-"""Isolated MCP client. Only the three approved read-only tools can be invoked."""
+"""Isolated MCP client restricted to approved read-only travel tools."""
 
 import asyncio
 import json
@@ -14,12 +14,24 @@ from mcp.client.streamable_http import streamablehttp_client
 
 logging.disable(logging.CRITICAL)
 TOOLS = {"train": "get-tickets", "hotel": "searchHotels", "flight": "getFlightPriceByCities"}
+HOTEL_TOOLS = frozenset({"searchHotels", "getHotelDetail", "getHotelSearchTags"})
 
 
-async def call(read, write, kind, arguments):
+def resolve_tool(payload):
+    kind = payload["provider"]
+    if kind not in TOOLS:
+        raise ValueError("unsupported_provider")
+    tool = payload.get("tool", TOOLS[kind])
+    allowed = HOTEL_TOOLS if kind == "hotel" else {TOOLS[kind]}
+    if not isinstance(tool, str) or tool not in allowed:
+        raise ValueError("unsupported_tool")
+    return tool
+
+
+async def call(read, write, tool, arguments):
     async with ClientSession(read, write, read_timeout_seconds=timedelta(seconds=35)) as session:
         await session.initialize()
-        result = await session.call_tool(TOOLS[kind], arguments)
+        result = await session.call_tool(tool, arguments)
         if result.isError:
             raise ValueError("provider_error")
         if result.structuredContent is not None:
@@ -28,9 +40,8 @@ async def call(read, write, kind, arguments):
 
 
 async def query(payload):
+    tool = resolve_tool(payload)
     kind = payload["provider"]
-    if kind not in TOOLS:
-        raise ValueError("unsupported_provider")
     if kind == "hotel":
         async with streamablehttp_client(
             "https://mcp.rollinggo.cn/mcp",
@@ -38,7 +49,7 @@ async def query(payload):
             timeout=35,
             sse_read_timeout=35,
         ) as (read, write, _):
-            return await call(read, write, kind, payload["arguments"])
+            return await call(read, write, tool, payload["arguments"])
     package, entry = (
         ("12306-mcp", "build/index.js")
         if kind == "train"
@@ -67,7 +78,7 @@ async def query(payload):
     )
     with open(os.devnull, "w") as err:
         async with stdio_client(params, errlog=err) as (read, write):
-            return await call(read, write, kind, payload["arguments"])
+            return await call(read, write, tool, payload["arguments"])
 
 
 if __name__ == "__main__":

@@ -99,6 +99,20 @@ def arguments(query: TravelSearchRequest) -> dict:
 
 
 def run_mcp(query: TravelSearchRequest, settings: Settings):
+    return run_readonly_mcp(query.provider, arguments(query), settings)
+
+
+def run_readonly_mcp(provider: str, tool_arguments: dict, settings: Settings, *, tool=None):
+    allowed = {
+        "train": {"get-tickets"},
+        "hotel": {"searchHotels", "getHotelDetail", "getHotelSearchTags"},
+        "flight": {"getFlightPriceByCities"},
+    }
+    if provider not in allowed or (tool is not None and tool not in allowed[provider]):
+        raise ValueError("unsupported_readonly_tool")
+    payload = {"provider": provider, "arguments": tool_arguments}
+    if tool is not None:
+        payload["tool"] = tool
     env = {
         key: value
         for key, value in os.environ.items()
@@ -116,14 +130,14 @@ def run_mcp(query: TravelSearchRequest, settings: Settings):
     env.update(
         TRAVEL_MCP_NODE=settings.travel_mcp_node, TRAVEL_MCP_MODULES=settings.travel_mcp_modules
     )
-    if query.provider == "hotel":
+    if provider == "hotel":
         env["ROLLINGGO_API_KEY"] = settings.rollinggo_api_key.get_secret_value()
-    elif query.provider == "flight":
+    elif provider == "flight":
         env["VARIFLIGHT_API_KEY"] = settings.variflight_api_key.get_secret_value()
     bridge = Path(__file__).resolve().parents[2] / "scripts/travel_mcp_bridge.py"
     completed = subprocess.run(
         [settings.travel_mcp_python, str(bridge)],
-        input=json.dumps({"provider": query.provider, "arguments": arguments(query)}),
+        input=json.dumps(payload),
         capture_output=True,
         text=True,
         encoding="utf-8",
