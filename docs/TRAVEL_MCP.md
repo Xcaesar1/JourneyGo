@@ -108,7 +108,16 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
-#### Default Enhanced Motion Release (Current)
+#### Loading Optimization Release (Current)
+
+- Source: `f46af59`; image: `journeyops-app:loading-f46af59`; release: `/opt/tripstar/releases/loading-f46af59-20260917`. Deployed from a local committed archive, not pushed to GitHub.
+- Recreate with base/staging Compose files, the travel override, then this release's `loading.compose.yaml`. Preserve private environment and provider flags. `loading-deploy.sh` checks active tasks and health, and automatically rolls back to the ambient image on deployment failure.
+- Only API/Worker were recreated; production/PostgreSQL/Redis container identities and start times remained unchanged. No database migration or paid query; train/hotel enabled, flight disabled.
+- Live home regression passed at 390/1440 in all four languages, including motion and reduced motion. Travel/result regression and PNG export passed with mocked supplier APIs. Public gzip/cache/auth checks and real browser cache reuse passed; details in `FRONTEND_LOADING.md`.
+- User-approved staging-only Caddy cache changes retain password protection and no-store on HTML/API/errors. Private original backup: `caddy-staging.before` in this release directory. Use explicit deferred header blocks compatible with Caddy 2.6.2.
+- Application rollback: replace the loading override with `/opt/tripstar/releases/ambient-8499c3c-20260916/ambient.compose.yaml`; recreate only worker/trip-planner with `--no-deps --no-build`. Restore ingress separately using the documented private backup if rolling back caching.
+
+#### Default Enhanced Motion Release (Previous)
 
 - Source: `8499c3c`, pushed to GitHub main. Image: `journeyops-app:ambient-8499c3c`.
 - Release directory: `/opt/tripstar/releases/ambient-8499c3c-20260916`.

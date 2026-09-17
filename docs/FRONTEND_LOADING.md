@@ -21,11 +21,14 @@ Measured on 2026-09-17 after selective component loading: initial JS 955448 deco
 ## Staging Publication
 
 - Rebuild the normal root Dockerfile; preserve the current release's private variables, provider flags, volumes and rollback image.
-- Current Caddy staging configuration adds `Cache-Control: no-store` globally. Changing ingress requires approval. At publication, retain no-store for HTML, API and authentication/error responses; allow successful `/assets` responses to retain the application's private cache policy. Preserve Basic Auth and other security headers.
+- On 2026-09-17, with explicit user approval, staging ingress was changed to retain no-store for HTML, API and authentication/error responses while caching successful hashed assets privately. Basic Auth and other security headers remain enabled. Caddy 2.6.2 requires explicit `defer` blocks, not the newer `>Header` or header response `match` syntax. Use reverse_proxy response matchers (200/304 plus upstream immutable cache policy) for the asset override and 4xx/5xx matchers for no-store; handle_errors also sets no-store.
 - Validate public JS/CSS Content-Encoding and Vary headers, private immutable cache headers for hashed assets, revalidation of HTML, and unauthenticated rejection. Do not claim browser-cache improvements until these checks pass through ingress.
 - Recheck root and direct `/result` navigation, local fonts, mobile layout and normal/reduced motion. Use explicit waits for mounted controls rather than treating document load as Vue readiness.
 - Existing large background PNG and favicon are unchanged. The initial JS reduction does not eliminate those downloads or guarantee a specific cellular-network load time.
 
+Deployment verification on 2026-09-17: public main JS gzip transfer 309939 bytes; HTML/API/401/404 no-store; assets private immutable without conflicting no-store; ETag 304; real Chrome return visit reused main JS cache. Home and travel/result browser regressions passed on staging with supplier APIs mocked, including PNG export. For cache verification, do not use Playwright routing or httpCredentials interception, which can disable cache; send the private Basic Auth header only to the trusted staging origin instead, without logging it.
+
 ## Rollback
 
 - Restore the prior application image and any separately approved ingress change. No database rollback or migration is required.
+- Current release: `/opt/tripstar/releases/loading-f46af59-20260917`; prior image: `journeyops-app:ambient-8499c3c`. The original ingress backup is `caddy-staging.before` in the release directory, mode 0600. Restore it with `sudo cp` (without `-p`) to `/etc/caddy/journeyops-staging.caddy`, validate `/etc/caddy/Caddyfile`, then gracefully reload Caddy. Never print the backup or expanded configuration because they contain credentials.

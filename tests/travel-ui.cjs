@@ -11,7 +11,8 @@ const assert = require('node:assert/strict');
   const plan = { ...fixture, origin: '北京', city: '上海', start_date: today, end_date: today,
     days: [{ ...fixture.days[0], city: '上海', date: today }], weather_info: [] };
   try {
-    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const access = process.env.TRAVEL_UI_AUTH_FILE ? JSON.parse(fs.readFileSync(process.env.TRAVEL_UI_AUTH_FILE, 'utf8')) : null;
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 }, ...(access ? { httpCredentials: { username: access.username, password: access.password } } : {}) });
     const errors = [];
     const calls = [];
     const versionRequests = [];
@@ -114,4 +115,4 @@ const assert = require('node:assert/strict');
     assert.deepEqual(versionRequests, [], 'removed version panel must not fetch history');
     console.log('PASS: JourneyGo brand, removed history/source panels and requests; train/hotel/flight forms, consent reset, empty/disabled states, 390/1280 layout. All supplier responses mocked.');
   } finally { await browser.close(); }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch(error => { console.error(String(error.message).split('\n')[0]); process.exitCode = 1; });
