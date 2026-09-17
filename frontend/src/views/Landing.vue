@@ -1050,27 +1050,23 @@ const handleRetry = async () => {
 @media (max-width: 760px) {
   .journey-explore { gap: 10px; padding: 10px 14px; font-size: 14px; }
   .journey-landscape {
-    inset: auto 0 128px;
-    aspect-ratio: 1942 / 809;
+    inset: 0;
     animation: none;
-    background-size: contain;
-    background-position: center;
+    background-size: cover;
+    background-position: 80% center;
     background-repeat: no-repeat;
   }
   .journey-mist { inset: 35% -8% 42% 15%; }
   .journey-hero {
-    min-height: 0;
-    height: auto;
-    max-height: none;
+    min-height: 640px;
+    height: 100svh;
     align-items: flex-start;
-    background: linear-gradient(160deg, #294969, #142a3b 48%, #0b151d 85%);
   }
   .journey-hero-shade {
-    inset: auto 0 128px;
-    aspect-ratio: 1942 / 809;
-    background: linear-gradient(0deg, #0b151d, transparent 18%);
+    inset: 0;
+    background: linear-gradient(90deg, #091a3699, #091a3622), linear-gradient(0deg, #0b151d, transparent 28%);
   }
-  .journey-hero-content { width: 86%; margin-left: 7%; padding: 108px 0 calc(100vw * 809 / 1942 + 152px); }
+  .journey-hero-content { width: 86%; margin-left: 7%; padding: 130px 0 160px; }
   .journey-hero h1 { font-size: clamp(36px, 9vw, 52px); margin-bottom: 20px; }
   .journey-hero-copy { font-size: 25px; margin-bottom: 28px; }
 }
