@@ -34,6 +34,7 @@ export interface Attraction {
 }
 
 export interface Meal {
+  price_reference?: { amount_cents: number; source: 'amap'; source_url: string; fetched_at: string } | null
   poi_id?: string
   type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   name: string

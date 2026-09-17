@@ -1,6 +1,6 @@
 """POI相关API路由"""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from ...config import get_settings
@@ -9,6 +9,16 @@ from ...services.attraction_discovery import AmapAttractionDiscoveryProvider
 from ...services.attraction_images import build_attraction_image_service
 
 router = APIRouter(prefix="/poi", tags=["POI"])
+
+
+@router.get("/intro", summary="获取景点百科短简介")
+async def attraction_intro(
+    name: str = Query(min_length=1, max_length=120),
+    city: str = Query(min_length=1, max_length=80),
+):
+    from ...services.attraction_intro import get_attraction_intro
+
+    return {"success": True, "data": await get_attraction_intro(name, city)}
 
 
 class POIDetailResponse(BaseModel):

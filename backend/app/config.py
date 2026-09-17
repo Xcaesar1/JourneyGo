@@ -38,6 +38,8 @@ class Settings(BaseSettings):
 
     # 高德地图API配置
     vite_amap_web_key: str = ""
+    # Enable only after the account's personal-map quota/terms have been verified.
+    amap_personal_map_enabled: bool = False
     vite_amap_web_js_key: str = ""
     vite_amap_security_js_code: str = ""
 

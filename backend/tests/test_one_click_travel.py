@@ -674,7 +674,7 @@ def test_fixed_september_20_five_day_acceptance(monkeypatch):
     )
     plan = planner(r).run()
     assert str(plan.end_date) == "2026-09-24"
-    assert plan.travel_summary["expected_cents"] == 378900
+    assert plan.travel_summary["expected_cents"] == 288900
     assert plan.travel_summary["hotel"]["nights"] == 4
     assert plan.travel_summary["hotel"]["cost_cents"] == 140000
     assert all(len({meal.type for meal in day.meals}) == len(day.meals) for day in plan.days)

@@ -12,6 +12,7 @@ from ..domain.trip_models import (
     ScheduleItemV2,
 )
 from ..domain.validation_models import ValidationReportV2
+from ..services.meal_pricing import MealPriceReference
 
 # ============ 请求模型 ============
 
@@ -135,6 +136,7 @@ class Meal(BaseModel):
     location: Location | None = Field(default=None, description="经纬度坐标")
     description: str | None = Field(default=None, description="描述")
     estimated_cost: int = Field(default=0, description="预估费用(元)")
+    price_reference: MealPriceReference | None = None
 
 
 class Hotel(BaseModel):

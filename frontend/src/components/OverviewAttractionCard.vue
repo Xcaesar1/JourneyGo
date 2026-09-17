@@ -11,7 +11,9 @@
     <div class="swiper-slide-content">
       <div>
         <h2>{{ item.name }}</h2>
-        <p>{{ item.description || item.address || t('common.noData') }}</p>
+        <AttractionIntro :name="item.name" :city="item.city || ''">
+          <p>{{ item.description || item.address || t('common.noData') }}</p>
+        </AttractionIntro>
         <a class="show-more" href="#" target="_self" :aria-label="t('result.side.days')" @click.prevent="emit('select-day', item.dayArrayIndex)">
           <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"></path>
@@ -24,9 +26,11 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import AttractionIntro from './AttractionIntro.vue'
 
 type OverviewAttractionItem = {
   name: string
+  city?: string
   address: string
   visit_duration: number
   description: string
@@ -74,7 +78,8 @@ main {
 }
 .swiper-slide {
   width: 10.75rem;
-  height: 25rem;
+  min-height: 25rem;
+  height: auto;
   display: flex;
   flex-direction: column;
   justify-content: end;

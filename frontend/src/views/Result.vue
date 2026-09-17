@@ -18,7 +18,7 @@
           <div v-if="tripPlan.travel_summary" class="journey-trip-facts">
             <span>{{ t('home.travelersLabel') }} <strong>{{ tripPlan.travel_summary.planning_request.travelers }}</strong></span>
             <span>{{ t('home.budgetLabel') }} <strong>{{ tripPlan.travel_summary.planning_request.budget_total }}</strong></span>
-            <span>{{ t('oneClick.total') }} <strong>CNY {{ (tripPlan.travel_summary.expected_cents / 100).toFixed(2) }}</strong></span>
+            <span>{{ locale.startsWith('zh') ? '已统计费用' : 'Counted costs' }} <strong>CNY {{ (tripPlan.travel_summary.expected_cents / 100).toFixed(2) }}</strong></span>
           </div>
         </header>
         <div class="top-switch-nav">
@@ -213,6 +213,7 @@
           :bordered="false"
           class="overview-card section-shellless"
         >
+          <PersonalMapExport v-if="taskId" :task-id="taskId" :review-id="currentReview?.review_id" :version="mapVersion" />
           <div v-if="overviewAttractions.length > 0" ref="overviewSwiperContainerRef" class="overview-swiper">
             <div class="swiper">
               <div class="swiper-wrapper">
@@ -350,7 +351,7 @@
                 <div v-if="filteredBudgetItems.length > 0" class="budget-detail-list">
                   <div class="budget-detail-row budget-detail-header">
                     <span>{{ t('result.budget.detailType') }}</span>
-                    <span>{{ t('result.budget.detailDay') }}</span>
+                    <span>{{ locale.startsWith('zh') ? '日期／适用范围' : 'Date / scope' }}</span>
                     <span>{{ t('result.budget.detailName') }}</span>
                     <span>{{ t('result.budget.detailAmount') }}</span>
                     <span>{{ t('result.budget.detailAction') }}</span>
@@ -362,7 +363,7 @@
                   >
                     <span class="budget-detail-type">{{ getBudgetTypeLabel(item.type) }}</span>
                     <span class="budget-detail-day">
-                      {{ item.dayNumber ? t('common.dayNumber', { day: item.dayNumber }) : '--' }}
+                      {{ item.scopeLabel || (item.dayNumber ? `${tripPlan.days[item.dayIndex!]?.date || ''} · ${t('common.dayNumber', { day: item.dayNumber })}` : (locale.startsWith('zh') ? '待确认' : 'To confirm')) }}
                     </span>
                     <span class="budget-detail-name">{{ item.name }}</span>
                     <span class="budget-detail-amount">¥{{ formatBudgetAmount(item.amount) }}</span>
@@ -399,10 +400,12 @@
 
           <div class="right-budget-summary" v-show="activeSection === 'budget' && !!tripPlan.budget">
             <div class="budget-summary-panel">
-              <div class="budget-summary-title">{{ t('result.budget.title') }}</div>
+              <div class="budget-summary-title">{{ tripPlan.travel_summary ? (locale.startsWith('zh') ? '已统计费用' : 'Counted costs') : t('result.budget.title') }}</div>
+              <p v-if="tripPlan.travel_summary" role="note">{{ locale.startsWith('zh') ? '部分餐费、门票及待核实税费未计入，实际以店内或供应商为准。' : 'Some meals, tickets and unverified taxes are excluded. Confirm actual prices with providers.' }}</p>
+              <p v-if="tripPlan.travel_summary && !tripPlan.travel_summary.meal_pricing_policy">{{ locale.startsWith('zh') ? '餐费沿用历史估算，未核实商家人均消费。' : 'Meal costs are historical estimates, not verified restaurant prices.' }}</p>
               <div class="budget-summary-total-wrap">
                 <span class="budget-summary-currency">¥</span>
-                <span class="budget-summary-total-value">{{ formatBudgetAmount(tripPlan.budget?.total ?? 0) }}</span>
+                <span class="budget-summary-total-value">{{ formatBudgetAmount(tripPlan.travel_summary ? tripPlan.travel_summary.expected_cents / 100 : tripPlan.budget?.total ?? 0) }}</span>
               </div>
               <div class="budget-summary-sub-grid">
                 <div class="budget-summary-sub-item">
@@ -414,7 +417,7 @@
                   <div class="budget-summary-sub-label">{{ t('result.budget.hotel') }}</div>
                 </div>
                 <div class="budget-summary-sub-item">
-                  <div class="budget-summary-sub-value">¥{{ formatBudgetAmount(tripPlan.budget?.total_meals ?? 0) }}</div>
+                  <div class="budget-summary-sub-value">{{ tripPlan.travel_summary ? mealLedgerLabel : `¥${formatBudgetAmount(tripPlan.budget?.total_meals ?? 0)}` }}</div>
                   <div class="budget-summary-sub-label">{{ t('result.budget.meal') }}</div>
                 </div>
                 <div class="budget-summary-sub-item">
@@ -489,6 +492,7 @@
                   <span v-if="day.city" class="day-city-tag">{{ day.city }}</span>
                   <span v-if="day.is_transfer_day" class="day-transfer-tag">{{ t('result.transferDay') }}</span>
                   <span class="day-date">{{ day.date }}</span>
+                  <PersonalMapExport v-if="taskId" :task-id="taskId" :review-id="currentReview?.review_id" :version="mapVersion" :day-index="index" />
                 </div>
               </template>
 
@@ -633,7 +637,12 @@
                       <div v-else>
                         <p><strong>{{ t('result.fieldAddress') }}:</strong> {{ item.address }}</p>
                         <p><strong>{{ t('result.fieldVisitDuration') }}:</strong> {{ item.visit_duration }}{{ t('result.minuteUnit') }}</p>
-                        <p><strong>{{ t('result.fieldDescription') }}:</strong> {{ item.description }}</p>
+                        <AttractionIntro :name="item.name" :city="day.city || tripPlan.city">
+                          <p><strong>{{ t('result.fieldDescription') }}:</strong> {{ item.description }}</p>
+                          <template #notice>
+                            <p v-if="/待核实|预约|门票|营业时间/.test(item.description || '')">{{ item.description }}</p>
+                          </template>
+                        </AttractionIntro>
                         <p v-if="item.rating"><strong>{{ t('result.fieldRating') }}:</strong> {{ item.rating }}</p>
                         <PlaceNavigation :place="item" :city="day.city || tripPlan.city" />
                         <!-- 预约提醒 -->
@@ -672,6 +681,7 @@
                   :label="getMealLabel(meal.type)"
                 >
                   {{ meal.name }}
+                  <p>{{ mealPriceText(meal, locale.startsWith('zh')) }}</p>
                   <span v-if="meal.description"> - {{ meal.description }}</span>
                   <PlaceNavigation v-if="!editMode" :place="meal" :city="day.city || tripPlan.city" />
                 </a-descriptions-item>
@@ -885,9 +895,12 @@ import NavBar from '@/components/NavBar.vue'
 import OverviewAttractionCard from '@/components/OverviewAttractionCard.vue'
 import AIChat from '@/components/AIChat.vue'
 import PlaceNavigation from '@/components/PlaceNavigation.vue'
+import AttractionIntro from '@/components/AttractionIntro.vue'
 import TripNavigator from '@/components/TripNavigator.vue'
 import TravelSearch from '@/components/TravelSearch.vue'
 import TravelSummary from '@/components/TravelSummary.vue'
+import PersonalMapExport from '@/components/PersonalMapExport.vue'
+import { mealPriceText, costScope, compareCostDates } from '@/services/tripCosts'
 import { toRoutePoint } from '@/services/mapCoordinates'
 import type {
   Attraction,
@@ -912,6 +925,7 @@ import {
   getRuntimeApiBaseUrl,
   getRuntimeMapJsKey,
   getTripTask,
+  getTripVersions,
   pollTaskStatus,
   submitTripReview,
   waitForTripTask,
@@ -924,6 +938,7 @@ const { t, locale } = useI18n()
 const tripPlan = ref<TripPlan | null>(null)
 const planId = ref('')
 const taskId = ref('')
+const mapVersion = ref<number>()
 const tripId = ref('')
 const currentReview = ref<TripReviewRecord | null>(null)
 const reviewMode = ref<'summary' | 'modify' | 'reject'>('summary')
@@ -987,6 +1002,7 @@ const canApproveCurrentReview = computed(() => {
 
 type OverviewAttractionItem = {
   name: string
+  city?: string
   image_url?: string
   address: string
   visit_duration: number
@@ -1001,6 +1017,8 @@ type BudgetItemType = 'attraction' | 'hotel' | 'meal' | 'transport'
 type BudgetSortMode = 'amountDesc' | 'amountAsc' | 'dayAsc' | 'dayDesc'
 
 type BudgetDetailItem = {
+  scopeLabel?: string
+  sortDate?: string
   id: string
   type: BudgetItemType
   dayIndex: number | null
@@ -1210,6 +1228,7 @@ const overviewAttractions = computed<OverviewAttractionItem[]>(() => {
     day.attractions.forEach((attraction, order) => {
       items.push({
         name: attraction.name,
+        city: day.city || tripPlan.value?.city,
         image_url: attraction.image_url,
         address: attraction.address,
         visit_duration: attraction.visit_duration,
@@ -1345,6 +1364,11 @@ const applyTaskRecord = async (task: TripTaskRecord) => {
   tripId.value = task.trip_id
   planId.value = task.task_id
   currentReview.value = task.review || null
+  mapVersion.value = undefined
+  if (!currentReview.value) {
+    try { mapVersion.value = (await getTripVersions(task.trip_id)).find(version => version.active)?.version }
+    catch { /* The itinerary remains readable when version metadata is unavailable. */ }
+  }
   reviewMode.value = 'summary'
   replanComposerOpen.value = false
   persistWorkflowState()
@@ -2022,13 +2046,18 @@ const recalculateBudgetTotals = (transportationOverride?: number) => {
   }
 }
 
+const mealLedgerLabel = computed(() => {
+  const item = tripPlan.value?.travel_summary?.cost_items.find((item: any) => item.category === 'meals')
+  return item?.amount_cents != null ? `¥${formatBudgetAmount(item.amount_cents / 100)}` : (locale.value.startsWith('zh') ? '未计入' : 'Not included')
+})
+
 const budgetItems = computed<BudgetDetailItem[]>(() => {
   if (!tripPlan.value) return []
   if (tripPlan.value.travel_summary) {
     const types: Record<string, BudgetItemType> = { hotel: 'hotel', meals: 'meal', tickets: 'attraction' }
     return tripPlan.value.travel_summary.cost_items
       .filter((item: any) => item.amount_cents !== null)
-      .map((item: any) => ({ id: item.category, type: types[item.category] || 'transport',
+      .map((item: any) => ({ ...costScope(item.category, tripPlan.value!.travel_summary!, locale.value.startsWith('zh')), id: item.category, type: types[item.category] || 'transport',
         dayIndex: null, dayNumber: null, name: t(`travelCosts.${item.category}`), amount: item.amount_cents / 100 }))
   }
 
@@ -2115,16 +2144,16 @@ const filteredBudgetItems = computed<BudgetDetailItem[]>(() => {
 
   const sorted = [...items]
   sorted.sort((a, b) => {
-    const dayA = a.dayNumber ?? Number.MAX_SAFE_INTEGER
-    const dayB = b.dayNumber ?? Number.MAX_SAFE_INTEGER
+    const dayA = a.sortDate ?? (a.dayIndex !== null ? tripPlan.value?.days[a.dayIndex]?.date || '' : '')
+    const dayB = b.sortDate ?? (b.dayIndex !== null ? tripPlan.value?.days[b.dayIndex]?.date || '' : '')
 
     switch (budgetSortMode.value) {
       case 'amountAsc':
         return a.amount - b.amount
       case 'dayAsc':
-        return dayA - dayB || b.amount - a.amount
+        return compareCostDates(dayA, dayB) || b.amount - a.amount
       case 'dayDesc':
-        return dayB - dayA || b.amount - a.amount
+        return compareCostDates(dayA, dayB, true) || b.amount - a.amount
       case 'amountDesc':
       default:
         return b.amount - a.amount
@@ -2469,7 +2498,7 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
     if (day.meals && day.meals.length) {
       mealsHTML = `<div style="margin-top:10px;"><strong style="color:#333;">${t('result.export.mealTitle')}</strong><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;">`
       day.meals.forEach(m => {
-        mealsHTML += `<div style="background:#fffbe6;padding:8px 14px;border-radius:8px;font-size:12px;color:#333;"><b>${mealLabels[m.type] || m.type}</b>: ${m.name || t('result.export.noMealRecommendation')}${m.estimated_cost ? ` (¥${m.estimated_cost})` : ''}</div>`
+        mealsHTML += `<div style="background:#fffbe6;padding:8px 14px;border-radius:8px;font-size:12px;color:#333;"><b>${mealLabels[m.type] || m.type}</b>: ${m.name || t('result.export.noMealRecommendation')} · ${mealPriceText(m, locale.value.startsWith('zh'))}</div>`
       })
       mealsHTML += '</div></div>'
     }
@@ -2499,15 +2528,15 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
             <div style="font-size:12px;color:#888;">${t('result.budget.hotel')}</div><div style="font-size:20px;font-weight:bold;color:#333;">¥${b.total_hotels || 0}</div>
           </div>
           <div style="flex:1;min-width:120px;background:#f5f7fa;padding:14px;border-radius:10px;text-align:center;">
-            <div style="font-size:12px;color:#888;">${t('result.budget.meal')}</div><div style="font-size:20px;font-weight:bold;color:#333;">¥${b.total_meals || 0}</div>
+            <div style="font-size:12px;color:#888;">${t('result.budget.meal')}</div><div style="font-size:20px;font-weight:bold;color:#333;">${tp.travel_summary ? mealLedgerLabel.value : `¥${b.total_meals || 0}`}</div>
           </div>
           <div style="flex:1;min-width:120px;background:#f5f7fa;padding:14px;border-radius:10px;text-align:center;">
             <div style="font-size:12px;color:#888;">${t('result.budget.transport')}</div><div style="font-size:20px;font-weight:bold;color:#333;">¥${b.total_transportation || 0}</div>
           </div>
         </div>
         <div style="background:#087e9a;color:#fff;padding:16px 20px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
-          <span style="font-size:16px;">${t('result.budget.total')}</span>
-          <span style="font-size:26px;font-weight:bold;">¥${b.total || 0}</span>
+          <span style="font-size:16px;">${tp.travel_summary ? (locale.value.startsWith('zh') ? '已统计费用（部分餐费、门票及税费未计入）' : 'Counted costs (some meals, tickets and taxes excluded)') : t('result.budget.total')}</span>
+          <span style="font-size:26px;font-weight:bold;">¥${tp.travel_summary ? formatBudgetAmount(tp.travel_summary.expected_cents / 100) : b.total || 0}</span>
         </div>
       </div>`
   }
@@ -4387,7 +4416,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 .budget-detail-row {
   display: grid;
-  grid-template-columns: 112px 96px minmax(0, 1fr) 120px 86px;
+  grid-template-columns: 100px 180px minmax(0, 1fr) 110px 86px;
   align-items: center;
   gap: 10px;
   padding: 11px 12px;
@@ -5524,6 +5553,17 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 }
 
+@media (max-width: 600px) {
+  .budget-detail-row { min-width: 0; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; }
+  .budget-detail-header > span:nth-child(1),
+  .budget-detail-header > span:nth-child(3),
+  .budget-detail-header > span:nth-child(5) { display: none; }
+  .budget-detail-name { grid-column: 1; grid-row: 1; white-space: normal; overflow-wrap: anywhere; }
+  .budget-detail-amount { grid-column: 2; grid-row: 1; }
+  .budget-detail-type { grid-column: 1; grid-row: 2; color: var(--jg-muted); }
+  .budget-action-wrap { grid-column: 2; grid-row: 2; }
+  .budget-detail-day { grid-column: 1 / -1; grid-row: 3; overflow-wrap: anywhere; }
+}
 </style>
 
 <style>

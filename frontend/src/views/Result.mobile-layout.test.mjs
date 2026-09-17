@@ -37,7 +37,9 @@ test('result removes version history and source panels without removing review o
   const result = read('./Result.vue')
   assert.doesNotMatch(result, /key[=:]\s*["'](?:versions|sources)["']/)
   assert.doesNotMatch(result, /id="(?:versions|sources)"/)
-  assert.doesNotMatch(result, /refreshVersions|getTripVersions|rollbackTripVersion|compareTripVersions/)
+  assert.doesNotMatch(result, /refreshVersions|rollbackTripVersion|compareTripVersions/)
+  // Reading the active version for map export must not restore the removed history UI.
+  assert.match(result, /mapVersion\.value = \(await getTripVersions\(task.trip_id\)\)\.find/)
   assert.match(result, /submitTripReview/)
   assert.match(result, /currentReview\.proposed_version/)
   assert.match(result, /Weather data by Open-Meteo \(CC BY 4\.0\)/)

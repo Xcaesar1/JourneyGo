@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, WebSocket, status
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy.orm import Session
 
 from ...db.session import get_db_session
@@ -14,6 +15,34 @@ from . import trips
 
 router = APIRouter(prefix="/tasks", tags=["API v2 tasks"])
 DbSession = Annotated[Session, Depends(get_db_session)]
+
+
+class PersonalMapInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    version: int | None = Field(default=None, ge=1)
+    review_id: str | None = Field(default=None, max_length=40)
+    day_index: int | None = Field(default=None, ge=0, le=28)
+    confirmed: bool = False
+
+    @model_validator(mode="after")
+    def validate_consent(self):
+        if not self.confirmed or (self.version is None) == (self.review_id is None):
+            raise ValueError("Confirm export and specify exactly one itinerary version or review.")
+        return self
+
+
+@router.post("/{task_id}/personal-map")
+async def personal_map(
+    task_id: str, payload: PersonalMapInput, session: DbSession, request: Request
+):
+    from ...config import get_settings
+    from ...services.guardrails import enforce_travel_guardrails
+    from ...services.personal_map import export_map
+
+    settings = get_settings()
+    # External writes always require the shared access credential, even on public previews.
+    enforce_travel_guardrails(request, settings, paid=True)
+    return await export_map(session, settings, task_id, payload)
 
 
 @router.get("/{task_id}", response_model=TripTaskRecordV2, summary="Read durable task status")

@@ -40,3 +40,31 @@ test('missing stored photo uses fetched fallback, then the placeholder', () => {
   assert.equal(imagesFor([{ name: 'Wall' }], { Wall: 'cached.jpg' })[0], 'cached.jpg')
   assert.match(imagesFor([{ name: 'Wall' }])[0], /^data:image\/svg\+xml;base64,/)
 })
+
+test('encyclopedia snippets use city-scoped keys, bounded text and attributed sources', async () => {
+  const introSource = readFileSync(new URL('../services/attractionIntro.ts', import.meta.url), 'utf8')
+  const code = ts.transpileModule(introSource.replace(/^import .*$/m, '').replace(/export /g, '') + '\nfetchAttractionIntro', {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText
+  let calls = 0
+  const fetchIntro = vm.runInNewContext(code, {
+    getRuntimeApiBaseUrl: () => '', URLSearchParams, AbortSignal,
+    fetch: async url => {
+      calls++
+      return { ok: true, json: async () => ({ data: {
+        summary: url.includes('city=other') ? 'x'.repeat(31) : 'A short sourced introduction',
+        source_url: 'https://zh.wikipedia.org/wiki/Example',
+      } }) }
+    },
+  })
+  assert.ok(await fetchIntro('Example', 'city'))
+  assert.ok(await fetchIntro('Example', 'city'))
+  assert.equal(calls, 1)
+  assert.equal(await fetchIntro('Example', 'other'), null)
+  assert.equal(calls, 2)
+  const card = readFileSync(new URL('../components/OverviewAttractionCard.vue', import.meta.url), 'utf8')
+  assert.match(card, /<AttractionIntro/)
+  const component = readFileSync(new URL('../components/AttractionIntro.vue', import.meta.url), 'utf8')
+  assert.match(component, /CC BY-SA 4\.0/)
+  assert.match(source, /待核实\|预约\|门票\|营业时间/)
+})

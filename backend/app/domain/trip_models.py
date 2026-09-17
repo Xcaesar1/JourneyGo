@@ -8,6 +8,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ..services.meal_pricing import MealPriceReference
 from .research_models import SourceEvidence
 from .validation_models import ValidationReportV2
 
@@ -222,6 +223,7 @@ class MealV2(BaseModel):
     location: LocationV2 | None = None
     description: str | None = Field(default=None, max_length=1000)
     estimated_cost: int = Field(default=0, ge=0)
+    price_reference: MealPriceReference | None = None
 
 
 class HotelV2(BaseModel):

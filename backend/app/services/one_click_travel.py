@@ -1,7 +1,7 @@
 """Bounded round-trip planning from durable supplier and map evidence."""
 
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal
 from math import asin, cos, radians, sin, sqrt
 from statistics import median
@@ -26,6 +26,7 @@ from ..domain.trip_models import (
 from .attraction_discovery import rank_amap_pois
 from .hotel_detail import detail_arguments, inspect_detail
 from .hotel_pricing import amount, estimate_stay
+from .meal_pricing import meal_reference
 from .task_events import redis_url
 from .travel_ledger import PlanningInputRequired, QueryLedger
 from .travel_place_selection import PlaceSelection, select_places
@@ -336,7 +337,7 @@ class OneClickPlanner:
                 },
             )
             response.raise_for_status()
-            return response.json()
+            return {**response.json(), "fetched_at": datetime.now(timezone.utc).isoformat()}
 
     def pois(self, city, keyword, kind, *, exact=False):
         raw = self.ledger.execute(
@@ -425,6 +426,7 @@ class OneClickPlanner:
                         "address": row.get("address") or "",
                         "location": {"longitude": lon, "latitude": lat},
                         "business": row.get("business") or {},
+                        "fetched_at": raw.get("fetched_at"),
                         "image": ranked[row["id"]].image.model_dump()
                         if row["id"] in ranked
                         else {},
@@ -1020,8 +1022,8 @@ class OneClickPlanner:
                             address=restaurant["address"],
                             location=LocationV2(**restaurant["location"]),
                             poi_id=restaurant["poi_id"],
-                            estimated_cost=60,
-                            description="每人餐费估算，营业时间待核实。",
+                            price_reference=meal_reference(restaurant),
+                            description="实际消费以店内为准，营业时间待核实。",
                         )
                     )
                     scheduled_restaurant_ids.add(restaurant["poi_id"])
@@ -1073,8 +1075,9 @@ class OneClickPlanner:
             timeline.sort(key=lambda item: item.start)
             if any(a.end > b.start for a, b in zip(timeline, timeline[1:])):
                 raise PlanningInputRequired("time_conflict", "交通接驳时间冲突，请调整出发日期。")
-            # Include meals on the train/flight and unscheduled breakfasts in the daily allowance.
-            meals_cents += 3 * 6000 * r.travelers
+            meals_cents += sum(
+                meal.price_reference.amount_cents for meal in meals if meal.price_reference
+            ) * r.travelers
             local_cents += 3000 * r.travelers
             days.append(
                 DayPlanV2(
@@ -1139,7 +1142,8 @@ class OneClickPlanner:
                 "amount_cents": inbound["price_cents"] * r.travelers,
             },
             {"category": "hotel", "status": "estimated", "amount_cents": hotel["cost_cents"]},
-            {"category": "meals", "status": "estimated", "amount_cents": meals_cents},
+            {"category": "meals", "status": "estimated" if meals_cents else "unknown",
+             "amount_cents": meals_cents or None},
             {"category": "local_transport", "status": "estimated", "amount_cents": local_cents},
             {"category": "tickets", "status": "unknown", "amount_cents": None},
             {"category": "hotel_taxes", "status": "unknown", "amount_cents": None},
@@ -1155,6 +1159,9 @@ class OneClickPlanner:
             "known_cents": known_cents,
             "estimated_cents": estimated_cents,
             "expected_cents": known_cents + estimated_cents,
+            "meal_pricing_policy": "amap_reference_only",
+            "costs_complete": False,
+            "excluded_costs": ["unpriced_meals", "tickets", "hotel_taxes"],
             "currency": "CNY",
             "quotes": [q for q in self.ledger.records if q["provider"] != "model"],
             "booking_status": "not_booked",

@@ -62,6 +62,7 @@ def trip_plan_v2_to_legacy(plan: TripPlanV2) -> TripPlan:
                 location=_location(item.location),
                 description=item.description,
                 estimated_cost=item.estimated_cost,
+                price_reference=item.price_reference,
             )
             for item in day.meals
         ]
