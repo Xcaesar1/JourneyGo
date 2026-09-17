@@ -1,6 +1,10 @@
 import pytest
 from backend.app.db.models import TravelQuery, Trip
-from backend.app.services.travel_ledger import PlanningInputRequired, QueryLedger
+from backend.app.services.travel_ledger import (
+    PlanningInputRequired,
+    QueryLedger,
+    QueryReuseUnavailable,
+)
 from backend.tests.test_one_click_travel import request
 from sqlalchemy import select
 
@@ -108,3 +112,43 @@ def test_explicit_model_revision_preserves_quotes_and_old_failure(db_session_fac
         assert len(records) == 2
         assert {r.status for r in records} == {"blocked", "succeeded"}
         assert all(r.finished_at is not None for r in records)
+
+
+def test_model_only_recovery_cannot_expand_supplier_queries(db_session_factory):
+    store = ledger(db_session_factory)
+    calls = []
+
+    def send(label):
+        calls.append(label)
+        return {"result": label}
+
+    original = {"destination": "西安", "size": 10}
+    assert store.execute("hotel", "search", original, lambda: send("search")) == {
+        "result": "search"
+    }
+    store.request.quote_revision["model"] = 1
+    assert store.execute(
+        "hotel", "search", original, lambda: pytest.fail("cached quote repeated")
+    ) == {"result": "search"}
+
+    with pytest.raises(QueryReuseUnavailable) as caught:
+        store.execute(
+            "hotel",
+            "detail",
+            {"hotelId": 4},
+            lambda: pytest.fail("model recovery sent a new supplier query"),
+        )
+    assert caught.value.payload == {
+        "code": "query_not_previously_verified",
+        "message": "本次恢复仅复用已核实的查询结果；如需新查询，请明确更新对应报价。",
+        "provider": "hotel",
+        "diagnostics": {"scope": "detail"},
+    }
+    with db_session_factory() as session:
+        assert len(session.scalars(select(TravelQuery)).all()) == 1
+
+    store.request.quote_revision["hotel"] = 1
+    assert store.execute("hotel", "detail", {"hotelId": 4}, lambda: send("detail")) == {
+        "result": "detail"
+    }
+    assert calls == ["search", "detail"]

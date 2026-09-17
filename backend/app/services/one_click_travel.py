@@ -660,10 +660,77 @@ class OneClickPlanner:
                 "没有可核实人数、房型和参考价的同档酒店，请调整日期或住宿偏好。",
                 provider="hotel",
             )
-        chosen = min(
+        ranked_hotels = sorted(
             hotel_candidates,
             key=lambda hotel: hotel_location_score(hotel, attractions, restaurants),
         )
+        failure = None
+        failed_hotel_codes = {}
+        viable = None
+        for hotel_index, hotel in enumerate(ranked_hotels):
+            hotel_failures = []
+            for candidate_outbound, candidate_inbound in combinations[:30]:
+                try:
+                    candidate_outbound["location"] = self.pois(
+                        city, candidate_outbound["to_name"], terminal_type, exact=True
+                    )[0]
+                    candidate_outbound["origin_location"] = self.pois(
+                        r.origin,
+                        candidate_outbound["from_name"],
+                        terminal_type,
+                        exact=True,
+                    )[0]
+                    candidate_inbound["location"] = self.pois(
+                        city, candidate_inbound["from_name"], terminal_type, exact=True
+                    )[0]
+                    total = (
+                        candidate_outbound["price_cents"] + candidate_inbound["price_cents"]
+                    ) * r.travelers
+                    # This probe is deterministic and uses only already verified candidates.
+                    self.schedule(
+                        candidate_outbound,
+                        candidate_inbound,
+                        hotel,
+                        attractions,
+                        restaurants,
+                        total,
+                    )
+                    viable = (
+                        hotel_index,
+                        hotel,
+                        candidate_outbound,
+                        candidate_inbound,
+                        total,
+                    )
+                    break
+                except PlanningInputRequired as exc:
+                    failure = exc
+                    hotel_failures.append(exc.payload["code"])
+            failed_hotel_codes[hotel["hotel_id"]] = list(dict.fromkeys(hotel_failures))
+            if viable is not None:
+                break
+        if viable is None:
+            raise failure or PlanningInputRequired(
+                "no_viable_hotel_transport", "没有可同时满足接驳与时间约束的交通和酒店组合。"
+            )
+        hotel_index, chosen, outbound, inbound, known_cents = viable
+        hotel_fallback = None
+        if hotel_index:
+            preferred = ranked_hotels[0]
+            reason_codes = list(
+                dict.fromkeys(
+                    code
+                    for hotel in ranked_hotels[:hotel_index]
+                    for code in failed_hotel_codes.get(hotel["hotel_id"], [])
+                )
+            )
+            hotel_fallback = {
+                "from_hotel_id": preferred["hotel_id"],
+                "from_name": preferred["name"],
+                "to_hotel_id": chosen["hotel_id"],
+                "to_name": chosen["name"],
+                "reason_codes": reason_codes,
+            }
         context = {
             "selection_contract_version": 2,
             "request": r.model_dump(mode="json"),
@@ -703,26 +770,30 @@ class OneClickPlanner:
             for key, place in meal_by_id.items()
         ]
         self.selection_notes = selected.notes
+        if hotel_fallback is not None:
+            self.selection_notes += " 首选酒店无法满足每日接驳约束，已改用同批核验的备选酒店。"
         self.progress("check_trip")
-        failure = None
-        for outbound, inbound in combinations[:30]:
-            try:
-                outbound["location"] = self.pois(
-                    city, outbound["to_name"], terminal_type, exact=True
-                )[0]
-                outbound["origin_location"] = self.pois(
-                    r.origin, outbound["from_name"], terminal_type, exact=True
-                )[0]
-                inbound["location"] = self.pois(
-                    city, inbound["from_name"], terminal_type, exact=True
-                )[0]
-                total = (outbound["price_cents"] + inbound["price_cents"]) * r.travelers
-                return self.schedule(outbound, inbound, chosen, attractions, restaurants, total)
-            except PlanningInputRequired as exc:
-                failure = exc
-        raise failure or PlanningInputRequired("no_transport", "没有可行的交通组合。")
+        return self.schedule(
+            outbound,
+            inbound,
+            chosen,
+            attractions,
+            restaurants,
+            known_cents,
+            hotel_fallback=hotel_fallback,
+        )
 
-    def schedule(self, outbound, inbound, hotel, attractions, restaurants, known_cents):
+    def schedule(
+        self,
+        outbound,
+        inbound,
+        hotel,
+        attractions,
+        restaurants,
+        known_cents,
+        *,
+        hotel_fallback=None,
+    ):
         r = self.request
         city = r.destinations[0].city
         arrival = datetime.fromisoformat(outbound["arrival"])
@@ -1090,6 +1161,7 @@ class OneClickPlanner:
             "selection_adjustments": {
                 "omitted_preferred_places": list(dict.fromkeys(omitted_places)),
                 "reason": "daily_time_and_local_commute_limits" if omitted_places else None,
+                "hotel_fallback": hotel_fallback,
             },
         }
         # Legacy integer display is rounded; the authoritative ledger retains exact cents.

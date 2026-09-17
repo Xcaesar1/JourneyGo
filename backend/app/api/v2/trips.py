@@ -132,6 +132,9 @@ def create_trip(
     idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> TripTaskRecordV2:
     """Persist before dispatch so an API restart cannot lose accepted work."""
+    if request.planning_mode == "one_click":
+        # Quote revisions are server-issued recovery/refresh authorizations.
+        request = request.model_copy(update={"quote_revision": {}})
     payload = request.model_dump(mode="json")
     try:
         preflight(request, get_settings())
@@ -218,6 +221,9 @@ def continue_trip(task_id: str, body: ContinueTripInput, session: DbSession, htt
             "refresh_travel": body.refresh
             if body.refresh is not None
             else previous_change.get("refresh_travel"),
+            "refresh_sources": False
+            if body.refresh is not None
+            else previous_change.get("refresh_sources", False),
             "confirm_flight_queries": request.flight_confirmed,
             "refresh_token": uuid4().hex
             if body.refresh

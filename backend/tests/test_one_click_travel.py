@@ -354,6 +354,99 @@ def test_hotel_location_and_compact_schedule_beat_cheaper_outskirts():
     assert "远郊景点0" in plan.overall_suggestions
 
 
+def test_scheduler_falls_back_to_verified_hotel_before_model_selection():
+    details = []
+    selection_contexts = []
+
+    def two_hotels(provider, tool, args):
+        data = supplier(provider, tool, args)
+        if tool == "searchHotels":
+            data["hotelInformationList"] = [
+                {
+                    "hotelId": 1,
+                    "name": "景区商务酒店",
+                    "starRating": 4,
+                    "price": {"lowestPrice": 300},
+                },
+                {
+                    "hotelId": 2,
+                    "name": "枢纽商务酒店",
+                    "starRating": 4,
+                    "price": {"lowestPrice": 320},
+                },
+            ]
+        elif tool == "getHotelDetail":
+            details.append(args["hotelId"])
+            data["hotelId"] = args["hotelId"]
+            data["roomRatePlans"][0]["averagePrice"] = {
+                1: 300,
+                2: 320,
+            }[args["hotelId"]]
+        return data
+
+    def fallback_maps(city, keyword, kind):
+        if kind == "100100":
+            locations = {
+                "景区商务酒店": (109.60, 34.55),
+                "枢纽商务酒店": (108.95, 34.26),
+            }
+            names = [keyword]
+            coordinates = [locations[keyword]]
+        elif kind == "110000":
+            names = [*[f"景区景点{i}" for i in range(8)], "枢纽景点一", "枢纽景点二"]
+            coordinates = [
+                *[(109.60 + i * 0.001, 34.55) for i in range(8)],
+                (108.951, 34.261),
+                (108.952, 34.262),
+            ]
+        elif kind == "050100":
+            names = [*[f"景区餐厅{i}" for i in range(4)], "枢纽餐厅"]
+            coordinates = [
+                *[(109.60 + i * 0.001, 34.551) for i in range(4)],
+                (108.951, 34.260),
+            ]
+        else:
+            names = [keyword]
+            coordinates = [(108.95, 34.26)]
+        return {
+            "status": "1",
+            "pois": [
+                {
+                    "name": name,
+                    "id": f"B{kind}{index}{place_name}",
+                    "address": "模拟地址",
+                    "adcode": "610100" if city == "西安" else "310000",
+                    "location": f"{longitude},{latitude}",
+                }
+                for index, (name, place_name, (longitude, latitude)) in enumerate(
+                    zip(names, names, coordinates)
+                )
+            ],
+        }
+
+    def select_once(context):
+        selection_contexts.append(context)
+        return {
+            "attraction_ids": [place["poi_id"] for place in context["attractions"]],
+            "restaurant_ids": [place["poi_id"] for place in context["restaurants"]],
+            "notes": "模拟规划",
+            "unmet_requirements": [],
+        }
+
+    plan = planner(supplier=two_hotels, maps=fallback_maps, selector=select_once).run()
+
+    assert details == [1, 2]
+    assert len(selection_contexts) == 1
+    assert selection_contexts[0]["hotel"]["hotel_id"] == 2
+    assert plan.travel_summary["hotel"]["name"] == "枢纽商务酒店"
+    assert plan.travel_summary["hotel"]["cost_cents"] == 128000
+    fallback = plan.travel_summary["selection_adjustments"]["hotel_fallback"]
+    assert fallback["from_hotel_id"] == 1
+    assert fallback["to_hotel_id"] == 2
+    assert "local_transfer_excessive" in fallback["reason_codes"]
+    assert "已改用同批核验的备选酒店" in plan.overall_suggestions
+
+
 def test_intercity_train_and_local_transit_do_not_count_as_walking():
     from backend.app.agents.journey_graph.nodes.validate import _validate_routes
 

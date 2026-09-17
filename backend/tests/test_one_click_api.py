@@ -1,7 +1,7 @@
 """Input pauses, access checks and immutable quote proposals without external calls."""
 
 from backend.app.api.v2 import trips
-from backend.app.db.models import TripTask
+from backend.app.db.models import TripReview, TripTask
 from backend.app.db.repository import save_trip_version
 from backend.app.services import guardrails
 from backend.tests.test_one_click_travel import request, settings
@@ -80,6 +80,9 @@ def test_continue_legacy_model_failure_changes_only_model_revision(
         task = session.get(TripTask, task_id)
         task.status = "awaiting_input"
         task.pending_input = {"code": "model_output", "provider": None}
+        stored = dict(task.trip.request_payload)
+        stored["quote_revision"] = {"hotel": 2}
+        task.trip.request_payload = stored
         session.commit()
     endpoint = f"/api/v2/trips/tasks/{task_id}/continue"
     assert client.post(endpoint, json={"request": payload}).status_code == 202
@@ -88,6 +91,81 @@ def test_continue_legacy_model_failure_changes_only_model_revision(
         persisted = session.get(TripTask, task_id).trip.request_payload
         assert persisted["quote_revision"] == {"hotel": 2, "model": 1}
         assert request(quote_revision=persisted["quote_revision"]).quote_revision["model"] == 1
+
+
+def test_initial_one_click_request_cannot_issue_quote_revisions(
+    client, db_session_factory, monkeypatch
+):
+    configure(monkeypatch)
+    payload = request(quote_revision={"model": 99, "hotel": 99}).model_dump(mode="json")
+    record = client.post("/api/v2/trips", json=payload)
+    assert record.status_code == 202, record.text
+    with db_session_factory() as session:
+        task = session.get(TripTask, record.json()["task_id"])
+        assert task.trip.request_payload["quote_revision"] == {}
+
+
+def test_new_provider_refresh_consumes_prior_source_refresh(
+    client, db_session_factory, monkeypatch
+):
+    from backend.app.domain.review_models import ReplanRequestV2
+    from backend.app.services.one_click_travel import (
+        replan_quote_revision,
+        replan_request,
+    )
+
+    configure(monkeypatch)
+    payload = request().model_dump(mode="json")
+    record = client.post("/api/v2/trips", json=payload).json()
+    task_id = record["task_id"]
+    source_token = "source-refresh"
+    thread_id = "replan-source-then-hotel"
+    with db_session_factory() as session:
+        task = session.get(TripTask, task_id)
+        task.status = "awaiting_input"
+        review = TripReview(
+            id="review-source-then-hotel",
+            trip_id=task.trip_id,
+            task_id=task.id,
+            workflow_type="replan",
+            thread_id=thread_id,
+            status="pending",
+            reason="",
+            change_request={
+                "instruction": "更新地点",
+                "refresh_sources": True,
+                "refresh_token": source_token,
+            },
+        )
+        session.add(review)
+        task.review_id = review.id
+        session.commit()
+
+    response = client.post(
+        f"/api/v2/trips/tasks/{task_id}/continue",
+        json={"request": payload, "refresh": "hotel"},
+    )
+    assert response.status_code == 202, response.text
+    with db_session_factory() as session:
+        task = session.get(TripTask, task_id)
+        review = session.get(TripReview, task.review_id)
+        base = request(quote_revision=task.trip.request_payload["quote_revision"])
+        changes = ReplanRequestV2.model_validate(review.change_request)
+        assert base.quote_revision == {
+            "amap": replan_quote_revision(thread_id, source_token)
+        }
+        assert changes.refresh_sources is False
+        assert changes.refresh_travel == "hotel"
+        assert changes.refresh_token != source_token
+        revised = replan_request(
+            base,
+            changes,
+            replan_quote_revision(thread_id, changes.refresh_token),
+        )
+        assert revised.quote_revision["amap"] == replan_quote_revision(thread_id, source_token)
+        assert revised.quote_revision["hotel"] == replan_quote_revision(
+            thread_id, changes.refresh_token
+        )
 
 
 def test_version_and_confirmed_request_saved_together(client, db_session_factory, monkeypatch):

@@ -19,6 +19,18 @@ class PlanningInputRequired(ValueError):
             self.payload["diagnostics"] = diagnostics
 
 
+class QueryReuseUnavailable(PlanningInputRequired):
+    """Stop model-only recovery from expanding its supplier query set."""
+
+    def __init__(self, provider, scope):
+        super().__init__(
+            "query_not_previously_verified",
+            "本次恢复仅复用已核实的查询结果；如需新查询，请明确更新对应报价。",
+            provider=provider,
+            diagnostics={"scope": scope},
+        )
+
+
 class QueryLedger:
     def __init__(self, trip_id, request, session_factory=SessionLocal):
         self.trip_id = trip_id
@@ -36,6 +48,12 @@ class QueryLedger:
                 raise PlanningInputRequired("cancelled", "任务已取消，不再发起查询。")
             row = session.get(TravelQuery, key)
             if row is None:
+                if (
+                    provider != "model"
+                    and self.request.quote_revision.get("model", 0) > 0
+                    and revision == 0
+                ):
+                    raise QueryReuseUnavailable(provider, scope)
                 if provider == "flight" and not self.request.flight_confirmed:
                     raise PlanningInputRequired(
                         "flight_consent", "请确认本次往返航班查询。", provider=provider
