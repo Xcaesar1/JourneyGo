@@ -487,3 +487,24 @@ for path in "${paths[@]}"; do compose+=(-f "$path"); done
 
 Do not change worker images, downgrade schema, restore data or remove volumes for
 this frontend rollback.
+
+## Mobile Calendar and Task Recovery Hotfix (2026-09-17)
+
+- Source commits: `cfb2dfe` (calendar column clipping) and `a925c9d` (task connection recovery).
+- Staging API image: `journeyops-app:mobile-fix-a925c9d`, layered on
+  `journeyops-app:outdoor-f136167`; only built frontend files replaced.
+- Release directory: `/opt/tripstar/releases/mobile-fix-a925c9d-20260917`.
+  Use its `previous-compose-files.txt` with the rollback commands above to restore
+  the outdoor image. No schema or data rollback is needed.
+- Date table and all seven column widths now agree; rightmost Sunday cells are
+  not clipped. September 20 was selected by touch in 360/390/768/1440px checks.
+- WebSocket error/close now falls back to read-only task-status polling, rather
+  than reporting generation failure. Connection recovery never resubmits work.
+  Reloading a pending-review task recovers the existing draft.
+- 40 frontend tests and production build passed. A simulated mobile disconnect
+  against deployed frontend assets recovered pending review with zero POSTs.
+- Readiness, private ingress and capability checks passed; paid flights remain
+  off. Production, worker, demo and data containers were unchanged.
+- The investigated real task remained awaiting approval with one attempt before
+  and after deployment. No real generation, retry, supplier query or review was
+  triggered by this hotfix verification.
