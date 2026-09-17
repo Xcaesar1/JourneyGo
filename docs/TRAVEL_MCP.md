@@ -108,7 +108,17 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 ### Recreate Staging
 
-#### Loading Optimization Release (Current)
+#### Memories Release (Current)
+
+- Source: `1245377`; image: `journeyops-app:memories-1245377`; release: `/opt/tripstar/releases/memories-1245377-20260917`. Deployed from a local committed archive, not pushed to GitHub.
+- Recreate with base/staging Compose files, the travel override, the prior loading override, then this release's `memories.compose.yaml`. Private variables, provider flags and volumes remain inherited.
+- `memories-deploy.sh` builds the normal root Dockerfile, checks active tasks and health, and automatically rolls back to `journeyops-app:loading-f46af59` if publication fails.
+- Only staging API/Worker were recreated after zero active tasks. Production/PostgreSQL/Redis container identities and start times remained unchanged. No migration, paid query, Caddy change or authentication change.
+- Live Chrome regressions passed: Memories in four languages at 360/390/1440, home at 390/1440, and result/PNG export with mocked supplier APIs. Authenticated `/history` and `/result` returned 200; the real history API returned the expected items shape; anonymous `/history` returned 401. Train/hotel remain enabled and flight disabled.
+- Public ingress verification passed: HTML/API/401/404 no-store, successful hashed assets private immutable, gzip, Vary and ETag 304. Main JS compressed transfer: 310235 bytes. This does not establish that the previously reported real-phone normal-mode white screen has been resolved.
+- Application rollback: omit only `memories.compose.yaml` from the same Compose stack and recreate worker/trip-planner with `--no-deps --no-build`. Keep the loading and travel overrides. No ingress or data rollback is required.
+
+#### Loading Optimization Release (Previous)
 
 - Source: `f46af59`; image: `journeyops-app:loading-f46af59`; release: `/opt/tripstar/releases/loading-f46af59-20260917`. Deployed from a local committed archive, not pushed to GitHub.
 - Recreate with base/staging Compose files, the travel override, then this release's `loading.compose.yaml`. Preserve private environment and provider flags. `loading-deploy.sh` checks active tasks and health, and automatically rolls back to the ambient image on deployment failure.

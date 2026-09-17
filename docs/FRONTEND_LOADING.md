@@ -33,5 +33,8 @@ Deployment verification on 2026-09-17: public main JS gzip transfer 309939 bytes
 
 ## Rollback
 
+Memories deployment verification on 2026-09-17: source `1245377`, live main JS gzip transfer 310235 bytes. Authentication, cache and mocked browser regressions passed; see `TRAVEL_MCP.md` for the active release, verification scope and rollback stack. The earlier mobile normal-mode white-screen report still needs confirmation on the affected phone.
+
 - Restore the prior application image and any separately approved ingress change. No database rollback or migration is required.
-- Current release: `/opt/tripstar/releases/loading-f46af59-20260917`; prior image: `journeyops-app:ambient-8499c3c`. The original ingress backup is `caddy-staging.before` in the release directory, mode 0600. Restore it with `sudo cp` (without `-p`) to `/etc/caddy/journeyops-staging.caddy`, validate `/etc/caddy/Caddyfile`, then gracefully reload Caddy. Never print the backup or expanded configuration because they contain credentials.
+- Current application release: `/opt/tripstar/releases/memories-1245377-20260917`, image `journeyops-app:memories-1245377`. Reverting Memories means omitting its Compose override and retaining the loading/travel overrides; recreate only staging API/Worker with `--no-deps --no-build`. Previous image: `journeyops-app:loading-f46af59`. No ingress changes were made by Memories.
+- For a separately approved rollback of the older loading/cache release: its directory is `/opt/tripstar/releases/loading-f46af59-20260917`, with prior image `journeyops-app:ambient-8499c3c`. The original ingress backup is `caddy-staging.before` in that directory, mode 0600. Restore it with `sudo cp` (without `-p`) to `/etc/caddy/journeyops-staging.caddy`, validate `/etc/caddy/Caddyfile`, then gracefully reload Caddy. Never print the backup or expanded configuration because they contain credentials.
