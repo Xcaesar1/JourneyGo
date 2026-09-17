@@ -2,11 +2,35 @@
 
 ## Status (2026-09-17)
 
+### Approved staging release
+
+- The user approved deployment before live functional acceptance. Staging now
+  runs `journeyops-app:one-click-f35652d`, including integrated workflow commit
+  `d7fe4a2` and homepage language commit `f35652d`.
+- Homepage language selection is Chinese/English only. Saved Japanese/Korean
+  selections fall back to Chinese on entering the homepage; locale packs remain
+  for historical result compatibility.
+- `ONE_CLICK_TRAVEL_ENABLED=true` on API and Worker; train/hotel enabled,
+  paid flights disabled with the existing zero limit. Production is unchanged.
+- PostgreSQL migration `20260917_07` ran successfully after a verified custom
+  dump backup. API/Worker health, private HTTPS authentication, readiness and
+  feature capabilities passed. PostgreSQL/Redis containers were not restarted.
+- Local frontend suite: 31 passed; build passed with existing asset/chunk
+  warnings. Chinese/English phone/desktop homepage and mocked planning tests
+  passed, including saved Japanese/Korean fallback and two-option dropdown.
+- Deployed-asset browser checks also passed via an SSH loopback tunnel:
+  homepage, one-click mock flow and legacy result/export compatibility. These
+  checks mock all API/provider responses and are not live planning acceptance.
+- Real model/supplier end-to-end acceptance is still pending. No paid flight
+  request or additional quota was authorized or consumed by deployment checks.
+- Release and rollback details: `docs/DEPLOYMENT.md`, one-click staging release.
+
 ### Integrated implementation, local mocked acceptance
 
 The remaining application workflow is now connected behind
 `ONE_CLICK_TRAVEL_ENABLED=false`. The earlier foundation-only status below is
-historical. No staging/production deployment or paid provider call was made.
+historical. At that implementation checkpoint, no staging/production deployment
+or paid provider call had been made; see the later release above.
 
 - JourneyGraph runs verified round-trip transport, bounded hotel search/detail,
   verified POI discovery, structured model selection and deterministic scheduling.
@@ -46,7 +70,8 @@ continue and atomic version activation. All external/model responses are mocked.
 PostgreSQL migration SQL generation passed. **Live PostgreSQL/Celery integration
 is not verified on this host:** Docker's Linux engine is unavailable. The existing
 four opt-in integration tests require their database/runtime environment. Keep
-the feature OFF until an approved isolated staging migration and end-to-end run.
+the feature OFF by default. The subsequent user-approved staging release above
+enables it for live acceptance after successful isolated migration.
 Real paid flight acceptance and any additional quota require separate approval.
 
 Final local verification for the integrated change: **293 backend tests passed,

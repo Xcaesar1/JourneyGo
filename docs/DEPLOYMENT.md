@@ -388,3 +388,50 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 - Production container ID, image, restart count and home-page SHA-256 remained unchanged
 - Browser flow and screenshots: `docs/assets/phase8/`; full matrix and residual risks:
   `docs/PHASE_8_ACCEPTANCE.md`
+## One-click Staging Release (2026-09-17)
+
+- Application source: `f35652d` (includes one-click workflow `d7fe4a2`).
+- URL: `https://staging.elonmusk0.asia`; existing private login unchanged.
+- Image: `journeyops-app:one-click-f35652d` on staging API and Worker only.
+- Release directory: `/opt/tripstar/releases/one-click-f35652d-20260917`.
+  Contains source archives, layered Dockerfile, `one-click.compose.yaml`,
+  `deploy.sh`, verification scripts and build log. Base dependencies match
+  `journeyops-app:memories-1245377`; backend and built frontend are replaced.
+- Deployment uses the original staging checkout/env plus the existing travel
+  override, memories override and new one-click override. Server branch and
+  its untracked private backup are not modified.
+- One-click, train and hotel are enabled on both processes. Worker now also
+  reads the existing private travel env file. Flights remain disabled; existing
+  zero paid-call ceiling and Redis counters are preserved.
+- Before migration: no active tasks; custom PostgreSQL dump saved to the release
+  directory as `staging-before.dump` with `0600` permissions, verified using
+  `pg_restore --list`; digest in `backup.sha256`. Treat dump as private data.
+- Migration `20260809_06 -> 20260917_07` and checkpoint setup succeeded.
+  API/Worker healthy; schema, private ingress, readiness and capabilities passed.
+  Protected container identity/start-time comparison confirms production API,
+  staging PostgreSQL and Redis were unchanged. No ingress/DNS change.
+- Homepage exposes Chinese/English only; obsolete saved homepage languages
+  fall back to Chinese. Existing translation packs and saved trips remain.
+- No real supplier/model itinerary or paid flight was requested during release.
+  Live end-to-end functional acceptance remains pending.
+- Against deployed assets over an SSH loopback tunnel, `home-hero.cjs`,
+  `one-click-ui.cjs` and `travel-ui.cjs` passed with mocked APIs: two languages,
+  saved-locale fallback, phone/desktop layout, pause/resume, navigation, quote
+  proposal editor and legacy result/export compatibility. HTTPS/auth checks
+  were separately run against the public staging hostname.
+
+For application rollback, preserve the database migration/query ledger and
+paid counters. With no active tasks, recreate only API/Worker using the previous
+override stack (the previous image defaults one-click to disabled):
+
+```bash
+cd /opt/tripstar/JourneyOps-staging
+docker compose --env-file .env.staging \
+  -f docker-compose.yaml -f docker-compose.staging.yaml \
+  -f /opt/tripstar/releases/travel-d7f99ce-20260916/travel.release.compose.yaml \
+  -f /opt/tripstar/releases/memories-1245377-20260917/memories.compose.yaml \
+  up -d --no-deps --no-build worker trip-planner
+```
+
+Do not downgrade `20260917_07`, restore a dump over live data, reset counters,
+or remove volumes as part of application rollback.
