@@ -1,5 +1,24 @@
 # Deployment And Rollback
 
+## Nationwide Flight City Registry (2026-09-18)
+
+- Source `55c42d4`; staging API `journeyops-app:cities-api-55c42d4`, worker
+  `journeyops-app:cities-worker-55c42d4`. Release directory:
+  `/opt/tripstar/releases/cities-55c42d4-20260918`.
+- Replaces the small whitelist with 254 sourced mainland aviation city/place
+  entries and explicit aliases. Backend planning and public quote-form mapping
+  share the same snapshot; see `FLIGHT_CITY_REGISTRY.md` for scope and refresh.
+- Verified 372 targeted backend tests, 60 frontend tests, Ruff and production build.
+  Local and deployed desktop/mobile browser checks passed for Shenzhen-Wuhan,
+  Mangshi/Shangri-La, Beijing/Chengdu and Hangzhou/Urumqi. Deployed public city
+  mapping matched the checked-in snapshot. Browser quote calls remained mocked.
+- Both services healthy; zero active tasks before deployment. Paid-call counter,
+  task/review/version/query hashes, production/demo/data container identities unchanged.
+  Flight remains enabled with cumulative limit 10; no live supplier calls, no bookings.
+- Rollback: use `previous-compose-files.txt` with `.env.staging` in recorded order,
+  check active tasks, then recreate only `worker trip-planner`. Previous images are
+  `flight-api-b061105` and `flight-worker-b061105`. Preserve counters and data.
+
 ## Staging Flight Enablement (2026-09-18)
 
 - User approved enabling staging flights with a cumulative limit of 10 calls.

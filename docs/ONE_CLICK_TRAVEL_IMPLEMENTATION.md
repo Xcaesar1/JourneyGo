@@ -1,5 +1,16 @@
 # One-click travel implementation status
 
+## Nationwide City Coverage (2026-09-18)
+
+- The seven-city whitelist is superseded by the 254-entry, versioned mainland
+  aviation registry and reviewed aliases. Shenzhen-Wuhan now passes both-leg
+  code mapping and mocked planning tests; exact city names such as 芒市 are preserved.
+- Quote UI receives its mapping from the same backend registry. No runtime scrape,
+  guessed neighboring airport, extra paid query, quota reset or production change.
+- Directory coverage does not guarantee direct service or sale inventory for every
+  route/date. Whole-country paid acceptance was not performed. See
+  `FLIGHT_CITY_REGISTRY.md` and the latest `DEPLOYMENT.md` section.
+
 ## Flight Enablement (2026-09-18)
 
 - Staging API and worker flights are enabled with the explicitly approved

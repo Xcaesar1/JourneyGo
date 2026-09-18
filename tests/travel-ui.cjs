@@ -31,7 +31,7 @@ const assert = require('node:assert/strict');
       const path = new URL(route.request().url()).pathname;
       if (path.includes('/versions')) versionRequests.push(path);
       let body = { success: true, data: {} };
-      if (path === '/api/v2/travel/capabilities') body = Object.fromEntries(['train', 'hotel', 'flight'].map(key => [key, { enabled, paid: key === 'flight' }]));
+      if (path === '/api/v2/travel/capabilities') body = Object.fromEntries(['train', 'hotel', 'flight'].map(key => [key, { enabled, paid: key === 'flight', ...(key === 'flight' ? { city_codes: { 北京: 'BJS', 上海: 'SHA' } } : {}) }]));
       if (path === '/api/v2/travel/search') {
         const request = route.request().postDataJSON();
         calls.push(request);
