@@ -14,6 +14,7 @@
       </article>
       <article>
         <h3>{{ t('oneClick.hotel') }} · {{ summary.hotel.name }}</h3>
+        <HotelPhoto :hotel="summary.hotel" :city="city" />
         <p>{{ summary.hotel.room_name }} · {{ summary.hotel.check_in }} → {{ summary.hotel.check_out }}</p>
         <p>{{ t('travelUnits.stay', { rooms: summary.hotel.rooms || 1, nights: summary.hotel.nights || summary.planning_request.travel_days - 1, adults: summary.planning_request.travelers }) }}</p>
         <p>CNY {{ money(summary.hotel.cost_cents) }} · {{ t('oneClick.estimated') }}</p>
@@ -47,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import HotelPhoto from './HotelPhoto.vue'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'

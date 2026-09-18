@@ -2,9 +2,10 @@
 
 - GET `/api/poi/intro?name=...&city=...` reads the public Chinese Wikipedia
   Action API. No API key, model generation or paid provider is used.
-- Exact-title queries follow redirects. Require the destination city in the
-  lead text and reject disambiguation/missing pages. Unmatched POIs retain their
-  original display text; there is no fuzzy automatic substitution.
+- Exact-title queries follow redirects and include explicit parenthesized aliases
+  in the same request (for example, a POI ending in `(博文女校)`). Require the destination
+  city in the lead text and reject disambiguation/missing pages. Unmatched overview
+  cards state that no verified background is available; no fuzzy substitution is used.
 - Excerpts are at most 30 characters, usually 20-30. Remove parenthetical text
   and citations, prefer a nearby punctuation boundary, otherwise show ellipsis.
 - Overview and daily attraction cards share request deduplication and a

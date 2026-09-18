@@ -162,6 +162,17 @@ def test_one_click_uses_existing_graph():
     assert not result["validation_report"].has_critical
 
 
+def test_hotel_photos_survive_non_attraction_poi_parsing():
+    def with_photos(city, keyword, kind):
+        result = maps(city, keyword, kind)
+        for row in result['pois']:
+            row['photos'] = [{'url': 'https://example.test/hotel.jpg'}]
+        return result
+    hotel = planner(maps=with_photos).pois('西安', '测试酒店', '100100', exact=True)[0]
+    assert hotel['image']['url'] == 'https://example.test/hotel.jpg'
+    assert hotel['image']['source'] == 'amap'
+
+
 @pytest.mark.parametrize("available", [True, False])
 def test_one_click_collects_trip_date_weather_without_changing_verified_plan(
     monkeypatch, available

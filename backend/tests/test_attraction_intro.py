@@ -42,3 +42,19 @@ async def test_verified_city_source_failure_and_cache(monkeypatch, city, ambiguo
     if expected:
         assert len(result['summary']) <= 30
         assert result['license'] == 'CC BY-SA 4.0'
+
+
+@pytest.mark.asyncio
+async def test_parenthesized_alias_uses_same_request_and_checks_city(monkeypatch):
+    intro._cache.clear()
+    intro._limit = __import__('asyncio').Semaphore(3)
+    async def get(self, url, **kwargs):
+        assert kwargs['params']['titles'] == '宿舍旧址(博文女校)|博文女校'
+        return httpx.Response(200, request=httpx.Request('GET', url), json={'query': {'pages': [
+            {'missing': True},
+            {'title': '博文女校', 'extract': '博文女校位于上海市，是历史建筑与中共一大代表的住地。',
+             'fullurl': 'https://zh.wikipedia.org/wiki/博文女校'},
+        ]}})
+    monkeypatch.setattr(httpx.AsyncClient, 'get', get)
+    assert (await intro.get_attraction_intro('宿舍旧址(博文女校)', '上海'))['summary']
+    assert not await intro.get_attraction_intro('宿舍旧址(博文女校)', '深圳')

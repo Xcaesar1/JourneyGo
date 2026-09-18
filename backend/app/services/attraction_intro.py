@@ -39,7 +39,7 @@ async def get_attraction_intro(name: str, city: str) -> dict:
                 response = await client.get(_API, params={
                     "action": "query", "prop": "extracts|info|pageprops",
                     "inprop": "url", "exintro": "1", "explaintext": "1",
-                    "redirects": "1", "titles": name, "format": "json",
+                    "redirects": "1", "titles": "|".join(dict.fromkeys([name, *re.findall(r"[（(]([^()（）]{2,40})[)）]", name)])), "format": "json",
                     "formatversion": "2", "variant": "zh-cn",
                 }, headers={"User-Agent": "JourneyGo/1.0 (https://github.com/Xcaesar1/JourneyGo)"})
                 response.raise_for_status()

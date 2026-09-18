@@ -3,8 +3,9 @@
     <button type="button" :disabled="busy" @click="expanded = !expanded">{{ dayIndex === undefined ? words.whole : words.day }}</button>
     <section v-if="expanded" :aria-label="words.title">
       <strong>{{ words.title }}</strong>
-      <p>{{ words.consent }}</p>
-      <button v-if="!result" type="button" :disabled="busy || (!reviewId && !version)" @click="submit">{{ busy ? words.loading : words.confirm }}</button>
+      <p v-if="available === false" role="status">{{ locale.startsWith('zh') ? '高德专属地图尚未启用，暂时不能创建或跳转。可继续使用单地点导航；启用前需核实账号额度和收费条件。' : 'Personal maps are not enabled. Use individual place navigation; account quota and billing must be verified before activation.' }}</p>
+      <p v-else>{{ words.consent }}</p>
+      <button v-if="!result && available !== false" type="button" :disabled="busy || available !== true || (!reviewId && !version)" @click="submit">{{ busy ? words.loading : words.confirm }}</button>
       <p v-if="!reviewId && !version">{{ words.noVersion }}</p>
       <p v-if="error" role="alert">{{ error }}</p>
       <template v-if="result">
@@ -40,6 +41,12 @@ const words = computed(() => locale.value.startsWith('zh') ? {
   failed: 'Map creation unavailable. Please retry later.', copied: 'Link copied.', copyFailed: 'Copy failed. Long-press the map link to copy.',
 })
 const expanded = ref(false)
+const available = ref<boolean | null>(null)
+watch(expanded, async value => {
+  if (!value || available.value !== null) return
+  try { available.value = Boolean((await api.get('/api/v2/travel/capabilities')).data.personal_map?.enabled) }
+  catch { error.value = words.value.failed }
+})
 const busy = ref(false)
 const error = ref('')
 const copied = ref(false)

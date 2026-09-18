@@ -1,8 +1,8 @@
 <template>
   <div class="place-navigation">
     <div class="navigation-actions">
-      <a :href="amapUrl(place, city, 'walk')" target="_blank" rel="noopener noreferrer">{{ t(canRoute(place) ? 'navigation.walk' : 'navigation.search') }}</a>
-      <a v-if="canRoute(place)" :href="amapUrl(place, city, 'bus')" target="_blank" rel="noopener noreferrer">{{ t('navigation.bus') }}</a>
+      <a :href="amapUrl(place, city, 'walk', true, from)" target="_blank" rel="noopener noreferrer">{{ t(canRoute(place) ? 'navigation.walk' : 'navigation.search') }}</a>
+      <a v-if="canRoute(place)" :href="amapUrl(place, city, 'bus', true, from)" target="_blank" rel="noopener noreferrer">{{ t('navigation.bus') }}</a>
       <button type="button" @click="expanded = !expanded" :aria-expanded="expanded">{{ t('navigation.more') }}</button>
     </div>
     <div v-if="expanded" class="navigation-help">

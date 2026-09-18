@@ -223,7 +223,6 @@
                   :item="item"
                   :image-src="getAttractionImage(item)"
                   :active="activeOverviewCard === index"
-                  @hover="setActiveOverviewCard(index)"
                   @image-error="handleImageError"
                   @select-day="goToDayFromOverview"
                 />
@@ -238,7 +237,7 @@
             <span v-if="planId" class="overview-meta-item">
               Plan ID: {{ planId }}
             </span>
-            <details v-if="tripPlan.overall_suggestions" class="overview-meta-item">
+            <details v-if="tripPlan.overall_suggestions && !tripPlan.travel_summary" class="overview-meta-item">
               <summary>{{ t('result.side.overview') }}</summary>
               {{ tripPlan.overall_suggestions }}
             </details>
@@ -503,33 +502,6 @@
                 <span class="transfer-info-text">{{ day.transfer_info }}</span>
               </div>
 
-              <!-- 行程基本信息 -->
-              <div class="day-info">
-                <div class="info-row">
-                  <span class="label">{{ t('result.dayDescription') }}</span>
-                  <span class="value">{{ day.description }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">{{ t('result.dayTransport') }}</span>
-                  <span class="value">{{ day.transportation }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">{{ t('result.dayAccommodation') }}</span>
-                  <span class="value">{{ day.accommodation }}</span>
-                </div>
-              </div>
-
-              <div v-if="issuesForDay(index).length > 0" class="day-validation-strip">
-                <span
-                  v-for="issue in issuesForDay(index)"
-                  :key="`${issue.code}-${issue.item_id || ''}`"
-                  :class="['day-validation-pill', `is-${issue.severity}`]"
-                  :title="issue.suggested_action || issue.message"
-                >
-                  {{ getValidationSeverityLabel(issue.severity) }} · {{ issue.message }}
-                </span>
-              </div>
-
               <section v-if="day.timeline && day.timeline.length > 0" class="day-timeline-section">
                 <div class="day-section-heading">
                   <span>{{ t('result.execution.timelineTitle') }}</span>
@@ -549,9 +521,10 @@
                     <div class="timeline-content">
                       <div>
                         <span class="timeline-type">{{ getScheduleItemTypeLabel(item.item_type) }}</span>
-                        <strong>{{ item.title }}</strong>
+                        <strong>{{ transferDetails(item, tripPlan.travel_summary)?.title || item.title }}</strong>
                       </div>
                       <span>{{ t('result.execution.minutes', { minutes: item.duration_minutes }) }}</span>
+                      <PlaceNavigation v-if="transferDetails(item, tripPlan.travel_summary)" :place="transferDetails(item, tripPlan.travel_summary)!.place" :from="transferDetails(item, tripPlan.travel_summary)!.from" :city="transferDetails(item, tripPlan.travel_summary)!.city || day.city || tripPlan.city" />
                     </div>
                   </article>
                 </div>
@@ -659,6 +632,7 @@
               <!-- 酒店推荐 -->
               <a-divider v-if="day.hotel" orientation="left">{{ t('result.hotelTitle') }}</a-divider>
               <a-card v-if="day.hotel" size="small" class="hotel-card">
+                <HotelPhoto :hotel="tripPlan.travel_summary?.hotel || day.hotel" :city="day.city || tripPlan.city" />
                 <template #title>
                   <span class="hotel-title">{{ day.hotel.name }}</span>
                 </template>
@@ -890,11 +864,13 @@ import * as echarts from 'echarts'
 import Swiper from 'swiper'
 import '@fontsource/nunito-sans/latin-400.css'
 import '@fontsource/raleway/latin-700.css'
-import { EffectCoverflow, Keyboard, Mousewheel } from 'swiper/modules'
+import { Keyboard, Mousewheel } from 'swiper/modules'
 import NavBar from '@/components/NavBar.vue'
 import OverviewAttractionCard from '@/components/OverviewAttractionCard.vue'
 import AIChat from '@/components/AIChat.vue'
 import PlaceNavigation from '@/components/PlaceNavigation.vue'
+import HotelPhoto from '@/components/HotelPhoto.vue'
+import { transferDetails } from '@/services/transferDetails'
 import AttractionIntro from '@/components/AttractionIntro.vue'
 import TripNavigator from '@/components/TripNavigator.vue'
 import TravelSearch from '@/components/TravelSearch.vue'
@@ -1075,10 +1051,6 @@ const recommendedTransportOptions = computed(() => (
 ))
 const validationIssues = computed<ValidationIssue[]>(() => tripPlan.value?.validation_report?.issues ?? [])
 const criticalValidationIssues = computed(() => validationIssues.value.filter(issue => issue.severity === 'critical'))
-
-const issuesForDay = (dayIndex: number): ValidationIssue[] => (
-  validationIssues.value.filter(issue => issue.day_index === dayIndex)
-)
 
 const formatTimelineTime = (value: string): string => {
   const match = value?.match(/T(\d{2}:\d{2})/)
@@ -1263,30 +1235,22 @@ const initOverviewSwiper = async () => {
 
   destroyOverviewSwiper()
   overviewSwiper = new Swiper(root, {
-    modules: [EffectCoverflow, Keyboard, Mousewheel],
-    effect: 'coverflow',
+    modules: [Keyboard, Mousewheel],
+    effect: 'slide',
     grabCursor: true,
-    centeredSlides: true,
-    coverflowEffect: {
-      rotate: 0,
-      stretch: 0,
-      depth: 100,
-      modifier: 2.5,
-    },
+    centeredSlides: false,
+    slidesPerView: 1.08,
     keyboard: {
       enabled: true,
     },
     mousewheel: {
       thresholdDelta: 70,
     },
-    spaceBetween: 30,
+    spaceBetween: 16,
     loop: false,
     breakpoints: {
       769: {
-        slidesPerView: 3,
-      },
-      1024: {
-        slidesPerView: 4,
+        enabled: false,
       },
     },
     on: {
@@ -1296,7 +1260,7 @@ const initOverviewSwiper = async () => {
     },
   })
 
-  const initialIndex = Math.min(1, overviewAttractions.value.length - 1)
+  const initialIndex = 0
   activeOverviewCard.value = initialIndex
   overviewSwiper.slideTo(initialIndex, 0, false)
 }
@@ -1900,13 +1864,6 @@ const scrollToSection = ({ key: menuKey }: { key: string | number }) => {
 const goToDayFromOverview = (dayArrayIndex: number) => {
   activeDays.value = [dayArrayIndex]
   activeSection.value = 'days'
-}
-
-const setActiveOverviewCard = (index: number) => {
-  activeOverviewCard.value = index
-  if (overviewSwiper && overviewSwiper.activeIndex !== index) {
-    overviewSwiper.slideTo(index)
-  }
 }
 
 // 切换编辑模式
@@ -3130,7 +3087,7 @@ const initAMap = async () => {
       zoom: 12,
       center: firstPoint,
       viewMode: '3D',
-      mapStyle: 'amap://styles/darkblue',
+      mapStyle: 'amap://styles/normal',
       // 开启 preserveDrawingBuffer 才能让 html2canvas 在 WebGL 下截屏成功！
       WebGLParams: {
         preserveDrawingBuffer: true
@@ -4342,16 +4299,28 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 .overview-swiper .swiper {
-  padding: 0 0 0.6rem;
-  margin-top: -2rem;
-  margin-bottom: -2rem;
+  padding: 0 0 12px;
+  margin: 12px 0;
   overflow: hidden;
   border-radius: 12px;
 }
 
 .overview-swiper .swiper-wrapper {
-  align-items: flex-end;
-  min-height: 32rem;
+  align-items: stretch;
+  min-height: 0;
+}
+
+@media (min-width: 769px) {
+  .overview-swiper .swiper-wrapper {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    transform: none !important;
+  }
+  .overview-swiper :deep(.swiper-slide) { width: auto !important; margin: 0 !important; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .overview-swiper .swiper-wrapper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 
@@ -4632,6 +4601,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 #amap-container {
   width: 100%;
   height: clamp(360px, 65vh, 600px);
+  background: #fff;
 }
 
 /* 知识图谱卡片 */
@@ -4946,59 +4916,6 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   font-weight: 600;
   color: var(--jg-warning);
 }
-
-.day-info {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: var(--jg-surface);
-  border-radius: 12px;
-  border: 1px solid var(--jg-border);
-}
-
-.info-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.info-row:last-child {
-  margin-bottom: 0;
-}
-
-.info-row .label {
-  font-weight: 600;
-  color: var(--jg-text);
-  min-width: 100px;
-}
-
-.info-row .value {
-  color: var(--jg-text);
-  flex: 1;
-}
-
-.day-validation-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: -6px 0 18px;
-}
-
-.day-validation-pill {
-  max-width: 100%;
-  padding: 5px 9px;
-  border: 1px solid var(--jg-border);
-  border-radius: 999px;
-  color: var(--jg-text);
-  background: var(--jg-surface);
-  font-size: 16px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.day-validation-pill.is-critical { border-color: var(--jg-border); color: var(--jg-text); }
-.day-validation-pill.is-warning { border-color: var(--jg-border); color: var(--jg-text); }
-.day-validation-pill.is-info { border-color: var(--jg-border); color: var(--jg-text); }
 
 .day-timeline-section {
   margin: 4px 0 18px;

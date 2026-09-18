@@ -8,6 +8,21 @@ const source = readFileSync(new URL('./Result.vue', import.meta.url), 'utf8')
 const overview = source.slice(source.indexOf('const overviewAttractions ='), source.indexOf('const destroyOverviewSwiper ='))
 const resolver = source.slice(source.indexOf('const getAttractionImage ='), source.indexOf('const handleImageError ='))
 
+test('desktop attraction gallery has aligned cards without coverflow or image waves', () => {
+  const card = readFileSync(new URL('../components/OverviewAttractionCard.vue', import.meta.url), 'utf8')
+  assert.doesNotMatch(source, /effect: 'coverflow'/)
+  assert.match(source, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/)
+  assert.match(card, /aspect-ratio: 4 \/ 3/)
+  assert.doesNotMatch(card, /shape-fill/)
+  assert.match(card, /@click="emit\('select-day', item.dayArrayIndex\)"/)
+})
+
+test('daily detail starts with the timeline instead of redundant summary and issue pills', () => {
+  const template = source.split('</template>\n\n<script')[0]
+  assert.doesNotMatch(template, /class="day-info"|class="day-validation-strip"/)
+  assert.match(template, /class="day-timeline-section"/)
+})
+
 function imagesFor(attractions, cached = {}) {
   const code = ts.transpileModule(`${overview}\n${resolver}\n overviewAttractions.map(getAttractionImage)`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },

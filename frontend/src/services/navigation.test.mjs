@@ -9,6 +9,19 @@ const exports = {}
 vm.runInNewContext(ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText,
   { exports, URLSearchParams })
 const { amapUrl, canRoute, dayStops, progressKey, parseProgress } = exports
+
+test('saved transfer rows expose the correct departure, arrival and return endpoints', () => {
+  const code = readFileSync(new URL('./transferDetails.ts', import.meta.url), 'utf8')
+  const module = { exports: {} }
+  vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, module)
+  const fn = module.exports.transferDetails
+  const summary = { planning_request: { origin: '深圳' }, outbound: { origin_location: { name: '深圳北站' }, location: { name: '上海虹桥站' } }, return: { location: { name: '上海南站' } }, hotel: { name: '酒店' } }
+  assert.equal(fn({ title: '出发城市内接驳（估算）' }, summary).place.name, '深圳北站')
+  assert.equal(fn({ title: '到站后接驳至酒店（估算）' }, summary).from.name, '上海虹桥站')
+  assert.equal(fn({ title: '酒店至返程枢纽（估算）' }, summary).place.name, '上海南站')
+  assert.equal(fn({ title: '任意旧项目' }, summary), null)
+  assert.equal(fn({ title: '到站后接驳至酒店' }, null), null)
+})
 const place = { name: '城墙 & 南门,入口', address: '西安', poi_id: 'B001ABC', location: { longitude: 108.94, latitude: 34.25 } }
 const meal = { name: '餐厅', type: 'lunch', location: { longitude: 108.95, latitude: 34.26 } }
 const day = { date: '2026-09-16', day_index: 0, attractions: [place], meals: [meal], timeline: [

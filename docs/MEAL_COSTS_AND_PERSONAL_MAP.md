@@ -15,11 +15,24 @@
 - No map is created during planning, loading or section switching. A confirmation and a separate app-open gesture are required.
 
 ## Enablement and Verification
+- 2026-09-18 authorized live check: created one map for the saved Shanghai itinerary's
+  2026-09-21 day (six points, none omitted), through the existing durable export ledger.
+  The returned `amapuri://workInAmap/createWithToken` link opened on the connected
+  Android AMap app and rendered the named map, markers and daily route. No purchase,
+  new permission or fee prompt appeared; this does not establish zero billing.
+  That initial check overrode the flag only in its one-off process. The subsequent
+  staging configuration release persistently enabled the website flag; see
+  `AMAP_ENABLEMENT_HANDOFF.md` and the API-only rollback in `DEPLOYMENT.md`.
+  Do not replay map creation with a different version/review identity to test opening.
+- The capability endpoint exposes `personal_map.enabled`. The export panel checks it
+  before offering creation and explains disabled state without sending a POST.
 - Default `AMAP_PERSONAL_MAP_ENABLED=false`; `VITE_AMAP_WEB_KEY` and `API_ACCESS_CODE` must be configured server-side.
 - 2026-09-17: read-only `tools/list` using staging credentials verified the tool name and schema (`orgName`, daily `lineList`, `pointInfoList` with name/lon/lat/poiId). No map was created.
 - Account remaining quota, billing and entitlement cannot be inferred from `tools/list`. Verify them in the AMap console and obtain approval for any charge/new authorization before enabling the flag. Do not claim unlimited free service.
 - Official references: https://developer.amap.com/api/mcp-server/gettingstarted and https://developer.amap.com/api/mcp-server/summary; price field: https://developer.amap.com/api/webservice/guide/api-advanced/newpoisearch.
-- Local tests mock external map writes. Live returned-link compatibility and Android app handoff still require an authorized integration check with the app installed. App login/location permissions remain controlled by AMap.
+- Local tests mock external map writes. The subsequent real Android Chrome button
+  round trip passed twice on staging, reusing the exact existing map with an unchanged
+  ledger. Production remains out of scope. App permissions remain controlled by AMap.
 - Rollback: disable the flag first, then revert only this feature's commit after an approved release. Existing itinerary and map ledger data need no migration or deletion.
 
 ## Local Verification (2026-09-17)

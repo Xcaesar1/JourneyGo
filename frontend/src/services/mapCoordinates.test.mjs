@@ -9,6 +9,13 @@ vm.runInNewContext(ts.transpileModule(readFileSync(new URL('./mapCoordinates.ts'
   { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports })
 const { toRoutePoint } = exports
 
+test('attraction map uses a light basemap and white loading background', () => {
+  const source = readFileSync(new URL('../views/Result.vue', import.meta.url), 'utf8')
+  assert.match(source, /mapStyle: 'amap:\/\/styles\/normal'/)
+  assert.doesNotMatch(source, /amap:\/\/styles\/darkblue/)
+  assert.match(source, /#amap-container\s*\{[^}]*background:\s*#fff;/)
+})
+
 test('map rejects missing, non-finite and out-of-range coordinates', () => {
   for (const value of [null, 'bad', {}, [], [null, null], ['', ' '], [true, false], [0, 0],
     [NaN, 34], [109, Infinity], [181, 34], [109, -91], { longitude: 'bad', latitude: 34 }]) {

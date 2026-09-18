@@ -27,7 +27,7 @@ test('phone cards do not require hover and navbar overrides legacy full-width br
   const card = read('../components/OverviewAttractionCard.vue').split('@media (max-width: 768px)')[1]
   assert.match(card, /height: auto/)
   assert.match(card, /white-space: normal/)
-  assert.match(card, /height: 44px; width: 44px; opacity: 1/)
+  assert.match(card, /min-height: 44px/)
   const navbar = read('../components/NavBar.vue')
   assert.match(navbar, /\.landing-navbar \.navbar-translate\s*\{[^}]*width: auto !important/s)
   assert.match(navbar, /flex-direction: row !important/)

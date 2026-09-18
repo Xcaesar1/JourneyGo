@@ -23,7 +23,7 @@ from ..domain.trip_models import (
     ScheduleItemV2,
     TripPlanV2,
 )
-from .attraction_discovery import rank_amap_pois
+from .attraction_discovery import parse_amap_pois, rank_amap_pois
 from .hotel_detail import detail_arguments, inspect_detail
 from .hotel_pricing import amount, estimate_stay
 from .meal_pricing import meal_reference
@@ -475,7 +475,7 @@ class OneClickPlanner:
                         "fetched_at": raw.get("fetched_at"),
                         "image": ranked[row["id"]].image.model_dump()
                         if row["id"] in ranked
-                        else {},
+                        else next((p.image.model_dump() for p in parse_amap_pois({"status": "1", "pois": [row]}, city)), {}),
                         "_provider_index": provider_index,
                     }
                 )

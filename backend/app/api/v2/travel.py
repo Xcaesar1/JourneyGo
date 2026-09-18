@@ -15,6 +15,7 @@ def travel_capabilities():
     settings = get_settings()
     return {
         **capabilities(settings),
+        "personal_map": {"enabled": bool(settings.amap_personal_map_enabled and settings.vite_amap_web_key)},
         "one_click": {
             "enabled": settings.one_click_travel_enabled
             and settings.planner_engine == "journey_graph",
