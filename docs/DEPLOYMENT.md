@@ -1,5 +1,34 @@
 # Deployment And Rollback
 
+## Staging Flight Enablement (2026-09-18)
+
+- User approved enabling staging flights with a cumulative limit of 10 calls.
+  Do not increase the limit or reset the shared credential counter without approval.
+- Source `b061105`; API `journeyops-app:flight-api-b061105`, worker
+  `journeyops-app:flight-worker-b061105`. Release
+  `/opt/tripstar/releases/flight-b061105-20260918` appends persistent
+  `TRAVEL_FLIGHT_ENABLED=true` and `TRAVEL_FLIGHT_CALL_LIMIT=10` for both services.
+- Existing supplier credential, access protection and paid consent are retained.
+  Production, demo and data containers are unchanged. No migrations or bookings.
+- Kunming `KMG` and Lijiang `LJG` were added to planning and quote-form mappings;
+  the quote form also now includes the existing Xi'an `SIA` mapping.
+- Two real, metered supplier calls succeeded: KMG-LJG on September 20 returned
+  MU5919 and LJG-KMG on September 24 returned MU5920. Both passed direct-economy
+  planning filters. Reference fares were CNY 280 and CNY 920 per person, excluding
+  unverified taxes; these are historical probe results, not a fare guarantee.
+- Counter after verification: 2 used, 8 remaining. Captured supplier responses are
+  retained privately in `/opt/tripstar/releases/flight-enable-20260918`; do not repeat
+  calls just to inspect them. A new uncached round trip normally consumes two calls.
+- 88 targeted backend tests, 60 frontend tests, Ruff and frontend build passed.
+  Both services passed health/config/quota checks. Live authenticated capability
+  and missing-consent rejection passed. Deployed desktop/mobile submission and
+  result UI passed with mocked task responses; no real complete itinerary was generated.
+- Existing task/review/version/query hashes matched before/after deployment.
+  Do not resume the user's existing train task or change its mode automatically.
+- Rollback: use this release's `previous-compose-files.txt` in recorded order with
+  `.env.staging`, after the active-task check, and recreate only `worker trip-planner`.
+  This restores the previous disabled flight settings. Never roll back quota counters.
+
 ## Contextual Pause Choices (2026-09-18)
 
 - Source `0aa75b1`; staging API image `journeyops-app:recovery-0aa75b1`, based on

@@ -1,5 +1,23 @@
 # One-click travel implementation status
 
+## Flight Enablement (2026-09-18)
+
+- Staging API and worker flights are enabled with the explicitly approved
+  cumulative ceiling of 10 calls. Two real round-trip probe calls succeeded;
+  remaining allowance was 8 at release verification. Production remains untouched.
+- Supported planning city mappings now include Kunming and Lijiang in addition
+  to Beijing, Shanghai, Guangzhou, Hefei and Xi'an. Unsupported cities still fail
+  before provider dispatch; do not infer that all domestic cities are mapped.
+- KMG-LJG city-pair reference:
+  https://www.caac.gov.cn/XXGK/XXGK/ZFGW/201601/P020160122452510922835.pdf
+- Provider tool contract:
+  https://github.com/variflight/variflight-mcp#get-flight-prices-by-cities
+- Real quotes passed normalization and planning eligibility. Full planner tests
+  use mocked suppliers/model and verify both directions and quote reuse. A real
+  whole-trip flight itinerary was not generated or substituted into an existing task.
+- See the staging flight section in `DEPLOYMENT.md` for images, proof and rollback.
+  Historical disabled-flight notes below describe earlier deployment states.
+
 ## C-prefix Train Correction (2026-09-18)
 
 - Accept G/D/C train numbers with available second-class seats, valid prices and
