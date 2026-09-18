@@ -636,6 +636,21 @@ flag without rebuilding images, changing worker configuration or modifying data.
 
 ## Result Details and Light Map (2026-09-18)
 
+Subsequent gallery-only release: `05f5ce2`, API image
+`journeyops-app:carousel-05f5ce2`, release directory
+`/opt/tripstar/releases/carousel-05f5ce2-20260918`. Restores the original
+centered coverflow with smaller depth/overlap and removes image-bottom wave
+overlays for straight edges. The replacement grid and arrow-control designs
+are discarded. Worker remains `journeyops-app:result-details-d14605a`.
+All 54 frontend tests, production build and 390/900/1440px interaction checks
+passed. Deployment found zero active tasks; private ingress/readiness and map
+enablement passed, with worker, production, demo and data containers unchanged.
+The actual staging page also passed desktop-viewport coverflow, straight-edge,
+keyboard navigation and itinerary-link checks with zero business mutations.
+Rollback only `trip-planner` using this release's `previous-compose-files.txt`
+and the existing Compose loop after the active-task check. This restores the
+previous API image without changing data, worker or the personal-map flag.
+
 - Source: `d14605a`; API and worker: `journeyops-app:result-details-d14605a`.
   Release: `/opt/tripstar/releases/result-details-d14605a-20260918`.
 - Layers the built frontend and three changed backend modules onto the previous
