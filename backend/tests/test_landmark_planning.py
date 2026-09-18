@@ -112,6 +112,108 @@ def test_verified_landmark_parent_dedup_does_not_collapse_city_temples():
     assert "云冈石窟-第十窟" not in {item.name for item in ranked}
 
 
+def lijiang_rows():
+    # IDs and parent links from the 2026-09-18 mobile candidate response.
+    return [
+        {**poi(name, i), "id": identifier, "parent": parent, "cityname": "丽江市"}
+        for i, (name, identifier, parent) in enumerate([
+            ("玉龙雪山国家级风景名胜区", "B0378008FA", ""),
+            ("玉龙雪山观景湖", "B0K6DS8TXV", "B0HBXXU1MR"),
+            ("玉龙雪山国家级风景名胜区-玉液湖", "B037814YDS", "B0378157WA"),
+            ("玉龙雪山冰川博物馆", "B0FFFDR6FE", "B03780I3SU"),
+            ("独立博物馆", "independent", ""),
+        ])
+    ]
+
+
+def test_mobile_lijiang_candidates_keep_one_core_experience():
+    ranked = rank_amap_pois({"status": "1", "pois": lijiang_rows()}, "丽江")
+    assert [p.name for p in ranked] == ["玉龙雪山国家级风景名胜区", "独立博物馆"]
+    assert ranked[0].recommended_minutes == 360
+
+
+def test_multilevel_parent_resolution_and_group_exclusion():
+    rows = [poi("云冈石窟", 1),
+            {**poi("中间分区", 2), "parent": "BLAND1"},
+            {**poi("具体洞窟", 3), "parent": "BLAND2"}]
+    assert len(rank_amap_pois({"status": "1", "pois": rows[::-1]}, "大同")) == 1
+    assert not rank_amap_pois({"status": "1", "pois": rows}, "大同", avoid=["具体洞窟"])
+
+
+def test_parent_cycles_and_cross_city_links_do_not_merge():
+    rows = [poi("云冈石窟", 1),
+            {**poi("异地地点", 2), "parent": "BLAND1", "cityname": "北京"},
+            {**poi("循环甲", 3), "parent": "BLAND4"},
+            {**poi("循环乙", 4), "parent": "BLAND3"}]
+    assert len(rank_amap_pois({"status": "1", "pois": rows}, "大同")) == 4
+
+
+def test_unverified_similar_name_is_retained_but_not_default_selected():
+    rows = lijiang_rows() + [poi("玉龙雪山远眺观景台", 90)]
+    provider = AmapAttractionDiscoveryProvider("fake", client=httpx.Client(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json={"status": "1", "pois": rows}))))
+    page = provider.discover("丽江", days=5)
+    pending = next(p for p in page.items if p.name == "玉龙雪山远眺观景台")
+    assert not pending.experience_group
+    assert pending.experience_review_required
+    assert pending.poi_id not in page.default_selected_ids
+
+
+@pytest.mark.parametrize("excluded", [[], ["玉龙雪山观景湖"]])
+def test_lijiang_planner_dedup_and_exclusion_across_queries(excluded):
+    p, _ = landmark_planner(LANDMARKS[1], excluded_attractions=excluded)
+    original = p.maps
+    def search(city, keyword, kind):
+        if kind != "110000":
+            return original(city, keyword, kind)
+        return {"status": "1", "pois": lijiang_rows() + [poi("玉龙雪山远眺观景台", 90)]}
+    p.maps = search
+    selected = p.discover_attractions("丽江")
+    snow = [item for item in selected if item.get("experience_group") == "lijiang-snow-mountain"]
+    assert len(snow) == (0 if excluded else 1)
+    if snow:
+        assert snow[0]["name"] == "玉龙雪山国家级风景名胜区"
+    assert not any(item["name"] == "玉龙雪山远眺观景台" for item in selected)
+
+
+def test_lijiang_explicit_component_conflict_pauses_before_queries():
+    p, queries = landmark_planner(LANDMARKS[1], must_visit=["玉龙雪山", "玉龙雪山观景湖"])
+    with pytest.raises(PlanningInputRequired) as caught:
+        p.discover_attractions("丽江")
+    assert caught.value.payload["code"] == "duplicate_must_visit"
+    assert not queries
+
+
+def test_planner_resolves_ancestry_across_separate_query_responses():
+    p, _ = landmark_planner(LANDMARKS[3])
+    def search(city, keyword, kind):
+        if keyword == "云冈石窟":
+            rows = [poi("云冈石窟", 1)]
+        elif keyword == "大同城市地标":
+            rows = [{**poi("中间分区", 2), "parent": "BLAND1"}]
+        else:
+            rows = [{**poi("独立命名的洞窟", 3), "parent": "BLAND2"}]
+        return {"status": "1", "pois": rows}
+    p.maps = search
+    selected = p.discover_attractions("大同")
+    assert [item["name"] for item in selected] == ["云冈石窟"]
+
+
+def test_real_lijiang_group_scheduled_once_for_whole_trip():
+    p, _ = landmark_planner(LANDMARKS[1])
+    original = p.maps
+    p.maps = lambda city, keyword, kind: (
+        {"status": "1", "pois": lijiang_rows()} if kind == "110000"
+        else original(city, keyword, kind)
+    )
+    plan = p.run()
+    visits = [sight for day in plan.days for sight in day.attractions
+              if same_experience("丽江", sight.name, "玉龙雪山")]
+    assert len(visits) == 1
+    assert visits[0].name == "玉龙雪山国家级风景名胜区"
+    assert visits[0].visit_duration == 360
+
+
 def test_explicit_duplicate_must_visits_pause_before_queries():
     p, queries = landmark_planner(LANDMARKS[3], must_visit=["大同古城墙", "大同古城南城墙"])
     with pytest.raises(PlanningInputRequired, match="同一游览体验") as caught:

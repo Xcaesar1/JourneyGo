@@ -818,7 +818,11 @@ def test_flight_roundtrip_once_each_and_unknown_taxes(route):
     # This fixture tests flight reuse, not real landmark POI discovery.
     from backend.app.domain.landmarks import city_landmarks
     trip_request.excluded_attractions = [item["name"] for item in city_landmarks(route[1])]
-    p = planner(trip_request, supplier=flights)
+    def flight_maps(city, keyword, kind):
+        # Return stable ordinary places: this test exercises flights, not landmarks.
+        return maps(city, "测试景点" if kind == "110000" else keyword, kind)
+
+    p = planner(trip_request, supplier=flights, maps=flight_maps)
     p.settings = p.settings.model_copy(
         update={
             "travel_flight_enabled": True,

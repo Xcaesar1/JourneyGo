@@ -71,6 +71,27 @@ LANDMARKS = [
 # Curated equivalent experiences, not containment of all POIs within the old city.
 EXPERIENCES = [
     dict(
+        city="丽江",
+        name="玉龙雪山国家级风景名胜区-玉液湖",
+        aliases=["玉液湖", "蓝月谷", "玉龙雪山-蓝月谷"],
+        group="lijiang-snow-mountain",
+        source="https://yn.yunnan.cn/system/2019/06/26/030308776.shtml",
+    ),
+    dict(
+        city="丽江",
+        name="玉龙雪山观景湖",
+        aliases=[],
+        group="lijiang-snow-mountain",
+        source="https://www.amap.com/place/B0K6DS8TXV",
+    ),
+    dict(
+        city="丽江",
+        name="玉龙雪山冰川博物馆",
+        aliases=[],
+        group="lijiang-snow-mountain",
+        source="https://yndaily.yunnan.cn/attachment/202402/24/2ef02912-382a-4e31-9f39-619a61277b07.pdf",
+    ),
+    dict(
         city="北京",
         name="慕田峪长城",
         aliases=["慕田峪长城景区"],

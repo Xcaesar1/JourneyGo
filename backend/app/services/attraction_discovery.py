@@ -16,7 +16,7 @@ from ..domain.attraction_models import (
     AttractionCandidatePage,
     AttractionImage,
 )
-from ..domain.landmarks import discovery_queries, experience, metadata, same_experience
+from ..domain.landmarks import LANDMARKS, discovery_queries, experience, metadata, same_experience
 from .tripai_supplemental import (
     CtripWendaoSupplementalSource,
     SupplementalAttractionSource,
@@ -259,6 +259,49 @@ def rank_amap_pois(
     )
 
 
+def resolve_experience_groups(items: Sequence[AttractionCandidate]) -> list[AttractionCandidate]:
+    """Follow verified POI ancestry, never name prefixes or geographic proximity."""
+    by_id = {item.poi_id: item for item in items}
+    resolved = []
+    for item in items:
+        current = item
+        visited = {item.poi_id}
+        while not current.experience_group and current.parent_poi_id:
+            parent = by_id.get(current.parent_poi_id)
+            if (parent is None or parent.poi_id in visited
+                    or parent.city.removesuffix("市") != item.city.removesuffix("市")):
+                break
+            visited.add(parent.poi_id)
+            # An old-city boundary is not an experience boundary for its temples.
+            if parent.experience_group and not any(
+                rule["group"] == parent.experience_group
+                for rule in LANDMARKS
+            ):
+                break
+            current = parent
+        if not item.experience_group and current.experience_group:
+            item = item.model_copy(update={
+                "experience_group": current.experience_group,
+                "experience_aliases": [*current.experience_aliases, item.name],
+                "identity_source": current.identity_source,
+                "experience_review_required": False,
+            })
+        if not item.experience_group and any(
+            rule["city"] == item.city.removesuffix("市")
+            and any(alias in item.name for alias in [rule["name"], *rule["aliases"]] if len(alias) >= 3)
+            for rule in LANDMARKS
+        ):
+            # Similar names are only a review signal, never evidence for merging.
+            item = item.model_copy(update={"experience_review_required": True})
+        resolved.append(item)
+    aliases = {}
+    for item in resolved:
+        if item.experience_group:
+            aliases.setdefault(item.experience_group, set()).update([item.name, *item.experience_aliases])
+    return [item.model_copy(update={"experience_aliases": sorted(aliases[item.experience_group])})
+            if item.experience_group else item for item in resolved]
+
+
 def rank_candidates(
     raw_candidates: Sequence[_RawCandidate],
     *,
@@ -269,20 +312,16 @@ def rank_candidates(
 ) -> list[AttractionCandidate]:
     """Deduplicate and score candidates using provider order, rating and diversity."""
     deduplicated: dict[str, _RawCandidate] = {}
-    parents = {raw.item.poi_id: raw.item for raw in raw_candidates if raw.item.is_landmark}
-    resolved = []
-    for raw in raw_candidates:
-        parent = parents.get(raw.item.parent_poi_id)
-        if parent and not raw.item.experience_group and parent.city.removesuffix("市") == raw.item.city.removesuffix("市"):
-            raw = replace(raw, item=raw.item.model_copy(update={
-                **metadata(parent.city, parent.name),
-                "experience_aliases": [*parent.experience_aliases, raw.item.name],
-            }))
-        resolved.append(raw)
-    raw_candidates = resolved
+    raw_candidates = [replace(raw, item=item) for raw, item in zip(
+        raw_candidates, resolve_experience_groups([raw.item for raw in raw_candidates])
+    )]
+    excluded_groups = {raw.item.experience_group for raw in raw_candidates
+                       if raw.item.experience_group and any(
+                           same_experience(raw.item.city, alias, name)
+                           for alias in [raw.item.name, *raw.item.experience_aliases] for name in avoid)}
     supplemental_keys = {_candidate_key(raw.item) for raw in raw_candidates if raw.supplemental}
     for raw in raw_candidates:
-        if _matches_any(raw.item, avoid) or any(same_experience(raw.item.city, raw.item.name, name) for name in avoid):
+        if raw.item.experience_group in excluded_groups or _matches_any(raw.item, avoid) or any(same_experience(raw.item.city, raw.item.name, name) for name in avoid):
             continue
         if not _is_discoverable_attraction(
             raw.item,
@@ -360,6 +399,7 @@ def rank_candidates(
             range(len(remaining)),
             key=lambda index: (
                 remaining[index][3],
+                not remaining[index][1].item.experience_review_required,
                 remaining[index][1].item.is_landmark,
                 bool(remaining[index][2]),
                 adjusted(remaining[index]),
@@ -394,6 +434,8 @@ def rank_candidates(
             reasons.append("高德检索与评分综合推荐（非热度榜）")
         if raw.item.is_landmark:
             reasons.insert(0, "城市代表景点")
+        if raw.item.experience_review_required:
+            reasons.insert(0, "与代表景点的游览关系待核实，不默认推荐")
         if _candidate_key(raw.item) in supplemental_keys:
             reasons.append("携程问道补充推荐（高德已验证）")
         ranked.append(
@@ -569,7 +611,7 @@ class AmapAttractionDiscoveryProvider:
             and item.category.startswith("风景名胜")
         ]
         default_source = [item for item in items if item.is_landmark] + preferred_items + items
-        default_pool = list(dict.fromkeys(item.poi_id for item in default_source))
+        default_pool = list(dict.fromkeys(item.poi_id for item in default_source if not item.experience_review_required))
         defaults = list(dict.fromkeys(required_ids + default_pool))[
             : max(default_count, len(required_ids))
         ]

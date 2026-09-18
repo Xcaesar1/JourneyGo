@@ -44,6 +44,7 @@ class AttractionCandidate(BaseModel):
     visit_style: str = "standard"
     duration_basis: str = "planning_estimate"
     identity_source: str = ""
+    experience_review_required: bool = False
 
 
 class AttractionCandidatePage(BaseModel):

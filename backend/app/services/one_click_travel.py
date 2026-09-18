@@ -12,6 +12,7 @@ import httpx
 from redis import Redis
 
 from ..domain.flight_cities import flight_city_code
+from ..domain.attraction_models import AttractionCandidate
 from ..domain.landmarks import (
     city_landmarks,
     discovery_queries,
@@ -31,7 +32,7 @@ from ..domain.trip_models import (
     ScheduleItemV2,
     TripPlanV2,
 )
-from .attraction_discovery import parse_amap_pois, rank_amap_pois
+from .attraction_discovery import parse_amap_pois, rank_amap_pois, resolve_experience_groups
 from .hotel_detail import detail_arguments, inspect_detail
 from .hotel_pricing import amount, estimate_stay
 from .landmark_transit import choose_transit, query_transit
@@ -305,6 +306,7 @@ class OneClickPlanner:
         self.transit_cache = {}
         self.deduplicated_places = []
         self.missing_landmarks = []
+        self.attraction_evidence = {}
 
     def discover_attractions(self, city):
         r = self.request
@@ -359,14 +361,34 @@ class OneClickPlanner:
                 "已核实景点较少，按实际游览时间安排，保留休息时间，不重复或虚构景点。"
             )
         grouped = {}
+        candidates = [
+            AttractionCandidate(**{
+                key: value for key, value in {**place, "city": city}.items()
+                if key in AttractionCandidate.model_fields
+            }) for place in unique.values()
+        ]
+        evidence = {**self.attraction_evidence, **{p.poi_id: p for p in candidates}}
+        resolved = {p.poi_id: p for p in resolve_experience_groups(list(evidence.values()))}
+        required_groups = {}
         for place in unique.values():
-            if any(same_experience(city, place["name"], excluded) for excluded in [*r.excluded_attractions, *r.avoid]):
+            candidate = resolved[place["poi_id"]]
+            place.update(candidate.model_dump(include={"experience_group", "experience_aliases", "identity_source", "experience_review_required"}))
+            if place.get("required") and candidate.experience_group:
+                previous = required_groups.get(candidate.experience_group)
+                if previous:
+                    raise PlanningInputRequired("duplicate_must_visit", "必去地点属于同一核实景区体验，请选择保留项。", diagnostics={"places": [previous, place["name"]]})
+                required_groups[candidate.experience_group] = place["name"]
+        for place in unique.values():
+            if any(same_experience(city, alias, excluded) for alias in [place["name"], *place.get("experience_aliases", [])] for excluded in [*r.excluded_attractions, *r.avoid]):
+                continue
+            if place.get("experience_review_required") and not place.get("required"):
+                self.candidate_notes.append(place["name"] + "：与代表景点的游览关系待核实，未自动安排。")
                 continue
             place["preferred"] = any(same_experience(city, place["name"], name) for name in r.preferred_attractions)
             key = place.get("experience_group") or place["poi_id"]
             old = grouped.get(key)
             rule = experience(city, place["name"])
-            if old is None or (not old.get("required") and (place.get("required") or (rule and place["name"] == rule["name"]))):
+            if old is None or (not old.get("required") and (place.get("required") or (place.get("is_landmark") and not old.get("is_landmark")) or (not old.get("is_landmark") and rule and place["name"] == rule["name"]))):
                 grouped[key] = place
                 if old:
                     self.deduplicated_places.append({"removed": old["name"], "kept": place["name"], "group": key})
@@ -447,6 +469,7 @@ class OneClickPlanner:
         ranked = {}
         rank_position = {}
         if kind == "110000":
+            self.attraction_evidence.update({p.poi_id: p for p in parse_amap_pois(raw, city)})
             ranked_places = rank_amap_pois(
                 raw,
                 city,
