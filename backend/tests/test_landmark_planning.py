@@ -148,6 +148,16 @@ def test_transit_rejects_taxi_and_excess_walking():
     assert choose_transit(payload) is None
 
 
+def test_real_amap_empty_railway_shape_is_not_a_train_segment():
+    payload = transit({})
+    segment = payload["route"]["transits"][0]["segments"][0]
+    segment["railway"] = {"via_stops": [], "alters": [], "spaces": []}
+    segment["taxi"] = []
+    assert choose_transit(payload)["minutes"] == 45
+    segment["railway"]["name"] = "实际铁路"
+    assert choose_transit(payload) is None
+
+
 def test_non_landmark_keeps_legacy_default_duration():
     plan = planner().run()
     assert all(sight.visit_duration == 90 for day in plan.days for sight in day.attractions)

@@ -27,3 +27,11 @@
 - Stage only at `https://staging.elonmusk0.asia/`. Preserve production containers, database state across deployment, map identities and the flight cumulative limit/counter.
 - Reuse existing Shenzhen-Guangzhou and Guangzhou-Datong five-day trips dated 2026-09-20 through 2026-09-24. Refresh AMap evidence explicitly; never refresh flight quotes or increase their quota.
 - Live staging verification is pending at the time of this implementation commit; append actual results after testing.
+
+## Live compatibility regression
+
+- The first staging run recalled Canton Tower and scheduled its 120-minute visit on the eligible first day, while retaining the original train quotes.
+- The Datong run recalled Yungang and correctly requested explicit hotel refresh when the new hotel ranking needed uncached room details. Flight quotes were retained.
+- Real AMap bus segments include `railway: {via_stops: [], alters: [], spaces: []}`. This is an empty placeholder, not a train leg. The transit parser now tests populated values and has a regression fixture for this shape.
+- Replaying the six retained Datong public-transit responses after this fix produced valid outward/return bus estimates without sending new route or flight queries.
+- Local regression after the parser fix: 697 backend tests passed, 4 infrastructure integration tests skipped; 63 frontend tests passed and production build passed. Live final itinerary verification follows deployment of the parser fix.

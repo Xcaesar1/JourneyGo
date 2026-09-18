@@ -28,8 +28,13 @@ def choose_transit(payload, walking_limit=90):
                 for line in segment.get("bus", {}).get("buslines", [])
                 if line.get("name")
             ]
+            # AMap emits railway placeholders containing only empty arrays on bus routes.
+            def populated(value):
+                return any(value.values()) if isinstance(value, dict) else bool(value)
+
             if not lines or any(
-                segment.get("taxi") or segment.get("railway") for segment in segments
+                populated(segment.get("taxi")) or populated(segment.get("railway"))
+                for segment in segments
             ):
                 continue
             duration = ceil(float(route["duration"]) / 60)
