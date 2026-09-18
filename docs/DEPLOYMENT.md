@@ -636,6 +636,21 @@ flag without rebuilding images, changing worker configuration or modifying data.
 
 ## Result Details and Light Map (2026-09-18)
 
+Scroll-interaction follow-up: `8becae8`, API image
+`journeyops-app:carousel-8becae8`, release directory
+`/opt/tripstar/releases/carousel-8becae8-20260918`. Removes mouseenter-driven
+selection, which competed with wheel/drag events as cards moved under a stationary
+pointer. Side cards select on click, keyboard focus remains supported, and wheel
+events release to the page at either end. No visual redesign.
+Verification: 55 frontend tests/build; native desktop wheel traversal across all
+six fixture cards in both directions with the pointer at left/center/right; drag,
+side-card click and 390/900/1440px regression checks. Deployed wheel handlers also
+passed with synthetic wheel events and the same six-card fixture (Android Chrome
+desktop viewport does not provide a reliable native mouse-wheel test).
+Staging health/private ingress passed, map enablement stayed true, and worker,
+production/demo/data containers were unchanged. Roll back API only via this
+release's saved Compose list; it restores `carousel-05f5ce2`.
+
 Subsequent gallery-only release: `05f5ce2`, API image
 `journeyops-app:carousel-05f5ce2`, release directory
 `/opt/tripstar/releases/carousel-05f5ce2-20260918`. Restores the original
