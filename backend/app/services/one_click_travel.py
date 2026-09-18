@@ -11,8 +11,8 @@ from zoneinfo import ZoneInfo
 import httpx
 from redis import Redis
 
-from ..domain.flight_cities import flight_city_code
 from ..domain.attraction_models import AttractionCandidate
+from ..domain.flight_cities import flight_city_code
 from ..domain.landmarks import (
     city_landmarks,
     discovery_queries,
@@ -423,12 +423,12 @@ class OneClickPlanner:
     def _transit(self, arguments):
         return query_transit(self.settings.vite_amap_web_key, arguments)
 
-    def landmark_route(self, left, right):
+    def landmark_route(self, left, right, departure):
         city = self.request.destinations[0].city
         def coordinate(place):
             return f"{place['location']['longitude']:.6f},{place['location']['latitude']:.6f}"
-        args = {"origin": coordinate(left), "destination": coordinate(right), "city": city, "cityd": city, "strategy": 0, "extensions": "all"}
-        key = (args["origin"], args["destination"])
+        args = {"origin": coordinate(left), "destination": coordinate(right), "city": city, "cityd": city, "strategy": 0, "extensions": "all", "date": departure.date().isoformat(), "time": departure.strftime("%H:%M")}
+        key = (args["origin"], args["destination"], args["date"], args["time"])
         if key not in self.transit_cache:
             raw = self.ledger.execute("amap", "landmark_transit", args, lambda: self.transit(args))
             walking = self.request.max_daily_walking_minutes
@@ -1088,11 +1088,13 @@ class OneClickPlanner:
                 for poi in sorted(remaining, key=preference):
                     if not (poi.get("is_landmark") or poi.get("required")) or not (poi.get("visit_style", "standard") != "standard" or place_distance_meters(hotel, poi) > 8000):
                         continue
-                    outward, backward = self.landmark_route(hotel, poi), self.landmark_route(poi, hotel)
+                    duration = poi.get("recommended_minutes", 90)
+                    outward = self.landmark_route(hotel, poi, start)
+                    return_start = start + timedelta(minutes=(outward["minutes"] if outward else 0) + duration + 60)
+                    backward = self.landmark_route(poi, hotel, return_start) if outward else None
                     if not outward or not backward:
                         landmark_failures[poi["poi_id"]] = "未取得往返公交接驳方案，不能默认包车或用驾车时间代替"
                         continue
-                    duration = poi.get("recommended_minutes", 90)
                     if start + timedelta(minutes=outward["minutes"] + duration + 60 + backward["minutes"]) > end:
                         landmark_failures[poi["poi_id"]] = "往返接驳、游览及必要休息超出当天可用时间"
                         continue

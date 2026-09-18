@@ -105,6 +105,47 @@ def test_datong_wall_group_preserves_independent_temples():
     assert not same_experience("大同", "大同古城", "华严寺")
 
 
+def test_dedicated_bus_queries_use_each_planned_departure_time():
+    item = next(item for item in LANDMARKS if item["city"] == "丽江")
+    p, _ = landmark_planner(item)
+    calls = []
+
+    def timed_transit(args):
+        calls.append(dict(args))
+        return transit(args)
+
+    p.transit = timed_transit
+    plan = p.run()
+    day = next(day for day in plan.days if any(a.name == item["name"] for a in day.attractions))
+    legs = [t for t in day.timeline if t.title.startswith("公交")]
+    assert len(legs) == 2
+    for leg in legs:
+        assert any(args["date"] == leg.start.date().isoformat() and args["time"] == leg.start.strftime("%H:%M") for args in calls)
+    outward = next(args for args in calls if args["time"] == legs[0].start.strftime("%H:%M"))
+    before = len(calls)
+    left = {"location": dict(zip(("longitude", "latitude"), map(float, outward["origin"].split(","))))}
+    right = {"location": dict(zip(("longitude", "latitude"), map(float, outward["destination"].split(","))))}
+    p.landmark_route(left, right, legs[0].start)
+    assert len(calls) == before
+    p.landmark_route(left, right, legs[0].start.replace(hour=8))
+    assert len(calls) == before + 1
+
+
+def test_missing_return_bus_never_reuses_outward_route():
+    item = next(item for item in LANDMARKS if item["city"] == "丽江")
+    p, _ = landmark_planner(item)
+    calls = []
+
+    def outbound_only(args):
+        calls.append(dict(args))
+        return transit(args) if args["time"] == "09:00" else {"status": "1", "route": {"transits": []}}
+
+    p.transit = outbound_only
+    with pytest.raises(PlanningInputRequired, match="往返公交"):
+        p.run()
+    assert len({args["date"] for args in calls}) == 3
+
+
 def test_verified_landmark_parent_dedup_does_not_collapse_city_temples():
     rows = [poi("云冈石窟", 1), {**poi("云冈石窟-第十窟", 2), "parent": "BLAND1"}, poi("大同古城", 3), {**poi("华严寺", 4), "parent": "BLAND3"}]
     ranked = rank_amap_pois({"status": "1", "pois": rows}, "大同")
