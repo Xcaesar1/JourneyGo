@@ -879,6 +879,7 @@ class OneClickPlanner:
             )
 
         remaining = list(attractions)
+        first_day_notes = []
         scheduled_restaurant_ids = set()
         scheduled_attraction_count = 0
         meals_cents = local_cents = 0
@@ -889,8 +890,22 @@ class OneClickPlanner:
             timeline, day_attractions, meals = [], [], []
             commute_limit = 240 if i in {0, r.travel_days - 1} else 180
             local_minutes = 0
+            attraction_limit = 3
             if i == 0:
                 dep = datetime.fromisoformat(outbound["departure"])
+                short_journey = arrival - dep < timedelta(hours=3)
+                early_arrival = arrival <= arrival.replace(hour=15, minute=0, second=0, microsecond=0)
+                attraction_limit = 1 if short_journey and early_arrival else 0
+                if not attraction_limit:
+                    first_day_notes.append(
+                        "出发当天不安排景点："
+                        + "、".join(
+                            reason for condition, reason in [
+                                (not short_journey, "去程耗时达到或超过3小时"),
+                                (not early_arrival, "抵达时间晚于15:00"),
+                            ] if condition
+                        ) + "；当天以交通、住宿和必要用餐为主。"
+                    )
                 timeline.append(
                     entry(
                         i,
@@ -920,13 +935,16 @@ class OneClickPlanner:
                     )
                 )
                 minutes = transfer(outbound["location"], hotel)
-                if (arrival + timedelta(minutes=minutes + 30)).date() != day:
+                exit_minutes = 60 if r.intercity_mode == "flight" else 30
+                terminal_exit = arrival + timedelta(minutes=exit_minutes)
+                if (terminal_exit + timedelta(minutes=minutes + 30)).date() != day:
                     raise PlanningInputRequired(
                         "late_arrival", "抵达酒店已跨日，请选择更早到达的交通方案。"
                     )
-                timeline.append(entry(i, "到站后接驳至酒店（估算）", arrival, minutes, poi=hotel))
+                timeline.append(entry(i, "下机 / 出站预留（估算）", arrival, exit_minutes, "free_time", outbound["location"]))
+                timeline.append(entry(i, "到站后接驳至酒店（估算）", terminal_exit, minutes, poi=hotel))
                 local_minutes += minutes
-                start = max(start, arrival + timedelta(minutes=minutes + 30))
+                start = max(start, terminal_exit + timedelta(minutes=minutes + 30))
             return_minutes = transfer(hotel, inbound["location"])
             reserved_return_minutes = return_minutes if i == r.travel_days - 1 else 0
             if local_minutes + reserved_return_minutes > commute_limit:
@@ -943,11 +961,12 @@ class OneClickPlanner:
                     "end": max(start, end).isoformat(),
                     "available_minutes": max(0, int((end - start).total_seconds() / 60)),
                     "is_transfer_day": i in {0, r.travel_days - 1},
+                    "max_attractions": attraction_limit,
                 }
             )
             current, previous = start, hotel
             for slot in range(3):
-                if remaining:
+                if remaining and len(day_attractions) < attraction_limit:
                     feasible = []
                     for poi in remaining:
                         travel = transfer(previous, poi)
@@ -1071,6 +1090,10 @@ class OneClickPlanner:
                     )
                     scheduled_restaurant_ids.add(restaurant["poi_id"])
                     previous = restaurant
+            if i == 0 and attraction_limit and not day_attractions:
+                first_day_notes.append("出发当天虽满足短途早到条件，但接驳和游览时间不足，不安排景点。")
+            activity_windows[-1]["scheduled_attractions"] = len(day_attractions)
+            activity_windows[-1]["sightseeing_note"] = " ".join(first_day_notes) if i == 0 else ""
             if previous != hotel:
                 minutes = transfer(previous, hotel)
                 timeline.append(entry(i, "返回酒店（估算）", current, minutes, poi=hotel))
@@ -1162,7 +1185,7 @@ class OneClickPlanner:
             for p in restaurants
             if p.get("selected") and p["poi_id"] not in scheduled_restaurant_ids
         )
-        schedule_notes = self.selection_notes
+        schedule_notes = self.selection_notes + " " + " ".join(first_day_notes)
         if omitted_places:
             schedule_notes += (
                 " 为控制每日市内接驳和时间冲突，以下偏好候选未排入时间线："

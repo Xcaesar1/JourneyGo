@@ -3,6 +3,7 @@
     <p>{{ t('oneClick.notBooked') }}</p>
     <p v-if="limitedSightseeing" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '往返交通占比较高，主要可游览日期：' : 'Travel takes a substantial part of this trip. Main sightseeing dates: ' }}{{ sightseeingDates }}{{ locale.startsWith('zh') ? '。抵达和返程当天按剩余时间安排，不代表完整游览日。' : '. Arrival and departure days use only the remaining time.' }}</p>
     <p v-for="notice in summary.planning_notices || []" :key="notice" class="planning-notice" role="note">{{ notice }}</p>
+    <p v-for="window in windows.filter((item: any) => item.sightseeing_note)" :key="window.date" class="planning-notice" role="note">{{ window.sightseeing_note }}</p>
     <div class="logistics-grid">
       <article v-for="direction in ['outbound', 'return']" :key="direction">
         <h3>{{ t(direction === 'outbound' ? 'oneClick.outbound' : 'oneClick.inbound') }} · <span class="train-number">{{ summary[direction].number }}</span></h3>
@@ -57,8 +58,9 @@ const props = defineProps<{ summary: Record<string, any>; city: string; busy: bo
 const emit = defineEmits<{ change: [value: Record<string, any>] }>()
 const { t, locale } = useI18n()
 const windows = computed(() => props.summary.activity_windows || [])
-const limitedSightseeing = computed(() => windows.value.some((window: any) => window.is_transfer_day && window.available_minutes < 180))
-const sightseeingDates = computed(() => windows.value.filter((window: any) => window.available_minutes >= 180).map((window: any) => window.date).join(' / ') || (locale.value.startsWith('zh') ? '请查看每日时间线' : 'See the daily timeline'))
+const hasSightseeing = (window: any) => window.scheduled_attractions !== undefined ? window.scheduled_attractions > 0 : window.available_minutes >= 180
+const limitedSightseeing = computed(() => windows.value.some((window: any) => window.is_transfer_day && !hasSightseeing(window)))
+const sightseeingDates = computed(() => windows.value.filter(hasSightseeing).map((window: any) => window.date).join(' / ') || (locale.value.startsWith('zh') ? '请查看每日时间线' : 'See the daily timeline'))
 const editing = ref('')
 const draft = ref<Record<string, any> | null>(null)
 const consent = ref(false)

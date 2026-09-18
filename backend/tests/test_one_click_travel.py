@@ -254,6 +254,24 @@ def test_one_click_uses_existing_graph():
     assert not result["validation_report"].has_critical
 
 
+@pytest.mark.parametrize("mode", ["train", "flight"])
+@pytest.mark.parametrize("duration,arrival_time,expected", [(179, "15:00", 1), (180, "15:00", 0), (120, "15:01", 0), (120, "14:00", 1)])
+def test_arrival_day_has_at_most_one_sight_only_for_short_early_journeys(mode, duration, arrival_time, expected):
+    p = planner()
+    baseline = p.run()
+    summary = baseline.travel_summary
+    p.request = p.request.model_copy(update={"intercity_mode": mode})
+    arrival = datetime.fromisoformat(f"{p.request.start_date}T{arrival_time}")
+    outbound = {**summary["outbound"], "arrival": arrival.isoformat(), "departure": (arrival - timedelta(minutes=duration)).isoformat()}
+    plan = p.schedule(outbound, summary["return"], summary["hotel"], p.pois("西安", "景点", "110000"), p.pois("西安", "美食", "050100"), summary["known_cents"])
+    assert len(plan.days[0].attractions) == expected
+    assert plan.travel_summary["activity_windows"][0]["max_attractions"] == expected
+    if not expected:
+        assert "出发当天不安排景点" in plan.overall_suggestions
+        assert plan.days[0].meals
+    assert all(a.end <= b.start for day in plan.days for a, b in zip(day.timeline, day.timeline[1:]))
+
+
 def test_hotel_photos_survive_non_attraction_poi_parsing():
     def with_photos(city, keyword, kind):
         result = maps(city, keyword, kind)
