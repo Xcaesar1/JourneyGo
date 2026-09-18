@@ -141,6 +141,7 @@
               <a-form-item name="accommodation">
                 <template #label>
                   <span class="field-label">{{ t('home.accommodationLabel') }}</span>
+                  <AccommodationHelp v-if="oneClickEnabled" />
                 </template>
                 <a-select v-model:value="formData.accommodation" size="large" class="field-select">
                   <template v-if="oneClickEnabled">
@@ -213,6 +214,8 @@
                   </label>
                 </a-checkbox-group>
               </div>
+              <p class="preference-help">{{ t('home.interestsHint') }}</p>
+              <p class="preference-help">{{ t('home.interestsRefreshHint') }}</p>
             </a-form-item>
           </div>
 
@@ -434,6 +437,7 @@ import {
 } from '@/services/attractionSelection'
 import { getCurrentLocale } from '@/i18n'
 import NavBar from '@/components/NavBar.vue'
+import AccommodationHelp from '@/components/AccommodationHelp.vue'
 import heroImage from '@/assets/journeygo-hero.png'
 import type {
   AttractionCandidatePage,
@@ -1457,6 +1461,8 @@ const handleRetry = async () => {
   color: var(--jg-text);
   font-weight: 700;
 }
+
+.preference-help { margin: 8px 0 0; color: var(--jg-muted); font-size: 16px; line-height: 1.6; }
 
 .interest-grid {
   width: 100%;

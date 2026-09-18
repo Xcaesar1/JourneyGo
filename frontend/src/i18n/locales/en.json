@@ -163,7 +163,11 @@
       "walk": "Walking",
       "mixed": "Mixed Mode"
     },
-    "accommodationLabel": "Accommodation Style",
+    "accommodationLabel": "Hotel Tier",
+    "accommodationHelpLabel": "About hotel tiers",
+    "accommodationHelpNote": "These are supplier-provided hotel star ranges, not guest review scores. Prices and amenities depend on the specific hotel. Selection remains subject to your budget.",
+    "interestsHint": "Personalize attraction recommendations and your itinerary. Leave blank for city highlights.",
+    "interestsRefreshHint": "After changing preferences, click Discover Popular Attractions again to update recommendations.",
     "accommodation": {
       "budget": "Budget Friendly",
       "comfort": "Comfort Business",
@@ -181,7 +185,7 @@
       "balanced": "Balanced",
       "intensive": "Intensive"
     },
-    "interestsLabel": "Travel Interests",
+    "interestsLabel": "Recommendation Preferences (Optional)",
     "interests": {
       "history": "History & Culture",
       "nature": "Nature",

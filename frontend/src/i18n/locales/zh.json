@@ -163,7 +163,11 @@
       "walk": "步行探索",
       "mixed": "混合模式"
     },
-    "accommodationLabel": "住宿风格",
+    "accommodationLabel": "住宿档次",
+    "accommodationHelpLabel": "查看住宿档次说明",
+    "accommodationHelpNote": "以上为供应商提供的酒店星级范围，非用户评分。实际价格、设施以具体酒店信息为准，选择仍受预算约束。",
+    "interestsHint": "影响景点推荐与行程安排，不选则推荐城市热门景点。",
+    "interestsRefreshHint": "修改偏好后，再次点击“发现热门景点”更新推荐。",
     "accommodation": {
       "budget": "经济实惠",
       "comfort": "舒适商务",
@@ -181,7 +185,7 @@
       "balanced": "均衡",
       "intensive": "紧凑"
     },
-    "interestsLabel": "旅行兴趣",
+    "interestsLabel": "推荐偏好（选填）",
     "interests": {
       "history": "历史文化",
       "nature": "自然风光",

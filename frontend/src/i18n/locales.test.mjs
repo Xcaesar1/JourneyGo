@@ -70,6 +70,22 @@ test('startup and chat use JourneyGo branding without removing the container ent
   assert.doesNotMatch(startup + chat, /旅途星辰/)
 })
 
+test('hotel explanation and preference guidance preserve accessible non-submit controls', () => {
+  const help = read('../components/AccommodationHelp.vue')
+  assert.match(help, /type="button"/)
+  assert.match(help, /aria-expanded/)
+  assert.match(help, /event.key === 'Escape'/)
+  assert.match(help, /removeEventListener\('pointerdown'/)
+  assert.match(help, /width: 44px; height: 44px/)
+  assert.equal(packs.zh.home.accommodationLabel, '住宿档次')
+  assert.equal(packs.zh.home.interestsLabel, '推荐偏好（选填）')
+  for (const code of ['zh', 'en']) {
+    for (const key of ['accommodationHelpLabel', 'accommodationHelpNote', 'interestsHint', 'interestsRefreshHint']) {
+      assert.ok(packs[code].home[key])
+    }
+  }
+})
+
 function loadLocale(browserLanguage, saved) {
   const storage = new Map(saved ? [['tripstar-locale', saved]] : [])
   const document = { documentElement: { lang: '' } }
