@@ -1,0 +1,4 @@
+services:
+  trip-planner:
+    environment:
+      AMAP_PERSONAL_MAP_ENABLED: "true"

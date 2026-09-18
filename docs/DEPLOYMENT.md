@@ -585,6 +585,52 @@ for path in "${paths[@]}"; do compose+=(-f "$path"); done
 This restores API `journeyops-app:nav-progress-f9a281d` and worker
 `journeyops-app:rail-2d90633`. Wait for both health checks before accepting traffic.
 
+## Staging AMap Personal Map Enablement (2026-09-18)
+
+- Configuration-only release: `/opt/tripstar/releases/amap-enable-20260918`.
+  Append `amap-enable.compose.yaml` to the API container's active Compose file
+  list. It sets only `trip-planner.environment.AMAP_PERSONAL_MAP_ENABLED=true`.
+  Tracked source: `deploy/amap-personal-map.staging.yaml`; apply only to staging.
+  The previous layered file list is saved as `previous-compose-files.txt`.
+- Only staging API was recreated, retaining `journeyops-app:form-help-9be791b`.
+  Worker stays on `journeyops-app:brand-cleanup-a5ccfb1`; its unused map flag
+  remains false. Website exports execute synchronously in the API.
+- Zero active tasks before recreation. API healthy; authenticated homepage,
+  `/health/ready` and travel capabilities returned 200. Paid flights remain
+  disabled with zero call allowance. Production, worker, demo and data container
+  identities, images and start times are unchanged.
+- Actual Android Chrome validation used saved task
+  `task_38233327d7724c9bb0c6`, review `review_80ff9e58dcfb4d9bb41b`,
+  `version=null`, `day_index=1` (2026-09-21), `confirmed=true`.
+  Two website confirmations returned the exact existing private map URL,
+  six points and no omissions. A native browser touch on `Open AMap app`
+  opened `com.autonavi.minimap`, displaying `JourneyGo` Shanghai trip and
+  the day-2 route marker. No adb VIEW intent was used for this handoff.
+- Disabled (503) and failed (502) responses were simulated in the browser only;
+  both displayed the explanation and individual-place navigation fallback.
+  No production flag was changed and no extra map was created for these tests.
+- Before enablement and after both browser exports, full-row hashes match for
+  all 2 tasks, 1 review, 1 version and 36 travel queries. The personal-map ledger
+  remains exactly 1 succeeded entry. No itinerary was regenerated or overwritten.
+- Private links, screenshots and verification scripts remain in ignored
+  `artifacts/`; no unrelated pending application changes were deployed.
+  Billing was not checked and no purchase or account permission was accepted.
+
+Rollback only the staging API, after the active-task check:
+
+```bash
+cd /opt/tripstar/JourneyOps-staging
+release=/opt/tripstar/releases/amap-enable-20260918
+docker exec -i journeyops-worker-staging python < /opt/tripstar/releases/travel-d7f99ce-20260916/travel-active-check.py
+compose=(docker compose --env-file .env.staging)
+IFS=',' read -ra paths < "$release/previous-compose-files.txt"
+for path in "${paths[@]}"; do compose+=(-f "$path"); done
+"${compose[@]}" up -d --no-deps --no-build trip-planner
+```
+
+Wait for API health before accepting traffic. This restores the previous false
+flag without rebuilding images, changing worker configuration or modifying data.
+
 ## Sourced Costs, Attraction Introductions and Map Export (2026-09-17)
 
 - Source: `f784506`. Staging API and worker image: `journeyops-app:costs-f784506`,
