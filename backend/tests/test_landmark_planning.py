@@ -2,6 +2,7 @@ from datetime import datetime
 
 import httpx
 import pytest
+from backend.app.agents.journey_graph.nodes.validate import _validate_routes
 from backend.app.domain.landmarks import LANDMARKS, discovery_queries, metadata, same_experience
 from backend.app.domain.trip_models import CityStayV2
 from backend.app.services.attraction_discovery import (
@@ -163,6 +164,36 @@ def test_real_amap_empty_railway_shape_is_not_a_train_segment():
     assert choose_transit(payload)["minutes"] == 45
     segment["railway"]["name"] = "实际铁路"
     assert choose_transit(payload) is None
+
+
+@pytest.mark.parametrize("invalid", ["missing_bus", "multiple_sights", "transfer_day", "missing_rest"])
+def test_dedicated_day_long_bus_round_trip_passes_route_validation(invalid):
+    p, _ = landmark_planner(LANDMARKS[3])
+    def long_transit(args):
+        payload = transit(args)
+        payload["route"]["transits"][0]["duration"] = "5700"
+        return payload
+    p.transit = long_transit
+    plan = p.run()
+    issues = _validate_routes({"request": p.request}, plan)
+    assert not any(issue.code == "daily_commute_excessive" for issue in issues)
+    assert any(issue.code == "daily_commute_high" for issue in issues)
+    bus_routes = [route for route in plan.route_matrix if route.provider == "amap-transit"]
+    assert len(bus_routes) == 2
+    day = next(day for day in plan.days if any(item.route_estimate_id == bus_routes[0].estimate_id for item in day.timeline))
+    if invalid == "missing_bus":
+        bus_routes[1].provider = "local-estimate"
+    elif invalid == "multiple_sights":
+        day.attractions.append(day.attractions[0].model_copy())
+    elif invalid == "transfer_day":
+        day.is_transfer_day = True
+        bus_item = next(item for item in day.timeline if item.route_estimate_id == bus_routes[0].estimate_id)
+        bus_item.duration_minutes += 30
+    else:
+        for item in day.timeline:
+            if item.item_type == "free_time":
+                item.duration_minutes = 30
+    assert any(issue.code == "daily_commute_excessive" for issue in _validate_routes({"request": p.request}, plan))
 
 
 def test_non_landmark_keeps_legacy_default_duration():
