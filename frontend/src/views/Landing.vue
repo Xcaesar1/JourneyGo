@@ -285,8 +285,8 @@
                         <span v-if="candidate.rating">{{ candidate.rating.toFixed(1) }}</span>
                       </div>
                       <p>{{ candidate.recommendation_reason }}</p>
-                      <small v-if="candidate.is_landmark">{{ getCurrentLocale().startsWith('zh') ? '城市代表景点 · ' : 'City landmark · ' }}</small>
-                      <small v-if="candidate.recommended_minutes">{{ candidate.recommended_minutes }} {{ getCurrentLocale().startsWith('zh') ? '分钟（规划估算）' : 'min (planning estimate)' }}</small>
+                      <small v-if="candidate.is_landmark" class="candidate-visit">{{ getCurrentLocale().startsWith('zh') ? '城市代表景点' : 'City landmark' }}</small>
+                      <small v-if="candidate.recommended_minutes" class="candidate-visit">{{ candidate.visit_style === 'full_day' ? (getCurrentLocale().startsWith('zh') ? '整日 · ' : 'Full day · ') : candidate.visit_style === 'half_day' ? (getCurrentLocale().startsWith('zh') ? '半日 · ' : 'Half day · ') : '' }}{{ candidate.recommended_minutes }} {{ getCurrentLocale().startsWith('zh') ? '分钟（规划估算）' : 'min (planning estimate)' }}</small>
                       <span v-if="isCandidateSelected(candidate.poi_id)" role="button" tabindex="0" @click.stop="markMustVisit(candidate.poi_id)" @keydown.enter.stop.prevent="markMustVisit(candidate.poi_id)">{{ explicitPoiIds.includes(candidate.poi_id) ? (getCurrentLocale().startsWith('zh') ? '已设为必去' : 'Must visit') : (getCurrentLocale().startsWith('zh') ? '默认推荐 · 设为必去' : 'Recommended · Set as must visit') }}</span>
                       <small>{{ candidate.category }}</small>
                       <a
@@ -1774,6 +1774,13 @@ const handleRetry = async () => {
 
 .candidate-copy a {
   color: var(--jg-text);
+}
+
+.candidate-copy .candidate-visit {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.5;
 }
 
 .candidate-empty {
