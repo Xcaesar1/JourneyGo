@@ -25,6 +25,15 @@ test('daily detail starts with the timeline instead of redundant summary and iss
   assert.match(template, /class="day-timeline-section"/)
 })
 
+test('moving cards cannot hijack wheel or drag through mouseenter', () => {
+  const card = readFileSync(new URL('../components/OverviewAttractionCard.vue', import.meta.url), 'utf8')
+  assert.doesNotMatch(card, /@mouseenter|emit\('hover'\)/)
+  assert.match(card, /@focusin="emit\('focus'\)"/)
+  assert.match(source, /@focus="setActiveOverviewCard\(index\)"/)
+  assert.match(source, /slideToClickedSlide: true/)
+  assert.match(source, /releaseOnEdges: true/)
+})
+
 function imagesFor(attractions, cached = {}) {
   const code = ts.transpileModule(`${overview}\n${resolver}\n overviewAttractions.map(getAttractionImage)`, {
     compilerOptions: { target: ts.ScriptTarget.ES2020 },

@@ -1,5 +1,5 @@
 <template>
-  <div class="swiper-slide" :class="{ 'swiper-slide-active': active }" @mouseenter="emit('hover')" @focusin="emit('hover')">
+  <div class="swiper-slide" :class="{ 'swiper-slide-active': active }" @focusin="emit('focus')">
     <div class="swiper-slide-img">
       <img :src="imageSrc" :alt="item.name" loading="lazy" @error="emit('image-error', $event)" />
     </div>
@@ -40,7 +40,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'hover'): void
+  (e: 'focus'): void
   (e: 'select-day', dayArrayIndex: number): void
   (e: 'image-error', event: Event): void
 }>()

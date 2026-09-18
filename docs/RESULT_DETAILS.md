@@ -17,10 +17,13 @@
   `AMAP_ENABLEMENT_HANDOFF.md`. No claim of free billing follows from success.
 - The attraction map uses the standard light AMap basemap and a white container
   background, replacing the fixed dark-blue theme without changing routes or markers.
-- Overview photos retain the original centered coverflow, hover selection and
+- Overview photos retain the original centered coverflow, click/focus selection and
   itinerary link. Only depth/overlap, spacing, rounded corners and shadow are
   softened; image-bottom waves are removed for a straight edge. The replacement grid, new card design and arrow controls
   are discarded; no gallery structure or interaction redesign is retained.
+- Moving slides no longer select themselves on mouseenter: this previously fought
+  wheel/drag input and trapped navigation when the pointer remained over a side card.
+  Wheel input is released to the page at the first/last slide.
 - Daily panels omit the redundant description/transport/accommodation summary and
   per-day validation pills. Timeline, navigation, hotel details and overview critical
   notices remain; saved snapshots and validation reports are not modified.

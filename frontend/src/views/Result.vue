@@ -223,7 +223,7 @@
                   :item="item"
                   :image-src="getAttractionImage(item)"
                   :active="activeOverviewCard === index"
-                  @hover="setActiveOverviewCard(index)"
+                  @focus="setActiveOverviewCard(index)"
                   @image-error="handleImageError"
                   @select-day="goToDayFromOverview"
                 />
@@ -1240,6 +1240,7 @@ const initOverviewSwiper = async () => {
     effect: 'coverflow',
     grabCursor: true,
     centeredSlides: true,
+    slideToClickedSlide: true,
     coverflowEffect: {
       rotate: 0,
       stretch: 0,
@@ -1251,6 +1252,7 @@ const initOverviewSwiper = async () => {
     },
     mousewheel: {
       thresholdDelta: 70,
+      releaseOnEdges: true,
     },
     spaceBetween: 36,
     loop: false,
