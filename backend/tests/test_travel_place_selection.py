@@ -50,6 +50,20 @@ def test_selection_uses_configured_output_limit(monkeypatch):
     assert len(calls) == 1
 
 
+def test_validation_diagnostics_report_schema_fields_not_private_values(monkeypatch, caplog):
+    fake_client(monkeypatch, json.dumps({
+        "attraction_ids": ["A"], "restaurant_ids": ["R"],
+        "notes": "private raw response" * 200, "unmet_requirements": [],
+        "private extra key": "private extra value",
+    }))
+    with pytest.raises(PlanningInputRequired) as caught:
+        selection.select_places(settings(), {})
+    errors = caught.value.payload["diagnostics"]["validation_errors"]
+    assert {"type": "string_too_long", "field": "notes"} in errors
+    assert {"type": "extra_forbidden", "field": "unknown"} in errors
+    assert "private" not in str(caught.value.payload) + caplog.text
+
+
 @pytest.mark.parametrize(
     "content,reason,empty,code",
     [

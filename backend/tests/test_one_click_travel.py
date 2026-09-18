@@ -190,6 +190,22 @@ def test_c_trains_can_complete_round_trip_planning():
     assert summary["outbound"]["number"] == summary["return"]["number"] == "C446"
 
 
+def test_dense_train_route_does_not_truncate_later_return_services():
+    def dense_supplier(provider, tool, args):
+        result = supplier(provider, tool, args)
+        if provider != "train":
+            return result
+        assert args["limitedNum"] == 0
+        if args["fromStation"] == "上海":
+            return result
+        early = {**result[0], "start_time": "07:00", "arrive_time": "13:00"}
+        late = {**result[0], "start_train_code": "G999", "start_time": "17:00", "arrive_time": "23:00"}
+        return [early.copy() for _ in range(30)] + [late]
+
+    summary = planner(supplier=dense_supplier).run().travel_summary
+    assert summary["return"]["number"] == "G999"
+
+
 @pytest.mark.parametrize("scope", ["outbound", "return"])
 @pytest.mark.parametrize("empty", [True, False])
 def test_transport_failure_identifies_leg_and_returned_data(scope, empty):

@@ -153,7 +153,19 @@ def select_places(settings, context):
     else:
         try:
             result = PlaceSelection.model_validate_json(choice.message.content).model_dump()
-        except ValidationError:
+        except ValidationError as exc:
+            # Never retain model text or arbitrary field names in diagnostics.
+            fields = set(PlaceSelection.model_fields) | set(RequirementIssue.model_fields)
+            diagnostics["validation_errors"] = [
+                {
+                    "type": error["type"],
+                    "field": ".".join(
+                        str(part) if isinstance(part, int) else part if part in fields else "unknown"
+                        for part in error["loc"]
+                    ) or "response",
+                }
+                for error in exc.errors(include_input=False, include_context=False, include_url=False)[:10]
+            ]
             code = "model_invalid"
         else:
             logger.info("Place selection completed: %s", diagnostics)

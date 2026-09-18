@@ -515,7 +515,8 @@ class OneClickPlanner:
             )
             args = arguments(query)
             if r.intercity_mode == "train":
-                args["limitedNum"] = 30
+                # City pairs can have hundreds of services; an early cutoff hides return trains.
+                args["limitedNum"] = 0
             payload = self.query(
                 r.intercity_mode,
                 scope,
