@@ -1,0 +1,200 @@
+{
+  "checkedAt": "2026-09-18T16:23:30.380Z",
+  "taskId": "task_0954c6f772aa4cc6b128",
+  "status": "awaiting_input",
+  "input": {
+    "origin": "广州",
+    "destinations": [
+      {
+        "city": "丽江",
+        "days": 5
+      }
+    ],
+    "startDate": "2026-09-20",
+    "endDate": "2026-09-24",
+    "travelers": 1,
+    "budget": 5000,
+    "mode": "flight"
+  },
+  "pending": {
+    "code": "landmark_unplaced",
+    "message": "代表景点未能安排：玉龙雪山国家级风景名胜区：未取得往返公交接驳方案，不能默认包车或用驾车时间代替",
+    "provider": null,
+    "diagnostics": {
+      "places": [
+        "玉龙雪山国家级风景名胜区"
+      ],
+      "required": []
+    }
+  },
+  "outbound": null,
+  "inbound": null,
+  "warnings": [],
+  "flightQueries": [
+    {
+      "scope": "outbound",
+      "status": "succeeded"
+    },
+    {
+      "scope": "return",
+      "status": "succeeded"
+    }
+  ],
+  "datedBusQueries": [
+    {
+      "date": "2026-09-23",
+      "time": "17:27",
+      "origin": "100.258558,27.098052",
+      "destination": "100.228858,26.866163",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-21",
+      "time": "17:24",
+      "origin": "100.258558,27.098052",
+      "destination": "100.229431,26.887760",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-22",
+      "time": "09:00",
+      "origin": "100.229431,26.887760",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 2
+    },
+    {
+      "date": "2026-09-22",
+      "time": "17:24",
+      "origin": "100.258558,27.098052",
+      "destination": "100.229431,26.887760",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-23",
+      "time": "09:00",
+      "origin": "100.229431,26.887760",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 2
+    },
+    {
+      "date": "2026-09-23",
+      "time": "17:24",
+      "origin": "100.258558,27.098052",
+      "destination": "100.229431,26.887760",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-21",
+      "time": "09:00",
+      "origin": "100.228858,26.866163",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 1
+    },
+    {
+      "date": "2026-09-21",
+      "time": "17:26",
+      "origin": "100.258558,27.098052",
+      "destination": "100.228858,26.866163",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-22",
+      "time": "09:00",
+      "origin": "100.228858,26.866163",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 1
+    },
+    {
+      "date": "2026-09-22",
+      "time": "17:27",
+      "origin": "100.258558,27.098052",
+      "destination": "100.228858,26.866163",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-23",
+      "time": "09:00",
+      "origin": "100.228858,26.866163",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 1
+    },
+    {
+      "date": "2026-09-21",
+      "time": "09:00",
+      "origin": "100.229431,26.887760",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 2
+    },
+    {
+      "date": "2026-09-21",
+      "time": "09:00",
+      "origin": "100.218096,26.866792",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 3
+    },
+    {
+      "date": "2026-09-21",
+      "time": "17:38",
+      "origin": "100.258558,27.098052",
+      "destination": "100.218096,26.866792",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-22",
+      "time": "09:00",
+      "origin": "100.218096,26.866792",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 3
+    },
+    {
+      "date": "2026-09-22",
+      "time": "17:41",
+      "origin": "100.258558,27.098052",
+      "destination": "100.218096,26.866792",
+      "status": "succeeded",
+      "routeCount": 0
+    },
+    {
+      "date": "2026-09-23",
+      "time": "09:00",
+      "origin": "100.218096,26.866792",
+      "destination": "100.258558,27.098052",
+      "status": "succeeded",
+      "routeCount": 3
+    },
+    {
+      "date": "2026-09-23",
+      "time": "17:38",
+      "origin": "100.258558,27.098052",
+      "destination": "100.218096,26.866792",
+      "status": "succeeded",
+      "routeCount": 0
+    }
+  ],
+  "audit": null,
+  "recoveryCheck": {
+    "hint": "已选择“调整景点偏好与要求”。请修改下方对应条件，再点击“按表单继续规划”；尚未发送新查询。",
+    "posts": [],
+    "width": {
+      "viewport": 363,
+      "scroll": 363
+    }
+  },
+  "bookingStatus": "not_booked",
+  "mapsCreated": 0
+}

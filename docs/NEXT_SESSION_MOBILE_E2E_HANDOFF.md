@@ -1,5 +1,16 @@
 # 新会话执行交接：五天高铁与飞机完整实测
 
+## 2026-09-19 最新状态（覆盖下方历史快照）
+
+- 代码修复 `0f3d67c` 已推送并仅部署 staging，API/worker healthy；新增公交日期和去返程实际出发时间，避免缓存跨日期/时段复用。全量后端 713 passed / 4 skipped，前端 63 passed，构建和 Ruff 通过。
+- 航班额度上限仍为 10，已用 8。广州到丽江往返已经查询，后续必须复用，禁止重新提交或刷新航班。
+- 武汉 task `task_f1e13a3b841646c69f81` completed，G1040/G1042，五天四晚、2802 元已统计费用，首日无景点，黄鹤楼第二天 120 分钟。六区、五天展开、地图、触摸滑动通过。
+- 大同旧 task `task_ea3708e702ef4d9993bb` completed，V3，4017 元，云冈公交专日通过，航班报价未刷新。
+- 丽江 task `task_0954c6f772aa4cc6b128` awaiting_input / landmark_unplaced。三个酒店、9月21日至23日均有去程、无返程公交结果。16:00 的额外诊断探测同样为空。不要以跳过雪山冒充完成。
+- 用户已授权“评估包车，不预订”。尚未授权替换正式行程，也没有取得日期特定的可确认包车总价。评估报告与真实证据见 `docs/demo/mobile-e2e/20260919/`。
+- 原始材料和脚本在 `artifacts/mobile-e2e-{shenzhen-wuhan,guangzhou-lijiang,datong-regression}/`、`artifacts/mobile-routes.cjs`。本机连接需进程级 `NO_PROXY=localhost,127.0.0.1`，避免 CDP 被 HTTP_PROXY 转发而 502。
+- 当前不再需要重复部署；本次发布目录 `/opt/tripstar/releases/landmarks-0f3d67c-20260919` 有 state/quota/protected 前后匹配证据。生产未变，无新高德专属地图，无预订。
+
 ## 用户当前授权与目标
 
 先核对部署、提交现有改动，然后直接在新会话执行，不仅提供建议或交接说明。

@@ -1,0 +1,536 @@
+{
+  "checkedAt": "2026-09-18T16:23:07.474Z",
+  "taskId": "task_ea3708e702ef4d9993bb",
+  "status": "completed",
+  "input": {
+    "origin": "广州",
+    "destinations": [
+      {
+        "city": "大同",
+        "days": 5
+      }
+    ],
+    "startDate": "2026-09-20",
+    "endDate": "2026-09-24",
+    "travelers": 1,
+    "budget": 5000,
+    "mode": "flight"
+  },
+  "pending": null,
+  "outbound": {
+    "number": "MU6733",
+    "from": "广州白云",
+    "to": "大同云冈",
+    "departure": "2026-09-20T06:40:00",
+    "arrival": "2026-09-20T11:55:00",
+    "seat": "经济舱",
+    "priceCents": 73600
+  },
+  "inbound": {
+    "number": "MU6734",
+    "from": "大同云冈",
+    "to": "广州白云",
+    "departure": "2026-09-24T12:40:00",
+    "arrival": "2026-09-24T17:45:00",
+    "seat": "经济舱",
+    "priceCents": 112000
+  },
+  "knownCents": 185600,
+  "estimatedCents": 216100,
+  "totalCents": 401700,
+  "landmarkCoverage": [
+    {
+      "name": "云冈石窟",
+      "poi_id": "B0160001P5",
+      "status": "scheduled",
+      "duration_basis": "planning_estimate",
+      "identity_source": "https://www.dt.gov.cn/dt12345/rxdt1/202604/29b73c0aa08148e3baca536eb7166bb9.shtml"
+    }
+  ],
+  "deduplicatedPlaces": [
+    {
+      "removed": "灵岩寺",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "西部窟群",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-露天大佛(第二十窟)",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "西天梵音",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-摩崖石刻",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-昙曜五窟",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "佛影殿",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-东花园",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-石破天惊",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-第十窟",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-万佛洞(第十五窟)",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟-帝后礼佛图",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "大同古城",
+      "kept": "大同古城墙",
+      "group": "datong-city-wall"
+    },
+    {
+      "removed": "城墙带状公园-大同东城墙",
+      "kept": "大同古城墙",
+      "group": "datong-city-wall"
+    },
+    {
+      "removed": "大同古城城墙外带状公园",
+      "kept": "大同古城墙",
+      "group": "datong-city-wall"
+    },
+    {
+      "removed": "大同古城南城墙",
+      "kept": "大同古城墙",
+      "group": "datong-city-wall"
+    },
+    {
+      "removed": "大同古城-和阳门",
+      "kept": "大同古城墙",
+      "group": "datong-city-wall"
+    },
+    {
+      "removed": "云冈石窟-释迦佛洞(第六窟)",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈石窟龙王殿",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "云冈灵岩禅寺",
+      "kept": "云冈石窟",
+      "group": "datong-yungang"
+    },
+    {
+      "removed": "大同古城",
+      "kept": "大同古城墙",
+      "group": "datong-city-wall"
+    }
+  ],
+  "days": [
+    {
+      "date": "2026-09-20",
+      "sights": [],
+      "timeline": [
+        {
+          "title": "出发城市内接驳（预估60分钟，需按实际出发位置核实）",
+          "start": "2026-09-20T03:40:00",
+          "end": "2026-09-20T04:40:00",
+          "minutes": 60
+        },
+        {
+          "title": "去程候车 / 值机预留",
+          "start": "2026-09-20T04:40:00",
+          "end": "2026-09-20T06:40:00",
+          "minutes": 120
+        },
+        {
+          "title": "MU6733 广州白云 → 大同云冈",
+          "start": "2026-09-20T06:40:00",
+          "end": "2026-09-20T11:55:00",
+          "minutes": 315
+        },
+        {
+          "title": "下机 / 出站预留（估算）",
+          "start": "2026-09-20T11:55:00",
+          "end": "2026-09-20T12:55:00",
+          "minutes": 60
+        },
+        {
+          "title": "到站后接驳至酒店（估算）",
+          "start": "2026-09-20T12:55:00",
+          "end": "2026-09-20T14:25:00",
+          "minutes": 90
+        },
+        {
+          "title": "自由安排 / 休息（含入住、离店准备）",
+          "start": "2026-09-20T14:25:00",
+          "end": "2026-09-20T14:55:00",
+          "minutes": 30
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-20T14:55:00",
+          "end": "2026-09-20T15:16:00",
+          "minutes": 21
+        },
+        {
+          "title": "自由活动 / 休息",
+          "start": "2026-09-20T15:16:00",
+          "end": "2026-09-20T17:00:00",
+          "minutes": 104
+        },
+        {
+          "title": "紫泥369粗粮季(南环店)",
+          "start": "2026-09-20T17:00:00",
+          "end": "2026-09-20T18:00:00",
+          "minutes": 60
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-20T18:00:00",
+          "end": "2026-09-20T18:21:00",
+          "minutes": 21
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-20T18:21:00",
+          "end": "2026-09-20T21:00:00",
+          "minutes": 159
+        }
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "sights": [
+        {
+          "name": "云冈石窟",
+          "minutes": 180
+        }
+      ],
+      "timeline": [
+        {
+          "title": "公交接驳至景点（方案估算）",
+          "start": "2026-09-21T09:00:00",
+          "end": "2026-09-21T10:41:00",
+          "minutes": 101
+        },
+        {
+          "title": "云冈石窟",
+          "start": "2026-09-21T10:41:00",
+          "end": "2026-09-21T13:41:00",
+          "minutes": 180
+        },
+        {
+          "title": "景区用餐 / 休息（餐厅与费用待核实）",
+          "start": "2026-09-21T13:41:00",
+          "end": "2026-09-21T14:41:00",
+          "minutes": 60
+        },
+        {
+          "title": "公交返回酒店（方案估算）",
+          "start": "2026-09-21T14:41:00",
+          "end": "2026-09-21T16:28:00",
+          "minutes": 107
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-21T16:28:00",
+          "end": "2026-09-21T16:49:00",
+          "minutes": 21
+        },
+        {
+          "title": "自由活动 / 休息",
+          "start": "2026-09-21T16:49:00",
+          "end": "2026-09-21T17:00:00",
+          "minutes": 11
+        },
+        {
+          "title": "紫泥369粗粮季(南环店)",
+          "start": "2026-09-21T17:00:00",
+          "end": "2026-09-21T18:00:00",
+          "minutes": 60
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-21T18:00:00",
+          "end": "2026-09-21T18:21:00",
+          "minutes": 21
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-21T18:21:00",
+          "end": "2026-09-21T21:00:00",
+          "minutes": 159
+        }
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "sights": [
+        {
+          "name": "晋华宫国家矿山公园",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-22T09:00:00",
+          "end": "2026-09-22T10:25:00",
+          "minutes": 85
+        },
+        {
+          "title": "晋华宫国家矿山公园",
+          "start": "2026-09-22T10:25:00",
+          "end": "2026-09-22T11:55:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-22T11:55:00",
+          "end": "2026-09-22T13:20:00",
+          "minutes": 85
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-22T13:20:00",
+          "end": "2026-09-22T21:00:00",
+          "minutes": 460
+        }
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "sights": [
+        {
+          "name": "华严寺",
+          "minutes": 90
+        },
+        {
+          "name": "善化古寺",
+          "minutes": 90
+        },
+        {
+          "name": "大同古城墙",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-23T09:00:00",
+          "end": "2026-09-23T09:33:00",
+          "minutes": 33
+        },
+        {
+          "title": "华严寺",
+          "start": "2026-09-23T09:33:00",
+          "end": "2026-09-23T11:03:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-23T11:03:00",
+          "end": "2026-09-23T11:23:00",
+          "minutes": 20
+        },
+        {
+          "title": "孙记老店",
+          "start": "2026-09-23T11:23:00",
+          "end": "2026-09-23T12:23:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-23T12:23:00",
+          "end": "2026-09-23T12:46:00",
+          "minutes": 23
+        },
+        {
+          "title": "善化古寺",
+          "start": "2026-09-23T12:46:00",
+          "end": "2026-09-23T14:16:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-23T14:16:00",
+          "end": "2026-09-23T14:38:00",
+          "minutes": 22
+        },
+        {
+          "title": "自由活动 / 休息",
+          "start": "2026-09-23T14:38:00",
+          "end": "2026-09-23T17:00:00",
+          "minutes": 142
+        },
+        {
+          "title": "云锦会大同小馆(鼓楼店)",
+          "start": "2026-09-23T17:00:00",
+          "end": "2026-09-23T18:00:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-23T18:00:00",
+          "end": "2026-09-23T18:23:00",
+          "minutes": 23
+        },
+        {
+          "title": "大同古城墙",
+          "start": "2026-09-23T18:23:00",
+          "end": "2026-09-23T19:53:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-23T19:53:00",
+          "end": "2026-09-23T20:22:00",
+          "minutes": 29
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-23T20:22:00",
+          "end": "2026-09-23T21:00:00",
+          "minutes": 38
+        }
+      ]
+    },
+    {
+      "date": "2026-09-24",
+      "sights": [],
+      "timeline": [
+        {
+          "title": "自由安排 / 休息（含入住、离店准备）",
+          "start": "2026-09-24T09:00:00",
+          "end": "2026-09-24T09:10:00",
+          "minutes": 10
+        },
+        {
+          "title": "酒店至返程枢纽（估算）",
+          "start": "2026-09-24T09:10:00",
+          "end": "2026-09-24T10:40:00",
+          "minutes": 90
+        },
+        {
+          "title": "候车 / 值机预留",
+          "start": "2026-09-24T10:40:00",
+          "end": "2026-09-24T12:40:00",
+          "minutes": 120
+        },
+        {
+          "title": "MU6734 大同云冈 → 广州白云",
+          "start": "2026-09-24T12:40:00",
+          "end": "2026-09-24T17:45:00",
+          "minutes": 305
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-24T17:45:00",
+          "end": "2026-09-24T21:00:00",
+          "minutes": 195
+        }
+      ]
+    }
+  ],
+  "warnings": [
+    "daily_commute_high",
+    "opening_hours_unverified"
+  ],
+  "flightQueries": [
+    {
+      "scope": "outbound",
+      "status": "succeeded"
+    },
+    {
+      "scope": "return",
+      "status": "succeeded"
+    }
+  ],
+  "datedBusQueries": [],
+  "audit": {
+    "errors": [],
+    "sections": [
+      {
+        "label": "行程概览",
+        "selected": "page",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "预算明细",
+        "selected": "page",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "景点地图",
+        "selected": "page",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "每日行程",
+        "selected": "page",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "知识图谱",
+        "selected": "page",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "天气信息",
+        "selected": "page",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      }
+    ],
+    "days": 5,
+    "mapCanvas": 1
+  },
+  "bookingStatus": "not_booked",
+  "mapsCreated": 0
+}
