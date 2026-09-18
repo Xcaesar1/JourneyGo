@@ -636,6 +636,29 @@ flag without rebuilding images, changing worker configuration or modifying data.
 
 ## Result Details and Light Map (2026-09-18)
 
+### C-prefix Train Eligibility Follow-Up
+
+- Source `588213d`; release `/opt/tripstar/releases/train-c-588213d-20260918`.
+  API image `journeyops-app:train-c-api-588213d`; worker image
+  `journeyops-app:train-c-worker-588213d`. Each is layered onto its respective
+  previous image, replacing only `one_click_travel.py`; no frontend/schema change.
+- C-prefix second-class trains now pass the same eligibility checks as G/D.
+  Empty-candidate messages identify leg, route and date, distinguishing empty
+  supplier responses from returned but ineligible offers. Query arguments and
+  durable ledger identities are unchanged.
+- 87 targeted backend tests and Ruff passed. After deployment, both API and worker
+  accepted all 11 saved Kunming-Lijiang outbound C-train records without provider
+  calls. This validates parsing of the saved quote, not current inventory or return
+  availability. The paused task was not resumed and its stored prompt is unchanged.
+- Zero active tasks before recreation; both services healthy; authenticated
+  homepage/readiness passed. Before/after task/review/version/query hashes match.
+  Production, demo and data containers are unchanged; personal-map enablement and
+  paid-flight disablement remain intact.
+- Rollback both staging app services using this release's saved
+  `previous-compose-files.txt` and `up -d --no-deps --no-build worker trip-planner`
+  after the active-task check. Restores API `carousel-8becae8` and worker
+  `result-details-d14605a`; do not delete queries or rewrite tasks.
+
 Scroll-interaction follow-up: `8becae8`, API image
 `journeyops-app:carousel-8becae8`, release directory
 `/opt/tripstar/releases/carousel-8becae8-20260918`. Removes mouseenter-driven
