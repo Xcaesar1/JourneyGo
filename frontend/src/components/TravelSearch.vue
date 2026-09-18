@@ -73,7 +73,7 @@ const props = defineProps<{ plan: TripPlan }>()
 const tabs: { key: TravelProvider; label: string }[] = [
   { key: 'train', label: '火车高铁' }, { key: 'hotel', label: '酒店住宿' }, { key: 'flight', label: '飞机航班' },
 ]
-const cityCodes: Record<string, string> = { 北京: 'BJS', 上海: 'SHA', 广州: 'CAN', 合肥: 'HFE' }
+const cityCodes: Record<string, string> = { 北京: 'BJS', 上海: 'SHA', 广州: 'CAN', 合肥: 'HFE', 西安: 'SIA', 昆明: 'KMG', 丽江: 'LJG' }
 const provider = ref<TravelProvider>('train')
 const capabilities = ref<TravelCapabilities | null>(null)
 const capabilityError = ref(false)

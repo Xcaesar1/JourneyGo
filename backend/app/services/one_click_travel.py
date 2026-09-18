@@ -34,7 +34,11 @@ from .travel_search import RESERVE, arguments, capabilities, flight_time, run_re
 
 # Only codes already verified in this integration are enabled. Never guess airport codes.
 # Xi'an city code (not airport XIY): CAAC P020160122452786310808.pdf.
-FLIGHT_CITIES = {"北京": "BJS", "上海": "SHA", "广州": "CAN", "合肥": "HFE", "西安": "SIA"}
+# Kunming/Lijiang: CAAC P020160122452510922835.pdf, route KMG-LJG.
+FLIGHT_CITIES = {
+    "北京": "BJS", "上海": "SHA", "广州": "CAN", "合肥": "HFE",
+    "西安": "SIA", "昆明": "KMG", "丽江": "LJG",
+}
 TIERS = {"economy": (0, 3), "business": (3, 4.5), "premium": (4.5, 5)}
 
 

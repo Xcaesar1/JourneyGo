@@ -716,7 +716,8 @@ def test_replan_flight_refresh_requires_new_consent():
     assert preserved.quote_revision == {"hotel": 2, "model": 3}
 
 
-def test_flight_roundtrip_once_each_and_unknown_taxes():
+@pytest.mark.parametrize("route", [("上海", "西安", "SHA", "SIA"), ("昆明市", "丽江市", "KMG", "LJG")])
+def test_flight_roundtrip_once_each_and_unknown_taxes(route):
     from pydantic import SecretStr
 
     calls = []
@@ -745,7 +746,10 @@ def test_flight_roundtrip_once_each_and_unknown_taxes():
             ],
         }
 
-    p = planner(request(intercity_mode="flight", flight_confirmed=True), supplier=flights)
+    trip_request = request(intercity_mode="flight", flight_confirmed=True)
+    trip_request.origin = route[0]
+    trip_request.destinations[0].city = route[1]
+    p = planner(trip_request, supplier=flights)
     p.settings = p.settings.model_copy(
         update={
             "travel_flight_enabled": True,
@@ -757,7 +761,8 @@ def test_flight_roundtrip_once_each_and_unknown_taxes():
     first = p.run()
     second = p.run()
     assert len(calls) == 2
-    assert calls[0]["dep_city"] == "SHA" and calls[0]["arr_city"] == "SIA"
+    assert calls[0]["dep_city"] == route[2] and calls[0]["arr_city"] == route[3]
+    assert calls[1]["dep_city"] == route[3] and calls[1]["arr_city"] == route[2]
     assert first.travel_summary["cost_items"][-1] == {
         "category": "flight_taxes",
         "status": "unknown",
