@@ -1,4 +1,6 @@
-# TripStar Baseline Audit
+# JourneyGo Historical Upstream Baseline Audit
+
+> 本文记录本项目改造前的历史状态，不是当前运行说明。当前部署以 `docs/DEPLOYMENT.md` 为准。
 
 审计日期：2026-08-06
 

@@ -1,4 +1,4 @@
-# JourneyOps Evaluation Report
+# JourneyGo Evaluation Report
 
 ## Reproducibility Contract
 

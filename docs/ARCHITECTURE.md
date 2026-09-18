@@ -1,4 +1,4 @@
-# JourneyOps Architecture
+# JourneyGo Architecture
 
 ## Before And After
 
@@ -18,7 +18,7 @@ The upstream path coupled HTTP availability, task execution and mutable JSON sta
 could interrupt work, external failures crossed component boundaries as untyped text, and generated values were
 not independently validated before presentation.
 
-### After: JourneyOps Runtime
+### After: JourneyGo Runtime
 
 ```mermaid
 flowchart LR

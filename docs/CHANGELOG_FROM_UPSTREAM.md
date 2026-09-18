@@ -1,6 +1,12 @@
 # Changelog From Upstream
 
-本文件记录 JourneyOps 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。
+本文件记录 JourneyGo 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。下方条目是对应日期的历史记录，不代表当前界面或部署状态。
+
+## Repository Branding Cleanup - 2026-09-18
+
+- 删除停止维护的英文、日文 README，主文档仅保留中文入口。
+- 启动脚本和聊天助手统一使用 JourneyGo 品牌；保留容器启动逻辑。
+- 保留许可证、上游归因、历史验收和真实部署标识，避免破坏运行及回滚。
 
 ## Memories Page - 2026-09-17
 

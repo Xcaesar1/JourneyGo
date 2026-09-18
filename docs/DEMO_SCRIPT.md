@@ -1,4 +1,4 @@
-# JourneyOps 3–5 Minute Demo
+# JourneyGo 3–5 Minute Demo
 
 ## Preparation
 
@@ -8,7 +8,7 @@
 
 ## 0:00–0:40 — Product Problem
 
-Explain that ordinary itinerary generators return one opaque answer. JourneyOps treats planning as a durable,
+Explain that ordinary itinerary generators return one opaque answer. JourneyGo treats planning as a durable,
 reviewable execution workflow: external facts have sources, computed constraints are validated, and changes are
 scoped rather than regenerating everything.
 

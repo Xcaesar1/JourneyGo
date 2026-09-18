@@ -47,16 +47,27 @@ test('Korean covers every existing message and preserves interpolation parameter
 })
 
 test('README branding and favicon use the supplied JourneyGo assets', () => {
-  for (const file of ['README.md', 'README_en.md', 'README_ja.md']) {
+  for (const file of ['README.md']) {
     const document = read(`../../../${file}`)
     assert.match(document, /src="docs\/assets\/journeygo-logo\.png" alt="JourneyGo"/)
     assert.doesNotMatch(document, /4bf6f5b1-b67d-4df6-9690-f99367fef473/)
+    assert.doesNotMatch(document, /README_(en|ja)\.md/)
   }
   const logo = readFileSync(new URL('../../../docs/assets/journeygo-logo.png', import.meta.url))
   assert.equal(logo.subarray(0, 8).toString('hex'), '89504e470d0a1a0a')
   const icon = readFileSync(new URL('../../favicon.png', import.meta.url))
   assert.equal(icon.subarray(0, 8).toString('hex'), '89504e470d0a1a0a')
   assert.match(read('../../index.html'), /rel="icon" type="image\/png" href="\/favicon\.png"/)
+})
+
+test('startup and chat use JourneyGo branding without removing the container entrypoint', () => {
+  const startup = read('../../../start.sh')
+  assert.match(startup, /JourneyGo AI/)
+  assert.match(startup, /exec gunicorn backend\.app\.api\.main:app/)
+  assert.match(read('../../../Dockerfile'), /CMD \["\.\/start\.sh"\]/)
+  const chat = read('../../../backend/app/services/chat_service.py')
+  assert.match(chat, /JourneyGo AI/)
+  assert.doesNotMatch(startup + chat, /旅途星辰/)
 })
 
 function loadLocale(browserLanguage, saved) {

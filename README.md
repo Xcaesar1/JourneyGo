@@ -6,11 +6,11 @@
 
 可持续运行、有来源、可校验、可恢复并支持局部重规划的旅行执行 Agent。
 
-[English](README_en.md) | [日本語](README_ja.md) | [架构](docs/ARCHITECTURE.md) | [API v2](docs/API_V2.md) | [评测报告](docs/EVALUATION_REPORT.md)
+[架构](docs/ARCHITECTURE.md) | [API v2](docs/API_V2.md) | [部署](docs/DEPLOYMENT.md) | [评测报告](docs/EVALUATION_REPORT.md)
 
 ## 一分钟了解
 
-JourneyOps 将上游 [1sdv/TripStar](https://github.com/1sdv/TripStar) 的一次性旅行攻略生成器，渐进改造成持久任务系统：FastAPI 接收请求，PostgreSQL 保存事实状态，Celery Worker 执行可恢复 JourneyGraph，Redis 负责队列与事件，Vue 展示真实节点进度、来源、交通、确定性校验、人工审核、版本差异和回滚。
+JourneyGo 将上游 [1sdv/TripStar](https://github.com/1sdv/TripStar) 的一次性旅行攻略生成器，渐进改造成持久任务系统：FastAPI 接收请求，PostgreSQL 保存事实状态，Celery Worker 执行可恢复 JourneyGraph，Redis 负责队列与事件，Vue 展示真实节点进度、交通、费用、天气和人工审核。
 
 它重点证明以下工程能力：
 
@@ -47,7 +47,7 @@ docker compose --env-file .env.demo -f docker-compose.yaml -f docker-compose.dem
 | 人工确认边界 | 不可变版本历史 |
 | ![人工确认边界](docs/assets/phase8/03-review.png) | ![不可变版本历史](docs/assets/phase8/04-version.png) |
 
-截图使用当前前端生产代码和阶段 8 的确定性脱敏 Fixture；Oracle 独立 Demo 栈另行完成真实 API、Worker、JourneyGraph、审批和持久化验收。
+以上为阶段 8 的历史演示截图，使用确定性脱敏 Fixture，不代表当前山野手册界面；Oracle 独立 Demo 栈另行完成真实 API、Worker、JourneyGraph、审批和持久化验收。
 
 ## 核心流程
 
@@ -90,7 +90,7 @@ Python 3.10、FastAPI、Pydantic v2、SQLAlchemy 2、Alembic、PostgreSQL 16、R
 
 ## 项目文档
 
-- [阶段 8 验收](docs/PHASE_8_ACCEPTANCE.md)
+- [历史阶段 8 验收](docs/PHASE_8_ACCEPTANCE.md)
 - [API v2](docs/API_V2.md)
 - [火车、酒店与航班 MCP 查询](docs/TRAVEL_MCP.md)
 - [架构与故障策略](docs/ARCHITECTURE.md)
@@ -102,6 +102,8 @@ Python 3.10、FastAPI、Pydantic v2、SQLAlchemy 2、Alembic、PostgreSQL 16、R
 
 ## 上游与许可证
 
-本项目基于 [1sdv/TripStar](https://github.com/1sdv/TripStar) 深度二次开发，保留其 GPL-2.0 许可证和上游归因。JourneyOps 的持久任务、JourneyGraph、来源证据、确定性校验、人工审核、版本化、评测、可观测性、安全与部署改造见 [相对上游改动](docs/CHANGELOG_FROM_UPSTREAM.md)。
+本项目基于 [1sdv/TripStar](https://github.com/1sdv/TripStar) 深度二次开发，保留其 GPL-2.0 许可证和上游归因。JourneyGo 的持久任务、JourneyGraph、来源证据、确定性校验、人工审核、版本化、评测、可观测性、安全与部署改造见 [相对上游改动](docs/CHANGELOG_FROM_UPSTREAM.md)。
+
+历史文档中的 JourneyOps 是本项目的早期代号；现有部署路径、镜像、容器和存储标识为保持兼容仍可能沿用该名称，不应仅为改名而修改。
 
 Licensed under [GPL-2.0](LICENSE).
