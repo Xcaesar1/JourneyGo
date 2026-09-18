@@ -1,5 +1,18 @@
 # One-click travel implementation status
 
+## C-prefix Train Correction (2026-09-18)
+
+- Accept G/D/C train numbers with available second-class seats, valid prices and
+  same-day arrival. Continue rejecting unsupported trains, standing tickets,
+  insufficient seats, missing prices and date mismatches.
+- Kunming-Lijiang investigation found 11 valid C-prefix records in the saved
+  outbound result, previously discarded by a G/D-only downstream filter.
+- Preserve supplier query arguments and ledger identities so saved successful
+  results remain reusable; do not clear caches or automatically resume tasks.
+- Transport failure text identifies the leg/date/route and distinguishes an empty
+  supplier response from returned offers that fail eligibility checks. Neither
+  is described as proof that no direct train operates.
+
 ## Status (2026-09-17)
 
 ### Approved staging release

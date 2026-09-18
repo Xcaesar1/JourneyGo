@@ -197,7 +197,7 @@ def transport_candidates(payload, query):
         rows = payload if isinstance(payload, list) else []
         for row in rows:
             if not isinstance(row, dict) or not str(row.get("start_train_code", "")).startswith(
-                ("G", "D")
+                ("G", "D", "C")
             ):
                 continue
             for fare in row.get("prices", []):
@@ -529,10 +529,18 @@ class OneClickPlanner:
             )
             offers = transport_candidates(payload, query)
             if not offers:
+                direction = "去程" if scope == "outbound" else "返程"
+                rows = payload if isinstance(payload, list) else payload.get("data", []) if isinstance(payload, dict) else []
+                reason = (
+                    "查询未返回车次或航班，不能据此判断实际没有直达班次。"
+                    if not rows else
+                    "查询已返回班次，但没有同时满足当天到达、出行人数余票和完整票价的可用方案。"
+                )
                 raise PlanningInputRequired(
                     "no_transport",
-                    "没有当天直达、余票和价格完整的往返方案，请调整日期。",
+                    f"{direction} {origin}→{destination}（{day}）：{reason}请核实日期和余票后更新交通查询。",
                     provider=r.intercity_mode,
+                    diagnostics={"scope": scope, "date": day.isoformat(), "returned_count": len(rows)},
                 )
 
             # Prefer usable destination time while keeping ticket price dominant.

@@ -5,7 +5,12 @@ import pytest
 from backend.app.agents.journey_graph import build_journey_graph
 from backend.app.config import Settings
 from backend.app.domain.trip_models import TripRequestV2
-from backend.app.services.one_click_travel import OneClickPlanner, preflight
+from backend.app.services.one_click_travel import (
+    OneClickPlanner,
+    TravelSearchRequest,
+    preflight,
+    transport_candidates,
+)
 from backend.app.services.travel_ledger import PlanningInputRequired
 
 
@@ -136,6 +141,77 @@ def planner(r=None, **overrides):
             **overrides,
         },
     )
+
+
+@pytest.mark.parametrize("number", ["G123", "D456", "C446"])
+def test_second_class_train_prefixes(number):
+    r = request()
+    query = TravelSearchRequest(provider="train", origin="昆明", destination="丽江", date=r.start_date)
+    rows = supplier("train", "get-tickets", {"date": str(r.start_date), "fromStation": "昆明", "toStation": "丽江"})
+    rows[0]["start_train_code"] = number
+    offers = transport_candidates(rows, query)
+    assert len(offers) == 1
+    assert offers[0]["number"] == number
+
+
+@pytest.mark.parametrize("invalid", ["sold_out", "not_enough", "missing_price", "overnight", "wrong_date", "unsupported_train", "wrong_seat"])
+def test_c_train_support_keeps_availability_and_date_checks(invalid):
+    r = request()
+    query = TravelSearchRequest(provider="train", origin="昆明", destination="丽江", date=r.start_date, adults=2)
+    rows = supplier("train", "get-tickets", {"date": str(r.start_date), "fromStation": "昆明", "toStation": "丽江"})
+    row = rows[0]
+    row["start_train_code"] = "C446"
+    fare = row["prices"][0]
+    if invalid == "sold_out":
+        fare["num"] = "无"
+    elif invalid == "not_enough":
+        fare["num"] = "1"
+    elif invalid == "missing_price":
+        fare["price"] = None
+    elif invalid == "overnight":
+        row["arrive_date"] = str(r.start_date + timedelta(days=1))
+    elif invalid == "wrong_date":
+        row["start_date"] = row["arrive_date"] = str(r.start_date + timedelta(days=1))
+    elif invalid == "unsupported_train":
+        row["start_train_code"] = "K123"
+    else:
+        fare["seat_name"] = "无座"
+    assert transport_candidates(rows, query) == []
+
+
+def test_c_trains_can_complete_round_trip_planning():
+    def c_supplier(provider, tool, args):
+        result = supplier(provider, tool, args)
+        if provider == "train":
+            result[0]["start_train_code"] = "C446"
+        return result
+
+    summary = planner(supplier=c_supplier).run().travel_summary
+    assert summary["outbound"]["number"] == summary["return"]["number"] == "C446"
+
+
+@pytest.mark.parametrize("scope", ["outbound", "return"])
+@pytest.mark.parametrize("empty", [True, False])
+def test_transport_failure_identifies_leg_and_returned_data(scope, empty):
+    r = request()
+    def failing_supplier(provider, tool, args):
+        result = supplier(provider, tool, args)
+        if provider == "train" and (args["fromStation"] == r.origin) == (scope == "outbound"):
+            if empty:
+                return []
+            result[0]["prices"][0]["num"] = "无"
+        return result
+
+    with pytest.raises(PlanningInputRequired) as exc:
+        planner(r, supplier=failing_supplier).run()
+    payload = exc.value.payload
+    assert payload["code"] == "no_transport"
+    assert payload["diagnostics"]["scope"] == scope
+    assert payload["diagnostics"]["returned_count"] == (0 if empty else 1)
+    assert ("去程" if scope == "outbound" else "返程") in payload["message"]
+    assert str(r.start_date if scope == "outbound" else r.end_date) in payload["message"]
+    assert ("查询未返回" if empty else "查询已返回") in payload["message"]
+    assert "没有当天直达" not in payload["message"]
 
 
 @pytest.mark.parametrize("adults", [1, 2])
