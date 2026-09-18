@@ -587,6 +587,9 @@ This restores API `journeyops-app:nav-progress-f9a281d` and worker
 
 ## Staging AMap Personal Map Enablement (2026-09-18)
 
+Subsequent application release: `d14605a`, documented in the result-details section
+below, retains this API flag and updates both staging application images.
+
 - Configuration-only release: `/opt/tripstar/releases/amap-enable-20260918`.
   Append `amap-enable.compose.yaml` to the API container's active Compose file
   list. It sets only `trip-planner.environment.AMAP_PERSONAL_MAP_ENABLED=true`.
@@ -630,6 +633,34 @@ for path in "${paths[@]}"; do compose+=(-f "$path"); done
 
 Wait for API health before accepting traffic. This restores the previous false
 flag without rebuilding images, changing worker configuration or modifying data.
+
+## Result Details and Light Map (2026-09-18)
+
+- Source: `d14605a`; API and worker: `journeyops-app:result-details-d14605a`.
+  Release: `/opt/tripstar/releases/result-details-d14605a-20260918`.
+- Layers the built frontend and three changed backend modules onto the previous
+  API image. No dependency changes or migrations. Existing Compose layers and
+  the persistent personal-map API enablement are retained.
+- Includes the pending Wikipedia alias, hotel-photo preservation/display,
+  transfer navigation and map-capability UI changes. Attraction maps now use
+  the normal light style; overview photos use aligned desktop cards with mobile
+  swipe browsing. Redundant daily summaries and issue pills are removed.
+- Verification: 54 frontend tests, 47 targeted backend tests, changed-file Ruff,
+  production build, gallery layout/action checks at 390/900/1440px and saved-trip
+  fixture detail checks at 390/1440px passed. Existing legacy asset-path and
+  chunk-size build warnings remain.
+- Zero active tasks at deployment. API/worker health, private ingress,
+  homepage/readiness, enabled map capability and paid-flight disablement passed.
+  Before/after task, review, version and travel-query hashes match. Production,
+  demo, PostgreSQL and Redis container identities/start times are unchanged.
+- Live Android Chrome on staging confirmed the new gallery, removed daily blocks,
+  hotel image controls, enabled map confirmation, rendered light AMap canvas and
+  authenticated homepage/readiness. Verification sent zero business mutations.
+- Rollback both staging application services using this release's
+  `previous-compose-files.txt` and the Compose loop above, with
+  `up -d --no-deps --no-build worker trip-planner`, after the active-task check.
+  This restores API `form-help-9be791b` and worker `brand-cleanup-a5ccfb1`
+  while keeping the previously enabled personal-map API flag. Do not delete data.
 
 ## Sourced Costs, Attraction Introductions and Map Export (2026-09-17)
 
