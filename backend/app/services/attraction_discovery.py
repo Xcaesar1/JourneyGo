@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Protocol
 
 import httpx
@@ -234,6 +234,7 @@ def parse_amap_pois(payload: dict[str, Any], city: str) -> list[AttractionCandid
                 longitude=longitude,
                 latitude=latitude,
                 category=_text(raw.get("type")) or "attraction",
+                parent_poi_id=_text(raw.get("parent")),
                 rating=_number(business.get("rating")),
                 image=_photo(raw),
                 **metadata(_text(raw.get("cityname")) or city, name),
@@ -268,6 +269,17 @@ def rank_candidates(
 ) -> list[AttractionCandidate]:
     """Deduplicate and score candidates using provider order, rating and diversity."""
     deduplicated: dict[str, _RawCandidate] = {}
+    parents = {raw.item.poi_id: raw.item for raw in raw_candidates if raw.item.is_landmark}
+    resolved = []
+    for raw in raw_candidates:
+        parent = parents.get(raw.item.parent_poi_id)
+        if parent and not raw.item.experience_group and parent.city.removesuffix("市") == raw.item.city.removesuffix("市"):
+            raw = replace(raw, item=raw.item.model_copy(update={
+                **metadata(parent.city, parent.name),
+                "experience_aliases": [*parent.experience_aliases, raw.item.name],
+            }))
+        resolved.append(raw)
+    raw_candidates = resolved
     supplemental_keys = {_candidate_key(raw.item) for raw in raw_candidates if raw.supplemental}
     for raw in raw_candidates:
         if _matches_any(raw.item, avoid) or any(same_experience(raw.item.city, raw.item.name, name) for name in avoid):
@@ -362,7 +374,7 @@ def rank_candidates(
         if group:
             # Prefer a concrete canonical place over a broad district/alias.
             rule = experience(raw.item.city, raw.item.name)
-            canonical = next((entry for entry in remaining if entry[1].item.experience_group == group and entry[1].item.name == rule["name"]), None)
+            canonical = next((entry for entry in remaining if entry[1].item.experience_group == group and (entry[1].item.name == rule["name"] if rule else entry[1].item.poi_id == raw.item.parent_poi_id)), None)
             if canonical and not is_must_visit:
                 remaining.remove(canonical)
                 base_score, raw, matches, is_must_visit = canonical

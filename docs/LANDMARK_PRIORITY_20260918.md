@@ -35,3 +35,5 @@
 - Real AMap bus segments include `railway: {via_stops: [], alters: [], spaces: []}`. This is an empty placeholder, not a train leg. The transit parser now tests populated values and has a regression fixture for this shape.
 - Replaying the six retained Datong public-transit responses after this fix produced valid outward/return bus estimates without sending new route or flight queries.
 - Local regression after the parser fix: 697 backend tests passed, 4 infrastructure integration tests skipped; 63 frontend tests passed and production build passed. Live final itinerary verification follows deployment of the parser fix.
+- Homepage live testing also exposed internal Yungang POIs consuming recommendation cards. Use AMap's verified parent ID together with a curated landmark parent to group these components. Do not apply parent grouping to the broad Datong old-city group; independent temples remain separate.
+- Parent grouping regression: 698 backend tests passed, 4 skipped. The real phone homepage rendered at 363 CSS pixels without overflow/errors; Yungang was first/default, showed its estimated 180-minute duration, and stayed deselected after a discovery refresh.

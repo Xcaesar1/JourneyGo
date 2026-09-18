@@ -104,6 +104,13 @@ def test_datong_wall_group_preserves_independent_temples():
     assert not same_experience("大同", "大同古城", "华严寺")
 
 
+def test_verified_landmark_parent_dedup_does_not_collapse_city_temples():
+    rows = [poi("云冈石窟", 1), {**poi("云冈石窟-第十窟", 2), "parent": "BLAND1"}, poi("大同古城", 3), {**poi("华严寺", 4), "parent": "BLAND3"}]
+    ranked = rank_amap_pois({"status": "1", "pois": rows}, "大同")
+    assert {item.name for item in ranked} == {"云冈石窟", "大同古城", "华严寺"}
+    assert "云冈石窟-第十窟" not in {item.name for item in ranked}
+
+
 def test_explicit_duplicate_must_visits_pause_before_queries():
     p, queries = landmark_planner(LANDMARKS[3], must_visit=["大同古城墙", "大同古城南城墙"])
     with pytest.raises(PlanningInputRequired, match="同一游览体验") as caught:

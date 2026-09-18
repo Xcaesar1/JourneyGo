@@ -319,6 +319,10 @@ class OneClickPlanner:
             query_name = "八达岭长城" if city.removesuffix("市") == "北京" and name == "长城" else name
             candidate = self.pois(city, query_name, "110000", exact=True)[0]
             places.append({**candidate, "required": True})
+        for index, place in enumerate(places):
+            conflicts = [other["name"] for other in places[:index] if place.get("experience_group") and place.get("experience_group") == other.get("experience_group")]
+            if conflicts:
+                raise PlanningInputRequired("duplicate_must_visit", "必去地点属于同一核实景区体验，请选择保留项。", diagnostics={"places": [*conflicts, place["name"]]})
         interests = [
             i
             for i in r.interests[:3]
@@ -447,13 +451,13 @@ class OneClickPlanner:
                 raw,
                 city,
                 interests=self.request.interests,
-                must_visit=self.request.must_visit,
+                must_visit=[keyword] if exact else self.request.must_visit,
                 avoid=self.request.avoid,
             )
             ranked = {p.poi_id: p for p in ranked_places}
             rank_position = {p.poi_id: index for index, p in enumerate(ranked_places)}
             for candidate in parse_amap_pois(raw, city):
-                winner = next((p for p in ranked_places if p.experience_group and p.experience_group == candidate.experience_group and p.poi_id != candidate.poi_id), None)
+                winner = next((p for p in ranked_places if p.poi_id != candidate.poi_id and ((p.experience_group and p.experience_group == candidate.experience_group) or (p.is_landmark and p.poi_id == candidate.parent_poi_id))), None)
                 if winner:
                     record = {"removed": candidate.name, "kept": winner.name, "group": winner.experience_group}
                     if record not in self.deduplicated_places:
@@ -527,6 +531,7 @@ class OneClickPlanner:
                         "location": {"longitude": lon, "latitude": lat},
                         "business": row.get("business") or {},
                         **(metadata(city, name) if kind == "110000" else {}),
+                        **(ranked[row["id"]].model_dump(include={"is_landmark", "experience_group", "experience_aliases", "recommended_minutes", "visit_style", "duration_basis", "identity_source", "parent_poi_id"}) if row["id"] in ranked else {}),
                         "matched_interests": ranked[row["id"]].matched_interests if row["id"] in ranked else [],
                         "fetched_at": raw.get("fetched_at"),
                         "image": ranked[row["id"]].image.model_dump()

@@ -38,6 +38,7 @@ class AttractionCandidate(BaseModel):
     is_must_visit: bool = False
     is_landmark: bool = False
     experience_group: str = ""
+    parent_poi_id: str = ""
     experience_aliases: list[str] = Field(default_factory=list)
     recommended_minutes: int = Field(default=90, ge=30, le=600)
     visit_style: str = "standard"
