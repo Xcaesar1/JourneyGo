@@ -23,9 +23,15 @@
       <div class="form-panel" :style="{ minHeight: panelHeight === 'auto' ? 'auto' : panelHeight + 'px' }" ref="panelRef">
         <a-form v-show="!loading" :model="formData" layout="vertical" @finish="handleSubmit">
           <section v-if="pausedTask" class="step" role="status">
-            <h3>{{ t('oneClick.paused') }}</h3><p>{{ pausedTask.message }}</p>
-            <p>{{ t('oneClick.retained') }}: {{ retainedQueries.length }}</p>
+            <h3>{{ t('oneClick.paused') }}</h3><p>{{ recovery.reason }}</p>
+            <div class="recovery-actions">
+              <button v-for="action in recovery.actions" :key="action.id + (action.value || '')" type="button" :disabled="loading" @click="chooseRecovery(action)">{{ action.label }}</button>
+            </div>
+            <p v-if="recoveryHint" role="status">{{ recoveryHint }}</p>
+            <details>
+            <summary>{{ t('oneClick.retained') }}: {{ retainedQueries.length }}</summary>
             <ul><li v-for="(query, index) in retainedQueries" :key="index">{{ query.provider }} · {{ query.scope }} · {{ query.status }} · {{ query.fetched_at || query.created_at }}<p v-for="line in queryPreview(query)" :key="line">{{ line }}</p></li></ul>
+            </details>
             <label v-if="['train', 'flight', 'hotel', 'amap'].includes(pausedTask.provider || '')"><input v-model="refreshQuote" type="checkbox" /> {{ t('oneClick.refresh') }}</label>
           </section>
           <div class="step">
@@ -120,7 +126,7 @@
               <h3>{{ t('home.step2') }}</h3>
             </div>
             <div class="grid grid2">
-              <a-form-item name="transportation">
+              <a-form-item name="transportation" data-recovery="transport">
                 <template #label>
                   <span class="field-label">{{ t('home.transportationLabel') }}</span>
                 </template>
@@ -138,7 +144,7 @@
                 </a-select>
               </a-form-item>
 
-              <a-form-item name="accommodation">
+              <a-form-item name="accommodation" data-recovery="hotel">
                 <template #label>
                   <span class="field-label">{{ t('home.accommodationLabel') }}</span>
                   <AccommodationHelp v-if="oneClickEnabled" />
@@ -158,7 +164,7 @@
             </div>
 
             <div class="grid grid4 constraint-grid">
-              <a-form-item name="budget_total">
+              <a-form-item name="budget_total" data-recovery="budget">
                 <template #label><span class="field-label">{{ t('home.budgetLabel') }}</span></template>
                 <a-input-number v-model:value="formData.budget_total" :min="100" :max="1000000" :step="100" size="large" class="field-input" style="width: 100%" />
               </a-form-item>
@@ -308,7 +314,7 @@
               <span>04</span>
               <h3>{{ t('home.step3') }}</h3>
             </div>
-            <a-form-item name="free_text_input">
+            <a-form-item name="free_text_input" data-recovery="preferences">
               <div class="field-textarea">
                 <a-textarea
                   v-model:value="formData.free_text_input"
@@ -448,6 +454,7 @@ import type {
 } from '@/types'
 import { memoriesState, type LandingFormData } from '@/services/memoriesState'
 import dayjs from 'dayjs'
+import { planningRecovery, type RecoveryAction } from '@/services/planningRecovery'
 
 type FailedTask = {
   taskId: string
@@ -462,7 +469,32 @@ const touchPicker = window.matchMedia('(pointer: coarse)').matches
 const oneClickEnabled = ref(false)
 const flightConfirmed = ref(false)
 const refreshQuote = ref(false)
-const pausedTask = ref<{ taskId: string; message: string; provider?: string } | null>(null)
+const pausedTask = ref<{ taskId: string; message: string; provider?: string; code?: string } | null>(null)
+const recovery = computed(() => planningRecovery(pausedTask.value || {}, getCurrentLocale().startsWith('zh'), { budget: formData.budget_total, hotelTier: formData.accommodation }))
+const recoveryHint = ref('')
+async function chooseRecovery(action: RecoveryAction) {
+  if (loading.value) return
+  recoveryHint.value = ''
+  refreshQuote.value = action.id === 'refresh'
+  if (action.id === 'budget' && action.value) formData.budget_total = Number(action.value)
+  if (action.id === 'hotel' && action.value) formData.accommodation = String(action.value)
+  if (action.id === 'retry' || action.id === 'refresh' || action.value !== undefined) {
+    await handleSubmit()
+    return
+  }
+  recoveryHint.value = getCurrentLocale().startsWith('zh')
+    ? `已选择“${action.label}”。请修改下方对应条件，再点击“按表单继续规划”；尚未发送新查询。`
+    : `Selected: ${action.label}. Edit the highlighted field, then continue with the form. No query has been sent.`
+  const selectors: Record<string, string> = {
+    dates: '.city-row-days', budget: '[data-recovery="budget"]', hotel: '[data-recovery="hotel"]',
+    transport: '[data-recovery="transport"]', preferences: '[data-recovery="preferences"]',
+  }
+  const field = panelRef.value?.querySelector(selectors[action.target || ''] || '.city-list')
+  const target = field?.closest('.ant-form-item') || field
+  target?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  const input = target?.querySelector<HTMLElement>('input, textarea, button') || field as HTMLElement | null
+  input?.focus({ preventScroll: true })
+}
 const retainedQueries = ref<any[]>([])
 function queryPreview(query: any): string[] {
   const result = query.result
@@ -488,7 +520,7 @@ onMounted(async () => {
     if (!taskId) return
     const task = await getTripTask(taskId)
     if (task.status === 'awaiting_input') {
-      pausedTask.value = { taskId, message: task.pending_input?.message || task.message, provider: task.pending_input?.provider }
+      pausedTask.value = { taskId, message: task.pending_input?.message || task.message, provider: task.pending_input?.provider, code: task.pending_input?.code }
       retainedQueries.value = await readTravelQueries(taskId)
       const request = await readPlanningInput(task.trip_id)
       restoredMustVisit.value = request.must_visit || []
@@ -766,7 +798,9 @@ const taskCallbacks = () => ({
   },
   onTaskEvent: (event: TripTaskEvent) => {
     if (event.status === 'awaiting_input') {
-      pausedTask.value = { taskId: event.task_id, message: event.pending_input?.message || event.message, provider: event.pending_input?.provider }
+      pausedTask.value = { taskId: event.task_id, message: event.pending_input?.message || event.message, provider: event.pending_input?.provider, code: event.pending_input?.code }
+      refreshQuote.value = false
+      recoveryHint.value = ''
       readTravelQueries(event.task_id).then(value => { retainedQueries.value = value }).catch(() => {})
     }
     if (event.plan_id) planCode.value = event.plan_id
@@ -954,6 +988,11 @@ const handleRetry = async () => {
 </script>
 
 <style scoped>
+.recovery-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 18px 0; }
+.recovery-actions button { padding: 12px 18px; border: 1px solid #a7b7a1; border-radius: 12px; background: #e6ecdf; color: #243b32; cursor: pointer; font: inherit; }
+.recovery-actions button:hover { background: #d8e4cf; }
+.recovery-actions button:focus-visible { outline: 3px solid #43735f; outline-offset: 3px; }
+.recovery-actions button:disabled { opacity: .5; cursor: wait; }
 .landing-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #0d171d 0%, #142430 58%, #0f1a22 100%);
