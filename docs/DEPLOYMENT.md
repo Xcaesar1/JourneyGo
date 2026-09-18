@@ -1,5 +1,25 @@
 # Deployment And Rollback
 
+## Contextual Pause Choices (2026-09-18)
+
+- Source `0aa75b1`; staging API image `journeyops-app:recovery-0aa75b1`, based on
+  `journeyops-app:train-c-api-588213d`. Worker remains `journeyops-app:train-c-worker-588213d`.
+- Release `/opt/tripstar/releases/recovery-0aa75b1-20260918` contains the frontend
+  archive, Dockerfile, deployment script, Compose override and previous Compose file list.
+- Pause UI explains model uncertainty separately from unavailable trains, retains
+  specific server reasons, and offers two or three contextual actions. Budget and
+  hotel choices state their changes before submission. Manual-edit choices focus
+  the relevant field without submitting. Flight consent and server guards remain intact.
+- Verified 60 frontend tests, production build, authenticated ingress/readiness,
+  and deployed Chrome desktop/mobile interaction with mocked API responses.
+  Confirmed unchanged request/no quote refresh on model retry and explicit budget
+  change on the budget action. No real task continuation or supplier queries were sent.
+- Zero active tasks before deployment. Task/review/version/query hashes and all
+  protected production, demo, worker and database container identities were unchanged.
+- Rollback using the release's `previous-compose-files.txt` in recorded order,
+  `.env.staging`, and `up -d --no-deps --no-build trip-planner` after the active-task check.
+  Do not recreate the worker or modify data. Personal-map enablement is preserved.
+
 ## Planning Recovery And Form Alignment (2026-09-18)
 
 - Source `f1efb26`; API and Worker image `journeyops-app:recovery-f1efb26`.
