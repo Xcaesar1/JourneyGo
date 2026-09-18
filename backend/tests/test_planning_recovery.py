@@ -64,6 +64,7 @@ def test_two_sights_three_day_arrival_and_departure_do_not_pause():
             "travel_days": 3,
             "end_date": base.start_date + timedelta(days=2),
             "interests": ["历史文化", "美食"],
+            "excluded_attractions": ["东方明珠"],
         }
     )
     calls, contexts = [], []
@@ -99,16 +100,16 @@ def test_two_sights_three_day_arrival_and_departure_do_not_pause():
     assert not plan.days[0].attractions and not plan.days[2].attractions
     assert "往返交通占比较高" in plan.overall_suggestions
     assert "无障碍证据" not in plan.overall_suggestions
-    assert len([c for c in calls if c[1] == "110000"]) <= 3
+    assert {"上海城市地标", "上海必游景点", "上海历史文化景点"} <= {k for k, kind in calls if kind == "110000"}
     assert all("美食" not in k for k, kind in calls if kind == "110000")
     windows = contexts[0]["activity_windows"]
     assert windows[2]["available_minutes"] == 0
     assert windows[1]["available_minutes"] > windows[0]["available_minutes"]
 
 
-def test_bounded_supplement_stops_when_enough_and_deduplicates():
+def test_bounded_discovery_completes_query_families_then_deduplicates():
     calls = []
-    p = planner(request(interests=["历史文化", "美食"]))
+    p = planner(request(interests=["历史文化", "美食"], excluded_attractions=["东方明珠"]))
 
     def pois(city, keyword, kind, **kwargs):
         calls.append(keyword)
@@ -117,11 +118,12 @@ def test_bounded_supplement_stops_when_enough_and_deduplicates():
 
     p.pois = pois
     result = p.discover_attractions("上海")
-    assert len(result) == 12 and len(calls) == 2
+    assert len(result) == 12 and len(calls) <= 12
+    assert {"上海城市地标", "上海必游景点", "上海历史文化景点"} <= set(calls)
 
 
 def test_model_only_recovery_uses_old_mixed_query_without_new_queries():
-    p = planner(request(interests=["历史文化", "美食"], quote_revision={"model": 1}))
+    p = planner(request(interests=["历史文化", "美食"], quote_revision={"model": 1}, excluded_attractions=["东方明珠"]))
 
     class CachedLedger:
         def execute(self, provider, scope, args, call):

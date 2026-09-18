@@ -106,7 +106,7 @@ export interface RouteEstimate {
   estimate_id: string
   origin: string
   destination: string
-  mode: 'driving' | 'walking' | 'straight_line'
+  mode: 'driving' | 'walking' | 'straight_line' | 'public_transit'
   distance_meters?: number | null
   duration_minutes?: number | null
   provider: string
@@ -217,6 +217,8 @@ export interface TripFormData {
   accommodation: string
   preferences: string[]
   must_visit?: string[]
+  preferred_attractions?: string[]
+  excluded_attractions?: string[]
   avoid?: string[]
   free_text_input: string
   language?: string
@@ -253,6 +255,13 @@ export interface AttractionCandidate {
   recommendation_reason: string
   matched_interests: string[]
   is_must_visit: boolean
+  is_landmark?: boolean
+  experience_group?: string
+  experience_aliases?: string[]
+  recommended_minutes?: number
+  duration_basis?: string
+  visit_style?: string
+  identity_source?: string
 }
 
 export interface AttractionCandidatePage {
@@ -327,7 +336,7 @@ export type TripTaskStage =
   | 'failed'
 
 export interface TripTaskEvent {
-  pending_input?: { code: string; message: string; provider?: string }
+  pending_input?: { code: string; message: string; provider?: string; diagnostics?: { places?: string[]; required?: string[] } }
   task_id: string
   plan_id: string
   trip_id?: string
@@ -418,7 +427,7 @@ export interface TripReviewRecord {
 }
 
 export interface TripTaskRecord {
-  pending_input?: { code: string; message: string; provider?: string }
+  pending_input?: { code: string; message: string; provider?: string; diagnostics?: { places?: string[]; required?: string[] } }
   task_id: string
   trip_id: string
   trace_id: string

@@ -6,7 +6,16 @@ export function planningRecovery(pending = {}, chinese = true, current = {}) {
   const hotel = edit('hotel', '调整住宿档次', 'Change hotel tier')
   let reason = pending.message || text('当前条件尚未通过核验，请调整后继续。', 'The current plan needs review before continuing.')
   let actions
-  if (pending.provider === 'model') {
+  if (['landmark_unplaced', 'landmark_unverified'].includes(pending.code)) {
+    const places = pending.diagnostics?.places || []
+    actions = pending.code === 'landmark_unverified'
+      ? [{ id: 'refresh', label: text('更新地点资料后继续', 'Refresh place evidence and continue') }, preferences]
+      : [dates, preferences]
+    if (places.length && !pending.diagnostics?.required?.length) actions.unshift({ id: 'skip_landmarks', places, label: text('本次跳过这些景点，继续', 'Skip these sights and continue') })
+  } else if (pending.code === 'duplicate_must_visit') {
+    actions = (pending.diagnostics?.places || []).slice(0, 2).map(name => ({ id: 'keep_place', value: name, places: pending.diagnostics.places, label: text(`只保留「${name}」`, `Keep only ${name}`) }))
+    actions.push(preferences)
+  } else if (pending.provider === 'model') {
     if (pending.code === 'supplier_uncertain') reason = text(
       '行程生成服务未返回可确认的结果，已停止自动重试。这不代表没有车，也不代表日期或预算不合适。具体是超时还是服务异常，目前无法确认。',
       'The planning service did not return a confirmed result. Automatic retries stopped. This does not mean trains are unavailable or your dates or budget are unsuitable. The exact service failure is not confirmed.')

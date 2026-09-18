@@ -2,6 +2,19 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { planningRecovery } from './planningRecovery.js'
 
+test('landmark omissions offer explicit skip without changing travel dates or paid quotes', () => {
+  const pending = { code: 'landmark_unplaced', diagnostics: { places: ['云冈石窟'], required: [] } }
+  const result = planningRecovery(pending)
+  assert.deepEqual(result.actions.map(a => a.id), ['skip_landmarks', 'dates', 'preferences'])
+  assert.deepEqual(result.actions[0].places, ['云冈石窟'])
+  assert.ok(!planningRecovery({ ...pending, diagnostics: { ...pending.diagnostics, required: ['云冈石窟'] } }).actions.some(a => a.id === 'skip_landmarks'))
+})
+
+test('duplicate must visits offer concrete choices, never silent deletion', () => {
+  const result = planningRecovery({ code: 'duplicate_must_visit', diagnostics: { places: ['大同古城墙', '大同古城南城墙'] } })
+  assert.deepEqual(result.actions.map(a => a.id), ['keep_place', 'keep_place', 'preferences'])
+})
+
 test('model uncertainty explains cause without requiring date changes or supplier refresh', () => {
   const result = planningRecovery({ code: 'supplier_uncertain', provider: 'model' })
   assert.match(result.reason, /不代表没有车/)

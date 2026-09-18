@@ -34,3 +34,4 @@ export function findCandidatePageKey(
   poiId: string,
 ): string | undefined
 export function hasCandidateImage(candidate: AttractionCandidate): boolean
+export function candidatePreferencePayload(pages: AttractionCandidatePage[], selectedIds: string[], explicitIds: string[], restored?: { must?: string[]; preferred?: string[]; excluded?: string[] }): { must_visit: string[]; preferred_attractions: string[]; excluded_attractions: string[] }

@@ -16,6 +16,7 @@ from ..domain.attraction_models import (
     AttractionCandidatePage,
     AttractionImage,
 )
+from ..domain.landmarks import discovery_queries, experience, metadata, same_experience
 from .tripai_supplemental import (
     CtripWendaoSupplementalSource,
     SupplementalAttractionSource,
@@ -235,6 +236,7 @@ def parse_amap_pois(payload: dict[str, Any], city: str) -> list[AttractionCandid
                 category=_text(raw.get("type")) or "attraction",
                 rating=_number(business.get("rating")),
                 image=_photo(raw),
+                **metadata(_text(raw.get("cityname")) or city, name),
             )
         )
     return parsed
@@ -266,8 +268,9 @@ def rank_candidates(
 ) -> list[AttractionCandidate]:
     """Deduplicate and score candidates using provider order, rating and diversity."""
     deduplicated: dict[str, _RawCandidate] = {}
+    supplemental_keys = {_candidate_key(raw.item) for raw in raw_candidates if raw.supplemental}
     for raw in raw_candidates:
-        if _matches_any(raw.item, avoid):
+        if _matches_any(raw.item, avoid) or any(same_experience(raw.item.city, raw.item.name, name) for name in avoid):
             continue
         if not _is_discoverable_attraction(
             raw.item,
@@ -332,6 +335,7 @@ def rank_candidates(
         )
     )
     category_counts: dict[str, int] = {}
+    seen_groups = set()
     ranked: list[AttractionCandidate] = []
     remaining = list(scored)
     while remaining and len(ranked) < max(1, min(limit, 40)):
@@ -344,12 +348,25 @@ def rank_candidates(
             range(len(remaining)),
             key=lambda index: (
                 remaining[index][3],
+                remaining[index][1].item.is_landmark,
+                bool(remaining[index][2]),
                 adjusted(remaining[index]),
                 -remaining[index][1].query_index,
                 -remaining[index][1].result_index,
             ),
         )
         base_score, raw, matches, is_must_visit = remaining.pop(best_index)
+        group = raw.item.experience_group
+        if group and group in seen_groups:
+            continue
+        if group:
+            # Prefer a concrete canonical place over a broad district/alias.
+            rule = experience(raw.item.city, raw.item.name)
+            canonical = next((entry for entry in remaining if entry[1].item.experience_group == group and entry[1].item.name == rule["name"]), None)
+            if canonical and not is_must_visit:
+                remaining.remove(canonical)
+                base_score, raw, matches, is_must_visit = canonical
+            seen_groups.add(group)
         category_root = raw.item.category.split(";")[0].split("|")[0]
         diversity_penalty = min(category_counts.get(category_root, 0) * 3.0, 15.0)
         score = min(100.0, max(0.0, base_score - diversity_penalty))
@@ -362,8 +379,10 @@ def rank_candidates(
         if raw.item.rating:
             reasons.append(f"高德评分 {raw.item.rating:.1f}")
         if not reasons:
-            reasons.append("高德综合热度推荐")
-        if raw.supplemental:
+            reasons.append("高德检索与评分综合推荐（非热度榜）")
+        if raw.item.is_landmark:
+            reasons.insert(0, "城市代表景点")
+        if _candidate_key(raw.item) in supplemental_keys:
             reasons.append("携程问道补充推荐（高德已验证）")
         ranked.append(
             raw.item.model_copy(
@@ -461,19 +480,16 @@ class AmapAttractionDiscoveryProvider:
             supplemental_names = supplemental.names
             if supplemental.issue:
                 supplemental_issues.append(supplemental.issue)
-        query_terms = [term for term in must_visit if term.strip()][:3]
-        query_terms.extend((f"{normalized_city}5A景区", f"{normalized_city}必游景点"))
-        for interest in interests:
-            interest_terms = _INTEREST_QUERIES.get(interest, (interest,))
-            query_terms.extend(f"{normalized_city}{term}" for term in interest_terms)
-        query_terms = list(dict.fromkeys(term.strip() for term in query_terms if term.strip()))[:8]
+        query_terms = discovery_queries(normalized_city, interests, must_visit)
         raw_candidates: list[_RawCandidate] = []
+        searched_pages: dict[str, list[AttractionCandidate]] = {}
         primary_issues: list[str] = []
         for query_index, keywords in enumerate(query_terms):
             for page_num in (1, 2):
                 try:
                     payload = self._search_page(normalized_city, keywords, page_num)
                     page = parse_amap_pois(payload, normalized_city)
+                    searched_pages.setdefault(keywords, []).extend(page)
                     for result_index, item in enumerate(page):
                         raw_candidates.append(
                             _RawCandidate(item, query_index, (page_num - 1) * 25 + result_index)
@@ -492,10 +508,13 @@ class AmapAttractionDiscoveryProvider:
         supplemental_query_index = len(query_terms)
         for offset, suggestion in enumerate(supplemental_names):
             try:
-                payload = self._search_page(normalized_city, suggestion, 1)
+                verified = searched_pages.get(suggestion)
+                if verified is None:
+                    payload = self._search_page(normalized_city, suggestion, 1)
+                    verified = parse_amap_pois(payload, normalized_city)
                 matches = [
                     item
-                    for item in parse_amap_pois(payload, normalized_city)
+                    for item in verified
                     if _matches_suggested_name(item, suggestion)
                 ]
                 if not matches:
@@ -537,7 +556,7 @@ class AmapAttractionDiscoveryProvider:
             if any(interest in {"nature", "自然风光"} for interest in interests)
             and item.category.startswith("风景名胜")
         ]
-        default_source = preferred_items + items if preferred_items else items
+        default_source = [item for item in items if item.is_landmark] + preferred_items + items
         default_pool = list(dict.fromkeys(item.poi_id for item in default_source))
         defaults = list(dict.fromkeys(required_ids + default_pool))[
             : max(default_count, len(required_ids))

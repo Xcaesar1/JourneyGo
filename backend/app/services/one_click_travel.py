@@ -12,6 +12,13 @@ import httpx
 from redis import Redis
 
 from ..domain.flight_cities import flight_city_code
+from ..domain.landmarks import (
+    city_landmarks,
+    discovery_queries,
+    experience,
+    metadata,
+    same_experience,
+)
 from ..domain.travel_models import TravelSearchRequest
 from ..domain.trip_models import (
     AttractionV2,
@@ -27,6 +34,7 @@ from ..domain.trip_models import (
 from .attraction_discovery import parse_amap_pois, rank_amap_pois
 from .hotel_detail import detail_arguments, inspect_detail
 from .hotel_pricing import amount, estimate_stay
+from .landmark_transit import choose_transit, query_transit
 from .meal_pricing import meal_reference
 from .task_events import redis_url
 from .travel_ledger import PlanningInputRequired, QueryLedger, QueryReuseUnavailable
@@ -104,7 +112,7 @@ def hotel_location_score(hotel, attractions, restaurants):
         distances = [place_distance_meters(hotel, place) for place in places[:limit]]
         return int(median(distances)) if distances else 0
 
-    required = [place for place in attractions if place.get("required")]
+    required = [place for place in attractions if place.get("required") or place.get("is_landmark")]
     required_distance = (
         sum(place_distance_meters(hotel, place) for place in required) // len(required)
         if required
@@ -282,6 +290,7 @@ class OneClickPlanner:
         maps=None,
         progress=None,
         selector=None,
+        transit=None,
     ):
         self.request, self.settings = request, settings
         self.ledger = ledger or QueryLedger(trip_id, request)
@@ -292,12 +301,23 @@ class OneClickPlanner:
         self.selection_notes = ""
         self.candidate_notes = []
         self.planning_notices = []
+        self.transit = transit or self._transit
+        self.transit_cache = {}
+        self.deduplicated_places = []
+        self.missing_landmarks = []
 
     def discover_attractions(self, city):
         r = self.request
         places = []
+        for index, name in enumerate(r.must_visit):
+            conflicts = [other for other in r.must_visit[:index] if same_experience(city, name, other)]
+            if conflicts:
+                raise PlanningInputRequired("duplicate_must_visit", "必去景点属于同一游览体验，请选择一个具体地点：" + "、".join([*conflicts, name]), diagnostics={"places": [*conflicts, name]})
+            if any(same_experience(city, name, excluded) for excluded in r.excluded_attractions):
+                raise PlanningInputRequired("duplicate_must_visit", "同一景点同时被设为必去和排除，请调整选择。", diagnostics={"places": [name]})
         for name in r.must_visit:
-            candidate = self.pois(city, name, "110000", exact=True)[0]
+            query_name = "八达岭长城" if city.removesuffix("市") == "北京" and name == "长城" else name
+            candidate = self.pois(city, query_name, "110000", exact=True)[0]
             places.append({**candidate, "required": True})
         interests = [
             i
@@ -305,7 +325,8 @@ class OneClickPlanner:
             if not any(word in i.casefold() for word in ("美食", "餐饮", "food", "dining"))
         ]
         primary = " ".join(interests) or "景点"
-        queries = list(dict.fromkeys([primary, "历史古迹", "景点"]))
+        queries = discovery_queries(city, interests, r.preferred_attractions)
+        queries += [primary, "历史古迹", "景点"]
         reuse_only = r.quote_revision.get("model", 0) > 0 and not r.quote_revision.get("amap", 0)
         if reuse_only:
             # Older paused tasks used a mixed-interest key; try cached keys only.
@@ -325,8 +346,6 @@ class OneClickPlanner:
             for place in candidates:
                 if not any(name in place["name"] for name in r.avoid):
                     unique.setdefault(place["poi_id"], place)
-            if len(unique) >= min(12, max(4, r.travel_days * 2)):
-                break
         if not unique:
             raise PlanningInputRequired(
                 "no_places", "没有可核实的景点，请调整偏好或明确刷新地点查询。", provider="amap"
@@ -335,7 +354,26 @@ class OneClickPlanner:
             self.candidate_notes.append(
                 "已核实景点较少，按实际游览时间安排，保留休息时间，不重复或虚构景点。"
             )
-        return list(unique.values())
+        grouped = {}
+        for place in unique.values():
+            if any(same_experience(city, place["name"], excluded) for excluded in [*r.excluded_attractions, *r.avoid]):
+                continue
+            place["preferred"] = any(same_experience(city, place["name"], name) for name in r.preferred_attractions)
+            key = place.get("experience_group") or place["poi_id"]
+            old = grouped.get(key)
+            rule = experience(city, place["name"])
+            if old is None or (not old.get("required") and (place.get("required") or (rule and place["name"] == rule["name"]))):
+                grouped[key] = place
+                if old:
+                    self.deduplicated_places.append({"removed": old["name"], "kept": place["name"], "group": key})
+            else:
+                self.deduplicated_places.append({"removed": place["name"], "kept": old["name"], "group": key})
+        result = sorted(grouped.values(), key=lambda p: (not p.get("required"), not p.get("is_landmark"), not p.get("preferred")))[:40]
+        represented = {p.get("experience_group") for p in result}
+        self.missing_landmarks = [item["name"] for item in city_landmarks(city) if item["group"] not in represented and not any(same_experience(city, item["name"], n) for n in [*r.excluded_attractions, *r.avoid])]
+        if self.missing_landmarks:
+            raise PlanningInputRequired("landmark_unverified", "以下代表景点尚未取得可核实的地点资料，请更新地点查询或明确选择本次跳过：" + "、".join(self.missing_landmarks), provider="amap", diagnostics={"places": self.missing_landmarks, "required": []})
+        return result
 
     def _supplier(self, provider, tool, args):
         if provider == "flight":
@@ -355,6 +393,21 @@ class OneClickPlanner:
                         provider="flight",
                     )
         return run_readonly_mcp(provider, args, self.settings, tool=tool)
+
+    def _transit(self, arguments):
+        return query_transit(self.settings.vite_amap_web_key, arguments)
+
+    def landmark_route(self, left, right):
+        city = self.request.destinations[0].city
+        def coordinate(place):
+            return f"{place['location']['longitude']:.6f},{place['location']['latitude']:.6f}"
+        args = {"origin": coordinate(left), "destination": coordinate(right), "city": city, "cityd": city, "strategy": 0, "extensions": "all"}
+        key = (args["origin"], args["destination"])
+        if key not in self.transit_cache:
+            raw = self.ledger.execute("amap", "landmark_transit", args, lambda: self.transit(args))
+            walking = self.request.max_daily_walking_minutes
+            self.transit_cache[key] = choose_transit(raw, (walking if walking is not None else 180) // 2)
+        return self.transit_cache[key]
 
     def query(self, provider, scope, tool, args):
         return self.ledger.execute(
@@ -399,6 +452,12 @@ class OneClickPlanner:
             )
             ranked = {p.poi_id: p for p in ranked_places}
             rank_position = {p.poi_id: index for index, p in enumerate(ranked_places)}
+            for candidate in parse_amap_pois(raw, city):
+                winner = next((p for p in ranked_places if p.experience_group and p.experience_group == candidate.experience_group and p.poi_id != candidate.poi_id), None)
+                if winner:
+                    record = {"removed": candidate.name, "kept": winner.name, "group": winner.experience_group}
+                    if record not in self.deduplicated_places:
+                        self.deduplicated_places.append(record)
         results = []
         keyword_key = place_name_key(keyword)
         for provider_index, row in enumerate(
@@ -467,6 +526,8 @@ class OneClickPlanner:
                         "address": row.get("address") or "",
                         "location": {"longitude": lon, "latitude": lat},
                         "business": row.get("business") or {},
+                        **(metadata(city, name) if kind == "110000" else {}),
+                        "matched_interests": ranked[row["id"]].matched_interests if row["id"] in ranked else [],
                         "fetched_at": raw.get("fetched_at"),
                         "image": ranked[row["id"]].image.model_dump()
                         if row["id"] in ranked
@@ -799,7 +860,7 @@ class OneClickPlanner:
                 "reason_codes": reason_codes,
             }
         context = {
-            "selection_contract_version": 3,
+            "selection_contract_version": 4,
             "activity_windows": probe.travel_summary["activity_windows"],
             "request": r.model_dump(mode="json"),
             "attractions": attractions,
@@ -829,10 +890,10 @@ class OneClickPlanner:
             )
         ):
             raise PlanningInputRequired("invalid_selection", "规划地点未通过核验，请调整偏好。")
-        selected_attractions = set(selected.attraction_ids)
+        selected_attractions = {key: index for index, key in enumerate(selected.attraction_ids)}
         selected_restaurants = set(selected.restaurant_ids)
         attractions = [
-            {**place, "selected": key in selected_attractions} for key, place in attr_by_id.items()
+            {**place, "selected": key in selected_attractions, "model_rank": selected_attractions.get(key, 999)} for key, place in attr_by_id.items()
         ]
         restaurants = [
             {**place, "selected": key in selected_restaurants} for key, place in meal_by_id.items()
@@ -874,7 +935,7 @@ class OneClickPlanner:
             meters = place_distance_meters(a, b)
             return max(20, int(meters * 1.5 / 20000 * 60) + 20)
 
-        def entry(day, title, start, duration, kind="transport", poi=None):
+        def entry(day, title, start, duration, kind="transport", poi=None, route_info=None):
             item_id = f"d{day}-{start:%H%M}-{kind}"
             actual = title.startswith(outbound["number"] + " ") or title.startswith(
                 inbound["number"] + " "
@@ -886,10 +947,10 @@ class OneClickPlanner:
                         origin=city,
                         destination=title,
                         duration_minutes=duration,
-                        mode="straight_line",
-                        provider=r.intercity_mode if actual else "local-estimate",
+                        mode="public_transit" if route_info else "straight_line",
+                        provider=r.intercity_mode if actual else "amap-transit" if route_info else "local-estimate",
                         status="verified" if actual else "estimated",
-                        detail="供应商时刻" if actual else "基于地点距离估算，非实时路况",
+                        detail="供应商时刻" if actual else ("、".join(route_info["lines"]) + "；" + route_info["note"]) if route_info else "基于地点距离估算，非实时路况",
                     )
                 )
             return ScheduleItemV2(
@@ -905,6 +966,9 @@ class OneClickPlanner:
             )
 
         remaining = list(attractions)
+        landmark_failures = {}
+        def preference(poi):
+            return (not poi.get("required"), not poi.get("is_landmark"), not (poi.get("preferred") or poi.get("matched_interests")), not poi.get("selected"), poi.get("model_rank", 999))
         first_day_notes = []
         scheduled_restaurant_ids = set()
         scheduled_attraction_count = 0
@@ -991,21 +1055,45 @@ class OneClickPlanner:
                 }
             )
             current, previous = start, hotel
+            dedicated = None
+            if i not in {0, r.travel_days - 1}:
+                for poi in sorted(remaining, key=preference):
+                    if not (poi.get("is_landmark") or poi.get("required")) or not (poi.get("visit_style", "standard") != "standard" or place_distance_meters(hotel, poi) > 8000):
+                        continue
+                    outward, backward = self.landmark_route(hotel, poi), self.landmark_route(poi, hotel)
+                    if not outward or not backward:
+                        landmark_failures[poi["poi_id"]] = "未取得往返公交接驳方案，不能默认包车或用驾车时间代替"
+                        continue
+                    duration = poi.get("recommended_minutes", 90)
+                    if start + timedelta(minutes=outward["minutes"] + duration + 60 + backward["minutes"]) > end:
+                        landmark_failures[poi["poi_id"]] = "往返接驳、游览及必要休息超出当天可用时间"
+                        continue
+                    dedicated = (poi, outward, backward)
+                    attraction_limit = 1
+                    activity_windows[-1]["max_attractions"] = 1
+                    commute_limit = max(commute_limit, outward["minutes"] + backward["minutes"] + 60)
+                    break
             for slot in range(3):
                 if remaining and len(day_attractions) < attraction_limit:
                     feasible = []
                     for poi in remaining:
+                        is_dedicated = dedicated is not None and poi["poi_id"] == dedicated[0]["poi_id"]
+                        needs_day = (poi.get("is_landmark") or poi.get("required")) and (poi.get("visit_style", "standard") != "standard" or place_distance_meters(hotel, poi) > 8000)
+                        if (dedicated and not is_dedicated) or (needs_day and not is_dedicated):
+                            continue
                         travel = transfer(previous, poi)
                         return_to_hotel = transfer(poi, hotel)
+                        duration = poi.get("recommended_minutes", 90)
+                        if is_dedicated:
+                            travel, return_to_hotel = dedicated[1]["minutes"], dedicated[2]["minutes"]
                         if (
                             local_minutes + travel + return_to_hotel + reserved_return_minutes
                             <= commute_limit
-                            and current + timedelta(minutes=travel + 90 + return_to_hotel) <= end
+                            and current + timedelta(minutes=travel + duration + return_to_hotel + (60 if is_dedicated else 0)) <= end
                         ):
                             feasible.append(
                                 (
-                                    not poi.get("required"),
-                                    not poi.get("selected"),
+                                    *preference(poi),
                                     travel,
                                     poi["name"],
                                     poi,
@@ -1014,18 +1102,21 @@ class OneClickPlanner:
                     if feasible:
                         *_, travel, _name, poi = min(feasible, key=lambda item: item[:-1])
                         remaining.remove(poi)
-                        timeline.append(entry(i, "市内接驳（估算）", current, travel, poi=poi))
+                        is_dedicated = dedicated is not None and poi["poi_id"] == dedicated[0]["poi_id"]
+                        timeline.append(entry(i, "公交接驳至景点（方案估算）" if is_dedicated else "市内接驳（估算）", current, travel, poi=poi, route_info=dedicated[1] if is_dedicated else None))
                         local_minutes += travel
                         current += timedelta(minutes=travel)
-                        timeline.append(entry(i, poi["name"], current, 90, "attraction", poi))
-                        current += timedelta(minutes=90)
+                        duration = poi.get("recommended_minutes", 90)
+                        timeline.append(entry(i, poi["name"], current, duration, "attraction", poi))
+                        current += timedelta(minutes=duration)
                         day_attractions.append(
                             AttractionV2(
                                 name=poi["name"],
                                 address=poi["address"],
                                 poi_id=poi["poi_id"],
                                 location=LocationV2(**poi["location"]),
-                                visit_duration=90,
+                                visit_duration=duration,
+                                recommendation_reason=("城市代表景点；" if poi.get("is_landmark") else "") + "游览时长为规划估算，非官方要求。",
                                 image_url=poi.get("image", {}).get("url", ""),
                                 image_source=poi.get("image", {}).get("source", ""),
                                 image_source_page=poi.get("image", {}).get("source_page", ""),
@@ -1035,6 +1126,14 @@ class OneClickPlanner:
                         )
                         scheduled_attraction_count += 1
                         previous = poi
+                        if is_dedicated:
+                            timeline.append(entry(i, "景区用餐 / 休息（餐厅与费用待核实）", current, 60, "free_time", poi))
+                            current += timedelta(minutes=60)
+                            back = dedicated[2]["minutes"]
+                            timeline.append(entry(i, "公交返回酒店（方案估算）", current, back, poi=hotel, route_info=dedicated[2]))
+                            current += timedelta(minutes=back)
+                            local_minutes += back
+                            previous = hotel
                 options = [
                     p for p in restaurants if p["poi_id"] not in {meal.poi_id for meal in meals}
                 ] or restaurants
@@ -1206,6 +1305,9 @@ class OneClickPlanner:
                     else None,
                 )
             )
+        missing_core = [p for p in remaining if p.get("is_landmark")]
+        if missing_core:
+            raise PlanningInputRequired("landmark_unplaced", "代表景点未能安排：" + "；".join(p["name"] + "：" + landmark_failures.get(p["poi_id"], "剩余可用时间不足，不能缩短游览凑数") for p in missing_core), diagnostics={"places": [p["name"] for p in missing_core], "required": [p["name"] for p in missing_core if p.get("required")]})
         if any(p.get("required") for p in remaining):
             raise PlanningInputRequired(
                 "must_visit_unplaced",
@@ -1264,6 +1366,8 @@ class OneClickPlanner:
             "cost_items": items,
             "planning_request": r.model_dump(mode="json"),
             "activity_windows": activity_windows,
+            "landmark_coverage": [{"name": p["name"], "poi_id": p["poi_id"], "status": "scheduled", "duration_basis": p.get("duration_basis", "planning_estimate"), "identity_source": p.get("identity_source", "")} for p in attractions if p.get("is_landmark")] + [{"name": name, "status": "unverified", "reason": "未取得可核实POI"} for name in self.missing_landmarks],
+            "deduplicated_places": self.deduplicated_places,
             "planning_notices": self.planning_notices,
             "known_cents": known_cents,
             "estimated_cents": estimated_cents,
@@ -1281,6 +1385,7 @@ class OneClickPlanner:
             },
         }
         # Legacy integer display is rounded; the authoritative ledger retains exact cents.
+        summary["landmark_coverage"].extend({"name": item["name"], "status": "skipped", "reason": "用户明确排除本次体验", "identity_source": item["source"]} for item in city_landmarks(city) if any(same_experience(city, item["name"], excluded) for excluded in [*r.excluded_attractions, *r.avoid]))
         components = [
             round(hotel["cost_cents"] / 100),
             round(meals_cents / 100),

@@ -4,6 +4,11 @@
     <p v-if="limitedSightseeing" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '往返交通占比较高，主要可游览日期：' : 'Travel takes a substantial part of this trip. Main sightseeing dates: ' }}{{ sightseeingDates }}{{ locale.startsWith('zh') ? '。抵达和返程当天按剩余时间安排，不代表完整游览日。' : '. Arrival and departure days use only the remaining time.' }}</p>
     <p v-for="notice in summary.planning_notices || []" :key="notice" class="planning-notice" role="note">{{ notice }}</p>
     <p v-for="window in windows.filter((item: any) => item.sightseeing_note)" :key="window.date" class="planning-notice" role="note">{{ window.sightseeing_note }}</p>
+    <details v-if="summary.landmark_coverage?.length || summary.deduplicated_places?.length" class="planning-notice">
+      <summary>{{ locale.startsWith('zh') ? '代表景点与去重说明' : 'Landmarks and duplicate experiences' }}</summary>
+      <p v-for="item in summary.landmark_coverage || []" :key="item.name">{{ item.name }} · {{ item.status === 'scheduled' ? (locale.startsWith('zh') ? '已安排，时长为规划估算' : 'Scheduled; estimated visit time') : item.reason }} <a v-if="item.identity_source" :href="item.identity_source" target="_blank" rel="noopener noreferrer">{{ locale.startsWith('zh') ? '景点资料' : 'Source' }}</a></p>
+      <p v-for="item in summary.deduplicated_places || []" :key="item.removed">{{ item.removed }} → {{ locale.startsWith('zh') ? '同类体验只保留' : 'Same experience; retained' }} {{ item.kept }}</p>
+    </details>
     <div class="logistics-grid">
       <article v-for="direction in ['outbound', 'return']" :key="direction">
         <h3>{{ t(direction === 'outbound' ? 'oneClick.outbound' : 'oneClick.inbound') }} · <span class="train-number">{{ summary[direction].number }}</span></h3>

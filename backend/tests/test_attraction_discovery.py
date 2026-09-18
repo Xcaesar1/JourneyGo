@@ -173,7 +173,7 @@ def test_amap_discovery_uses_city_popularity_queries_before_interest_queries() -
     )
     provider.discover("西安", interests=["历史文化"])
 
-    assert keywords[:2] == ["西安5A景区", "西安必游景点"]
+    assert keywords[:3] == ["西安城市地标", "西安必游景点", "西安5A景区"]
     assert "西安博物馆" in keywords
 
 

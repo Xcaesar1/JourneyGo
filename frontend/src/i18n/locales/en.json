@@ -196,7 +196,7 @@
     },
     "discovery": {
       "title": "Choose attractions before planning",
-      "description": "Recommendations use AMap popularity, ratings, interests, and category diversity.",
+      "description": "City landmarks first, supported by place data, ratings and interests. Default recommendations are optional, not must-visits.",
       "load": "Discover popular attractions",
       "loading": "Discovering attractions…",
       "search": "Search candidates in this city",

@@ -285,6 +285,9 @@
                         <span v-if="candidate.rating">{{ candidate.rating.toFixed(1) }}</span>
                       </div>
                       <p>{{ candidate.recommendation_reason }}</p>
+                      <small v-if="candidate.is_landmark">{{ getCurrentLocale().startsWith('zh') ? '城市代表景点 · ' : 'City landmark · ' }}</small>
+                      <small v-if="candidate.recommended_minutes">{{ candidate.recommended_minutes }} {{ getCurrentLocale().startsWith('zh') ? '分钟（规划估算）' : 'min (planning estimate)' }}</small>
+                      <span v-if="isCandidateSelected(candidate.poi_id)" role="button" tabindex="0" @click.stop="markMustVisit(candidate.poi_id)" @keydown.enter.stop.prevent="markMustVisit(candidate.poi_id)">{{ explicitPoiIds.includes(candidate.poi_id) ? (getCurrentLocale().startsWith('zh') ? '已设为必去' : 'Must visit') : (getCurrentLocale().startsWith('zh') ? '默认推荐 · 设为必去' : 'Recommended · Set as must visit') }}</span>
                       <small>{{ candidate.category }}</small>
                       <a
                         v-if="candidate.image.source_page && candidate.image.attribution"
@@ -437,7 +440,7 @@ import {
   buildCandidateDiscoveryState,
   filterCandidateItems,
   findCandidatePageKey,
-  selectedCandidateNames,
+  candidatePreferencePayload,
   toggleCandidateSelection,
   visibleCandidateItems,
 } from '@/services/attractionSelection'
@@ -469,7 +472,7 @@ const touchPicker = window.matchMedia('(pointer: coarse)').matches
 const oneClickEnabled = ref(false)
 const flightConfirmed = ref(false)
 const refreshQuote = ref(false)
-const pausedTask = ref<{ taskId: string; message: string; provider?: string; code?: string } | null>(null)
+const pausedTask = ref<{ taskId: string; message: string; provider?: string; code?: string; diagnostics?: { places?: string[]; required?: string[] } } | null>(null)
 const recovery = computed(() => planningRecovery(pausedTask.value || {}, getCurrentLocale().startsWith('zh'), { budget: formData.budget_total, hotelTier: formData.accommodation }))
 const recoveryHint = ref('')
 async function chooseRecovery(action: RecoveryAction) {
@@ -478,6 +481,19 @@ async function chooseRecovery(action: RecoveryAction) {
   refreshQuote.value = action.id === 'refresh'
   if (action.id === 'budget' && action.value) formData.budget_total = Number(action.value)
   if (action.id === 'hotel' && action.value) formData.accommodation = String(action.value)
+  if (action.id === 'skip_landmarks') {
+    excludedNames.value = [...new Set([...excludedNames.value, ...(action.places || [])])]
+    restoredPreferredNames.value = restoredPreferredNames.value.filter(name => !action.places?.includes(name))
+    selectedPoiIds.value = selectedPoiIds.value.filter(id => !candidateCities.value.flatMap(page => page.items).some(p => p.poi_id === id && action.places?.includes(p.name)))
+    await handleSubmit()
+    return
+  }
+  if (action.id === 'keep_place') {
+    excludedNames.value = excludedNames.value.filter(name => !action.places?.includes(name))
+    excludedGroups.value = excludedGroups.value.filter(group => !candidateCities.value.flatMap(page => page.items).some(p => p.experience_group === group && p.experience_aliases?.includes(String(action.value))))
+    restoredMustVisit.value = [...restoredMustVisit.value.filter(name => !action.places?.includes(name)), String(action.value)]
+    explicitPoiIds.value = explicitPoiIds.value.filter(id => !candidateCities.value.flatMap(page => page.items).some(p => p.poi_id === id && action.places?.includes(p.name)))
+  }
   if (action.id === 'retry' || action.id === 'refresh' || action.value !== undefined) {
     await handleSubmit()
     return
@@ -505,6 +521,10 @@ function queryPreview(query: any): string[] {
   return []
 }
 const restoredMustVisit = ref<string[]>([])
+const restoredPreferredNames = ref<string[]>([])
+const explicitPoiIds = ref<string[]>([])
+const excludedNames = ref<string[]>([])
+const excludedGroups = ref<string[]>([])
 const restoredConstraints = ref<{ avoid?: string[]; accessibility_needs?: string[] }>({})
 onMounted(async () => {
   try {
@@ -520,10 +540,12 @@ onMounted(async () => {
     if (!taskId) return
     const task = await getTripTask(taskId)
     if (task.status === 'awaiting_input') {
-      pausedTask.value = { taskId, message: task.pending_input?.message || task.message, provider: task.pending_input?.provider, code: task.pending_input?.code }
+      pausedTask.value = { taskId, message: task.pending_input?.message || task.message, provider: task.pending_input?.provider, code: task.pending_input?.code, diagnostics: task.pending_input?.diagnostics }
       retainedQueries.value = await readTravelQueries(taskId)
       const request = await readPlanningInput(task.trip_id)
       restoredMustVisit.value = request.must_visit || []
+      restoredPreferredNames.value = request.preferred_attractions || []
+      excludedNames.value = request.excluded_attractions || []
       restoredConstraints.value = { avoid: request.avoid || [], accessibility_needs: request.accessibility_needs || [] }
       Object.assign(formData, { origin: request.origin, cities: request.destinations,
         start_date: dayjs(request.start_date), transportation: request.intercity_mode,
@@ -633,11 +655,29 @@ const candidateCities = computed(() => formData.cities
   .map(item => candidatePages.value[item.city.trim()])
   .filter((page): page is AttractionCandidatePage => Boolean(page)))
 
-const mustVisitNames = computed(() => selectedCandidateNames(candidateCities.value, selectedPoiIds.value))
+const markMustVisit = (poiId: string) => {
+  if (!explicitPoiIds.value.includes(poiId)) explicitPoiIds.value.push(poiId)
+  const candidate = candidateCities.value.flatMap(page => page.items).find(p => p.poi_id === poiId)
+  if (candidate && !restoredMustVisit.value.includes(candidate.name)) restoredMustVisit.value.push(candidate.name)
+}
 
 const isCandidateSelected = (poiId: string) => selectedPoiIds.value.includes(poiId)
 
 const toggleCandidate = (poiId: string) => {
+  const candidate = candidateCities.value.flatMap(page => page.items).find(p => p.poi_id === poiId)
+  if (candidate) {
+    if (selectedPoiIds.value.includes(poiId)) {
+      excludedNames.value = [...new Set([...excludedNames.value, candidate.name])]
+      if (candidate.experience_group) excludedGroups.value.push(candidate.experience_group)
+      restoredMustVisit.value = restoredMustVisit.value.filter(name => name !== candidate.name)
+      restoredPreferredNames.value = restoredPreferredNames.value.filter(name => name !== candidate.name)
+      explicitPoiIds.value = explicitPoiIds.value.filter(id => id !== poiId)
+    } else {
+      excludedNames.value = excludedNames.value.filter(name => name !== candidate.name && !candidate.experience_aliases?.includes(name))
+      excludedGroups.value = excludedGroups.value.filter(group => group !== candidate.experience_group)
+      markMustVisit(poiId)
+    }
+  }
   selectedPoiIds.value = toggleCandidateSelection(selectedPoiIds.value, poiId)
 }
 
@@ -691,7 +731,10 @@ const discoverAttractions = async () => {
       candidateVisible[city] = 8
     })
     candidatePages.value = discovery.pages
-    selectedPoiIds.value = discovery.selectedPoiIds
+    selectedPoiIds.value = [...new Set([...discovery.selectedPoiIds, ...explicitPoiIds.value])].filter(id => {
+      const candidate = Object.values(discovery.pages).flatMap(page => page.items).find(p => p.poi_id === id)
+      return candidate && !excludedNames.value.includes(candidate.name) && !candidate.experience_aliases?.some(name => excludedNames.value.includes(name)) && !excludedGroups.value.includes(candidate.experience_group || '')
+    })
     discoverySignature.value = currentDiscoverySignature.value
     void hydrateCandidateImages(Object.values(discovery.pages))
     return true
@@ -798,7 +841,7 @@ const taskCallbacks = () => ({
   },
   onTaskEvent: (event: TripTaskEvent) => {
     if (event.status === 'awaiting_input') {
-      pausedTask.value = { taskId: event.task_id, message: event.pending_input?.message || event.message, provider: event.pending_input?.provider, code: event.pending_input?.code }
+      pausedTask.value = { taskId: event.task_id, message: event.pending_input?.message || event.message, provider: event.pending_input?.provider, code: event.pending_input?.code, diagnostics: event.pending_input?.diagnostics }
       refreshQuote.value = false
       recoveryHint.value = ''
       readTravelQueries(event.task_id).then(value => { retainedQueries.value = value }).catch(() => {})
@@ -939,7 +982,7 @@ const handleSubmit = async () => {
       transportation: formData.transportation,
       accommodation: formData.accommodation,
       preferences: formData.preferences,
-      must_visit: [...new Set([...mustVisitNames.value, ...restoredMustVisit.value])],
+      ...candidatePreferencePayload(candidateCities.value, selectedPoiIds.value, explicitPoiIds.value, { must: restoredMustVisit.value, preferred: restoredPreferredNames.value, excluded: excludedNames.value }),
       avoid: restoredConstraints.value.avoid,
       accessibility_needs: restoredConstraints.value.accessibility_needs,
       free_text_input: formData.free_text_input,

@@ -275,6 +275,8 @@ export async function submitTripPlan(formData: TripFormData, continueTaskId?: st
       accommodation_preference: formData.accommodation || null,
       interests: formData.preferences,
       must_visit: formData.must_visit || [],
+      preferred_attractions: formData.preferred_attractions || [],
+      excluded_attractions: formData.excluded_attractions || [],
       avoid: formData.avoid || [],
       pace: formData.pace || 'balanced',
       daily_start_time: formData.daily_start_time || '09:00:00',

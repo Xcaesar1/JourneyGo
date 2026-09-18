@@ -59,3 +59,16 @@ export const findCandidatePageKey = (pages, poiId) => Object.entries(pages)
   .find(([, page]) => page.items.some(candidate => candidate.poi_id === poiId))?.[0]
 
 export const hasCandidateImage = candidate => Boolean(candidate.image.url)
+
+export const candidatePreferencePayload = (pages, selectedIds, explicitIds, restored = {}) => {
+  const excluded = restored.excluded || []
+  const items = pages.flatMap(page => page.items)
+  const allowed = name => {
+    const candidate = items.find(p => p.name === name || p.experience_aliases?.includes(name))
+    return !excluded.includes(name) && !candidate?.experience_aliases?.some(alias => excluded.includes(alias))
+  }
+  const explicit = new Set(explicitIds)
+  const must = [...new Set([...selectedCandidateNames(pages, selectedIds.filter(id => explicit.has(id))), ...(restored.must || [])])]
+  const preferred = [...new Set([...selectedCandidateNames(pages, selectedIds.filter(id => !explicit.has(id))), ...(restored.preferred || [])])].filter(name => allowed(name) && !must.includes(name))
+  return { must_visit: must, preferred_attractions: preferred, excluded_attractions: [...new Set(excluded)] }
+}

@@ -36,6 +36,13 @@ class AttractionCandidate(BaseModel):
     recommendation_reason: str = Field(default="", max_length=500)
     matched_interests: list[str] = Field(default_factory=list, max_length=12)
     is_must_visit: bool = False
+    is_landmark: bool = False
+    experience_group: str = ""
+    experience_aliases: list[str] = Field(default_factory=list)
+    recommended_minutes: int = Field(default=90, ge=30, le=600)
+    visit_style: str = "standard"
+    duration_basis: str = "planning_estimate"
+    identity_source: str = ""
 
 
 class AttractionCandidatePage(BaseModel):

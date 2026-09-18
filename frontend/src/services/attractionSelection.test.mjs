@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   buildCandidateDiscoveryState,
+  candidatePreferencePayload,
   filterCandidateItems,
   findCandidatePageKey,
   hasCandidateImage,
@@ -10,6 +11,12 @@ import {
   toggleCandidateSelection,
   visibleCandidateItems,
 } from './attractionSelection.js'
+
+test('defaults stay soft while explicit choices become required and exclusions survive aliases', () => {
+  const pages = [{ items: [{ poi_id: 'core', name: '云冈石窟', experience_aliases: ['云冈石窟', '云冈石窟景区'] }, { poi_id: 'wall', name: '大同古城墙' }] }]
+  assert.deepEqual(candidatePreferencePayload(pages, ['core', 'wall'], ['wall']), { must_visit: ['大同古城墙'], preferred_attractions: ['云冈石窟'], excluded_attractions: [] })
+  assert.deepEqual(candidatePreferencePayload(pages, ['core'], [], { preferred: ['云冈石窟'], excluded: ['云冈石窟景区'] }), { must_visit: [], preferred_attractions: [], excluded_attractions: ['云冈石窟景区'] })
+})
 
 const candidate = (poiId, name, city, overrides = {}) => ({
   poi_id: poiId,

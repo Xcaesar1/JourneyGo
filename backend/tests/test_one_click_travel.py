@@ -815,6 +815,9 @@ def test_flight_roundtrip_once_each_and_unknown_taxes(route):
     trip_request = request(intercity_mode="flight", flight_confirmed=True)
     trip_request.origin = route[0]
     trip_request.destinations[0].city = route[1]
+    # This fixture tests flight reuse, not real landmark POI discovery.
+    from backend.app.domain.landmarks import city_landmarks
+    trip_request.excluded_attractions = [item["name"] for item in city_landmarks(route[1])]
     p = planner(trip_request, supplier=flights)
     p.settings = p.settings.model_copy(
         update={

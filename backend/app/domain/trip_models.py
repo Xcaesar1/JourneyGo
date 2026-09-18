@@ -101,6 +101,8 @@ class TripRequestV2(BaseModel):
     avoid: list[PlaceText] = Field(
         default_factory=list, max_length=30, description="Items to avoid."
     )
+    preferred_attractions: list[PlaceText] = Field(default_factory=list, max_length=40)
+    excluded_attractions: list[PlaceText] = Field(default_factory=list, max_length=40)
 
     pace: Literal["relaxed", "balanced", "intensive"] = Field(
         default="balanced",
@@ -310,7 +312,7 @@ class RouteEstimateV2(BaseModel):
     estimate_id: str = Field(..., min_length=1, max_length=80)
     origin: str = Field(..., min_length=1, max_length=200)
     destination: str = Field(..., min_length=1, max_length=200)
-    mode: Literal["driving", "walking", "straight_line"] = "driving"
+    mode: Literal["driving", "walking", "straight_line", "public_transit"] = "driving"
     distance_meters: int | None = Field(default=None, ge=0)
     duration_minutes: int | None = Field(default=None, ge=0)
     provider: str = Field(..., min_length=1, max_length=80)
