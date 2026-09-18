@@ -1,6 +1,8 @@
 <template>
   <section class="trip-logistics">
     <p>{{ t('oneClick.notBooked') }}</p>
+    <p v-if="limitedSightseeing" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '往返交通占比较高，主要可游览日期：' : 'Travel takes a substantial part of this trip. Main sightseeing dates: ' }}{{ sightseeingDates }}{{ locale.startsWith('zh') ? '。抵达和返程当天按剩余时间安排，不代表完整游览日。' : '. Arrival and departure days use only the remaining time.' }}</p>
+    <p v-for="notice in summary.planning_notices || []" :key="notice" class="planning-notice" role="note">{{ notice }}</p>
     <div class="logistics-grid">
       <article v-for="direction in ['outbound', 'return']" :key="direction">
         <h3>{{ t(direction === 'outbound' ? 'oneClick.outbound' : 'oneClick.inbound') }} · <span class="train-number">{{ summary[direction].number }}</span></h3>
@@ -45,13 +47,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import { amapUrl } from '@/services/navigation'
 const props = defineProps<{ summary: Record<string, any>; city: string; busy: boolean }>()
 const emit = defineEmits<{ change: [value: Record<string, any>] }>()
 const { t, locale } = useI18n()
+const windows = computed(() => props.summary.activity_windows || [])
+const limitedSightseeing = computed(() => windows.value.some((window: any) => window.is_transfer_day && window.available_minutes < 180))
+const sightseeingDates = computed(() => windows.value.filter((window: any) => window.available_minutes >= 180).map((window: any) => window.date).join(' / ') || (locale.value.startsWith('zh') ? '请查看每日时间线' : 'See the daily timeline'))
 const editing = ref('')
 const draft = ref<Record<string, any> | null>(null)
 const consent = ref(false)
@@ -76,6 +81,7 @@ function submit() {
 
 <style scoped>
 .trip-logistics { margin: 24px 0; padding: 24px; border: 1px solid var(--jg-border); border-radius: 20px; background: var(--jg-surface); color: var(--jg-text); }
+.planning-notice { padding: 12px 16px; border: 1px solid var(--jg-border); border-radius: 12px; background: var(--jg-soft); overflow-wrap: anywhere; }
 .logistics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 article { padding: 20px; background: var(--jg-bg); border-radius: 20px; overflow-wrap: anywhere; border: 1px solid var(--jg-border); }
 article:last-child { background: var(--jg-soft); }

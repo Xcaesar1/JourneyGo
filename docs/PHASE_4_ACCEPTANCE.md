@@ -3,7 +3,7 @@
 ## Scope
 
 阶段 4 为 JourneyGraph 增加来源化旅行研究和 Provider 降级，并把小红书从必需依赖改为可选
-社区来源。本文只验收 `docs/DEVELOPMENT_PLAN.md` 的阶段 4，不开始阶段 5。生产容器、生产数据、
+社区来源。本文为阶段 4 的历史验收记录，不作为当前开发计划。生产容器、生产数据、
 Caddy 和公网 DNS 未修改。
 
 ## Current Architecture

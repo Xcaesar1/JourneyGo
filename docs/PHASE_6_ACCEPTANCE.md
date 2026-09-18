@@ -3,7 +3,7 @@
 ## Scope
 
 阶段 6 为 JourneyGraph 增加持久人工审核、局部动态重规划、结构化差异和不可变版本回滚。
-本文只验收 `docs/DEVELOPMENT_PLAN.md` 的阶段 6，不开始阶段 7。生产容器、生产数据、Caddy
+本文为阶段 6 的历史验收记录，不作为当前开发计划。生产容器、生产数据、Caddy
 和公网 DNS 均未修改。
 
 ## Current Architecture

@@ -186,7 +186,11 @@ def continue_trip(task_id: str, body: ContinueTripInput, session: DbSession, htt
         raise HTTPException(422, "One-click request required.")
     request.quote_revision = dict(old.quote_revision)
     pending = task.pending_input or {}
-    if pending.get("provider") == "model" or pending.get("code") == "model_output":
+    if pending.get("provider") == "model" or pending.get("code") in {
+        "model_output",
+        "unmet_requirements",
+        "requirement_confirmation",
+    }:
         # A user-initiated continuation authorizes one new model intent, not new quotes.
         request.quote_revision["model"] = request.quote_revision.get("model", 0) + 1
     if body.refresh:
@@ -225,9 +229,7 @@ def continue_trip(task_id: str, body: ContinueTripInput, session: DbSession, htt
             if body.refresh is not None
             else previous_change.get("refresh_sources", False),
             "confirm_flight_queries": request.flight_confirmed,
-            "refresh_token": uuid4().hex
-            if body.refresh
-            else previous_change.get("refresh_token"),
+            "refresh_token": uuid4().hex if body.refresh else previous_change.get("refresh_token"),
         }
     task.pending_input = None
     task.status, task.stage = "queued", "queued"

@@ -3,7 +3,7 @@
 ## Scope
 
 阶段 7 为 JourneyOps 增加可复现离线评测、运行版本清单、端到端 trace、持久脱敏遥测和模型费用
-防护。本文只验收 `docs/DEVELOPMENT_PLAN.md` 的阶段 7，不开始阶段 8。legacy
+防护。本文为阶段 7 的历史验收记录，不作为当前开发计划。legacy
 `backend/app/agents/legacy/trip_planner_agent.py` 未修改；生产容器、生产数据、Caddy 和 DNS 未修改。
 
 ## Current Architecture

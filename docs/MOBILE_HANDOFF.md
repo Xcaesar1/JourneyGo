@@ -1,6 +1,6 @@
 # Mobile Debugging Handoff
 
-Updated: 2026-09-16. Read AGENTS.md and verify current state before acting.
+Updated: 2026-09-16. Historical verification record; read README.md and docs/DEPLOYMENT.md and verify current state before acting.
 
 ## Continuation verification (2026-09-16)
 

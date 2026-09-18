@@ -3,7 +3,7 @@
 ## Scope
 
 阶段 3 将 legacy 单体 Planner 渐进迁移为可恢复、可切换的 JourneyGraph，同时保持旧 API
-和前端响应结构。本文只验收 `docs/DEVELOPMENT_PLAN.md` 的阶段 3，不开始阶段 4。
+和前端响应结构。本文为阶段 3 的历史验收记录，不作为当前开发计划。
 
 ## Current Architecture
 

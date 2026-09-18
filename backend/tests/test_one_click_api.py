@@ -1,5 +1,6 @@
 """Input pauses, access checks and immutable quote proposals without external calls."""
 
+import pytest
 from backend.app.api.v2 import trips
 from backend.app.db.models import TripReview, TripTask
 from backend.app.db.repository import save_trip_version
@@ -69,8 +70,9 @@ def test_continue_is_access_protected(client, db_session_factory, monkeypatch):
     )
 
 
+@pytest.mark.parametrize("code", ["model_output", "unmet_requirements", "requirement_confirmation"])
 def test_continue_legacy_model_failure_changes_only_model_revision(
-    client, db_session_factory, monkeypatch
+    client, db_session_factory, monkeypatch, code
 ):
     configure(monkeypatch)
     payload = request(quote_revision={"hotel": 2}).model_dump(mode="json")
@@ -79,7 +81,7 @@ def test_continue_legacy_model_failure_changes_only_model_revision(
     with db_session_factory() as session:
         task = session.get(TripTask, task_id)
         task.status = "awaiting_input"
-        task.pending_input = {"code": "model_output", "provider": None}
+        task.pending_input = {"code": code, "provider": None}
         stored = dict(task.trip.request_payload)
         stored["quote_revision"] = {"hotel": 2}
         task.trip.request_payload = stored
@@ -151,9 +153,7 @@ def test_new_provider_refresh_consumes_prior_source_refresh(
         review = session.get(TripReview, task.review_id)
         base = request(quote_revision=task.trip.request_payload["quote_revision"])
         changes = ReplanRequestV2.model_validate(review.change_request)
-        assert base.quote_revision == {
-            "amap": replan_quote_revision(thread_id, source_token)
-        }
+        assert base.quote_revision == {"amap": replan_quote_revision(thread_id, source_token)}
         assert changes.refresh_sources is False
         assert changes.refresh_travel == "hotel"
         assert changes.refresh_token != source_token

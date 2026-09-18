@@ -3,7 +3,7 @@
 ## Scope
 
 阶段 5 把 JourneyGraph 从目的地内容生成升级为带出发地、城际交通、闭合时间轴、程序预算和
-确定性校验/修订的可执行行程。本文只验收 `docs/DEVELOPMENT_PLAN.md` 的阶段 5，不开始阶段 6。
+确定性校验/修订的可执行行程。本文为阶段 5 的历史验收记录，不作为当前开发计划。
 生产容器、生产数据、Caddy 和公网 DNS 未修改。
 
 ## Current Architecture

@@ -4,6 +4,13 @@ import test from 'node:test'
 
 const landingSource = readFileSync(new URL('./Landing.vue', import.meta.url), 'utf8')
 
+test('date and duration share sizing and chapter three has no extra inset', () => {
+  assert.match(landingSource, /\.grid-date\s*\{\s*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/)
+  assert.match(landingSource, /\.grid-date \.field-input\.ant-picker,\s*\.grid-date \.days-chip\s*\{[^}]*height: 56px/s)
+  assert.match(landingSource, /\.grid-date :deep\(\.ant-form-item-label\)\s*\{[^}]*display: flex/s)
+  assert.doesNotMatch(landingSource, /\.attraction-discovery-step\s*\{/)
+})
+
 test('touch date and time pickers suppress the software keyboard only on coarse pointers', () => {
   assert.match(landingSource, /window\.matchMedia\('\(pointer: coarse\)'\)\.matches/)
   assert.equal((landingSource.match(/:input-read-only="touchPicker"/g) || []).length, 3)

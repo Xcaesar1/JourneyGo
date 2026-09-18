@@ -45,7 +45,7 @@ def test_selection_uses_configured_output_limit(monkeypatch):
     }
     calls = fake_client(monkeypatch, json.dumps(payload))
     config = settings().model_copy(update={"llm_structured_max_tokens": 16384})
-    assert selection.select_places(config, {}) == payload
+    assert selection.select_places(config, {}) == {**payload, "requirement_issues": []}
     assert calls[0]["max_tokens"] == 16384
     assert len(calls) == 1
 

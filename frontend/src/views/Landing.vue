@@ -1254,8 +1254,22 @@ const handleRetry = async () => {
 }
 
 .grid-date {
-  grid-template-columns: 1fr 0.6fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 12px;
+}
+
+.grid-date :deep(.ant-form-item-label) {
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: 8px;
+}
+
+.grid-date .field-input.ant-picker,
+.grid-date .days-chip {
+  box-sizing: border-box;
+  height: 56px;
+  min-height: 56px;
+  width: 100%;
 }
 
 .grid2 {
@@ -1496,14 +1510,6 @@ const handleRetry = async () => {
   border-color: var(--jg-border);
 }
 
-.attraction-discovery-step {
-  margin: 18px 0 22px;
-  padding: 18px;
-  border: 1px solid var(--jg-border);
-  border-radius: 16px;
-  background: var(--jg-surface);
-}
-
 .discovery-heading,
 .candidate-city-head,
 .candidate-city-head > div,
@@ -1512,6 +1518,11 @@ const handleRetry = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.discovery-heading > div {
+  flex: 1;
+  min-width: 0;
 }
 
 .discovery-heading > div > p {
@@ -2017,10 +2028,6 @@ const handleRetry = async () => {
 
   .interest-group {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .attraction-discovery-step {
-    padding: 13px;
   }
 
   .discovery-heading,

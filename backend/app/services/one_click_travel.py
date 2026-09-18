@@ -28,8 +28,8 @@ from .hotel_detail import detail_arguments, inspect_detail
 from .hotel_pricing import amount, estimate_stay
 from .meal_pricing import meal_reference
 from .task_events import redis_url
-from .travel_ledger import PlanningInputRequired, QueryLedger
-from .travel_place_selection import PlaceSelection, select_places
+from .travel_ledger import PlanningInputRequired, QueryLedger, QueryReuseUnavailable
+from .travel_place_selection import PlaceSelection, select_places, selection_notices
 from .travel_search import RESERVE, arguments, capabilities, flight_time, run_readonly_mcp
 
 # Only codes already verified in this integration are enabled. Never guess airport codes.
@@ -295,6 +295,52 @@ class OneClickPlanner:
         self.progress = progress or (lambda stage: None)
         self.selector = selector or (lambda context: select_places(self.settings, context))
         self.selection_notes = ""
+        self.candidate_notes = []
+        self.planning_notices = []
+
+    def discover_attractions(self, city):
+        r = self.request
+        places = []
+        for name in r.must_visit:
+            candidate = self.pois(city, name, "110000", exact=True)[0]
+            places.append({**candidate, "required": True})
+        interests = [
+            i
+            for i in r.interests[:3]
+            if not any(word in i.casefold() for word in ("美食", "餐饮", "food", "dining"))
+        ]
+        primary = " ".join(interests) or "景点"
+        queries = list(dict.fromkeys([primary, "历史古迹", "景点"]))
+        reuse_only = r.quote_revision.get("model", 0) > 0 and not r.quote_revision.get("amap", 0)
+        if reuse_only:
+            # Older paused tasks used a mixed-interest key; try cached keys only.
+            queries = list(
+                dict.fromkeys([primary, " ".join(r.interests[:3]) or "景点", "历史古迹", "景点"])
+            )
+        unique = {p["poi_id"]: p for p in places}
+        for keyword in queries:
+            try:
+                candidates = self.pois(city, keyword, "110000")
+            except QueryReuseUnavailable:
+                continue
+            except PlanningInputRequired as exc:
+                if exc.payload["code"] != "poi_unmatched":
+                    raise
+                continue
+            for place in candidates:
+                if not any(name in place["name"] for name in r.avoid):
+                    unique.setdefault(place["poi_id"], place)
+            if len(unique) >= min(12, max(4, r.travel_days * 2)):
+                break
+        if not unique:
+            raise PlanningInputRequired(
+                "no_places", "没有可核实的景点，请调整偏好或明确刷新地点查询。", provider="amap"
+            )
+        if len(unique) < min(12, max(4, r.travel_days * 2)):
+            self.candidate_notes.append(
+                "已核实景点较少，按实际游览时间安排，保留休息时间，不重复或虚构景点。"
+            )
+        return list(unique.values())
 
     def _supplier(self, provider, tool, args):
         if provider == "flight":
@@ -441,11 +487,7 @@ class OneClickPlanner:
             )
         results.sort(
             key=lambda place: (
-                0
-                if exact and place_name_key(place["name"]) == keyword_key
-                else 1
-                if exact
-                else 0,
+                0 if exact and place_name_key(place["name"]) == keyword_key else 1 if exact else 0,
                 rank_position.get(place["poi_id"], len(rank_position)),
                 place["_provider_index"],
             )
@@ -583,16 +625,7 @@ class OneClickPlanner:
         ]
         hotels.sort(key=lambda h: amount(h.get("price", {}).get("lowestPrice")) or Decimal("1e9"))
         self.progress("plan_places")
-        attractions = []
-        for name in r.must_visit:
-            candidate = self.pois(city, name, "110000", exact=True)[0]
-            candidate["required"] = True
-            attractions.append(candidate)
-        attractions.extend(self.pois(city, " ".join(r.interests[:3]) or "景点", "110000"))
-        unique_attractions = {}
-        for place in attractions:
-            unique_attractions.setdefault(place["poi_id"], place)
-        attractions = list(unique_attractions.values())
+        attractions = self.discover_attractions(city)
         attractions = [p for p in attractions if not any(name in p["name"] for name in r.avoid)]
         if not attractions:
             raise PlanningInputRequired(
@@ -640,7 +673,9 @@ class OneClickPlanner:
             cost = cents(evidence.estimated_stay_total)
             if cost is None or cost > hotel_allowance:
                 continue
-            room = next(x for x in evidence.rooms if x.rate_plan_id == evidence.selected_rate_plan_id)
+            room = next(
+                x for x in evidence.rooms if x.rate_plan_id == evidence.selected_rate_plan_id
+            )
             hotel_candidates.append(
                 {
                     **poi,
@@ -689,7 +724,7 @@ class OneClickPlanner:
                         candidate_outbound["price_cents"] + candidate_inbound["price_cents"]
                     ) * r.travelers
                     # This probe is deterministic and uses only already verified candidates.
-                    self.schedule(
+                    probe = self.schedule(
                         candidate_outbound,
                         candidate_inbound,
                         hotel,
@@ -734,7 +769,8 @@ class OneClickPlanner:
                 "reason_codes": reason_codes,
             }
         context = {
-            "selection_contract_version": 2,
+            "selection_contract_version": 3,
+            "activity_windows": probe.travel_summary["activity_windows"],
             "request": r.model_dump(mode="json"),
             "attractions": attractions,
             "restaurants": restaurants,
@@ -745,10 +781,12 @@ class OneClickPlanner:
         selected = PlaceSelection.model_validate(
             self.ledger.execute("model", "place_selection", context, lambda: self.selector(context))
         )
-        if selected.unmet_requirements:
+        advisory, blockers = selection_notices(selected, r)
+        if blockers:
             raise PlanningInputRequired(
-                "unmet_requirements",
-                "这些特殊需求尚无法核实，请调整：" + "；".join(selected.unmet_requirements),
+                "requirement_confirmation",
+                "需要确认你明确提出的要求：" + "；".join(blockers),
+                provider="model",
             )
         attr_by_id = {p["poi_id"]: p for p in attractions}
         meal_by_id = {p["poi_id"]: p for p in restaurants}
@@ -764,14 +802,13 @@ class OneClickPlanner:
         selected_attractions = set(selected.attraction_ids)
         selected_restaurants = set(selected.restaurant_ids)
         attractions = [
-            {**place, "selected": key in selected_attractions}
-            for key, place in attr_by_id.items()
+            {**place, "selected": key in selected_attractions} for key, place in attr_by_id.items()
         ]
         restaurants = [
-            {**place, "selected": key in selected_restaurants}
-            for key, place in meal_by_id.items()
+            {**place, "selected": key in selected_restaurants} for key, place in meal_by_id.items()
         ]
-        self.selection_notes = selected.notes
+        self.selection_notes = " ".join([selected.notes, *self.candidate_notes, *advisory])
+        self.planning_notices = [*self.candidate_notes, *advisory]
         if hotel_fallback is not None:
             self.selection_notes += " 首选酒店无法满足每日接驳约束，已改用同批核验的备选酒店。"
         self.progress("check_trip")
@@ -801,7 +838,7 @@ class OneClickPlanner:
         arrival = datetime.fromisoformat(outbound["arrival"])
         departure = datetime.fromisoformat(inbound["departure"])
         buffer = 60 if r.intercity_mode == "train" else 120
-        days, routes = [], []
+        days, routes, activity_windows = [], [], []
 
         def transfer(a, b):
             meters = place_distance_meters(a, b)
@@ -895,6 +932,15 @@ class OneClickPlanner:
                 )
             if i == r.travel_days - 1:
                 end = min(end, departure - timedelta(minutes=buffer + return_minutes + 30))
+            activity_windows.append(
+                {
+                    "date": day.isoformat(),
+                    "start": start.isoformat(),
+                    "end": max(start, end).isoformat(),
+                    "available_minutes": max(0, int((end - start).total_seconds() / 60)),
+                    "is_transfer_day": i in {0, r.travel_days - 1},
+                }
+            )
             current, previous = start, hotel
             for slot in range(3):
                 if remaining:
@@ -903,13 +949,9 @@ class OneClickPlanner:
                         travel = transfer(previous, poi)
                         return_to_hotel = transfer(poi, hotel)
                         if (
-                            local_minutes
-                            + travel
-                            + return_to_hotel
-                            + reserved_return_minutes
+                            local_minutes + travel + return_to_hotel + reserved_return_minutes
                             <= commute_limit
-                            and current + timedelta(minutes=travel + 90 + return_to_hotel)
-                            <= end
+                            and current + timedelta(minutes=travel + 90 + return_to_hotel) <= end
                         ):
                             feasible.append(
                                 (
@@ -972,10 +1014,7 @@ class OneClickPlanner:
                         ),
                     )
                     if (
-                        local_minutes
-                        + travel
-                        + return_to_hotel
-                        + reserved_return_minutes
+                        local_minutes + travel + return_to_hotel + reserved_return_minutes
                         <= commute_limit
                         and meal_start + timedelta(minutes=60 + return_to_hotel) <= end
                     ):
@@ -1075,9 +1114,10 @@ class OneClickPlanner:
             timeline.sort(key=lambda item: item.start)
             if any(a.end > b.start for a, b in zip(timeline, timeline[1:])):
                 raise PlanningInputRequired("time_conflict", "交通接驳时间冲突，请调整出发日期。")
-            meals_cents += sum(
-                meal.price_reference.amount_cents for meal in meals if meal.price_reference
-            ) * r.travelers
+            meals_cents += (
+                sum(meal.price_reference.amount_cents for meal in meals if meal.price_reference)
+                * r.travelers
+            )
             local_cents += 3000 * r.travelers
             days.append(
                 DayPlanV2(
@@ -1142,8 +1182,11 @@ class OneClickPlanner:
                 "amount_cents": inbound["price_cents"] * r.travelers,
             },
             {"category": "hotel", "status": "estimated", "amount_cents": hotel["cost_cents"]},
-            {"category": "meals", "status": "estimated" if meals_cents else "unknown",
-             "amount_cents": meals_cents or None},
+            {
+                "category": "meals",
+                "status": "estimated" if meals_cents else "unknown",
+                "amount_cents": meals_cents or None,
+            },
             {"category": "local_transport", "status": "estimated", "amount_cents": local_cents},
             {"category": "tickets", "status": "unknown", "amount_cents": None},
             {"category": "hotel_taxes", "status": "unknown", "amount_cents": None},
@@ -1156,6 +1199,8 @@ class OneClickPlanner:
             "hotel": hotel,
             "cost_items": items,
             "planning_request": r.model_dump(mode="json"),
+            "activity_windows": activity_windows,
+            "planning_notices": self.planning_notices,
             "known_cents": known_cents,
             "estimated_cents": estimated_cents,
             "expected_cents": known_cents + estimated_cents,
@@ -1188,6 +1233,11 @@ class OneClickPlanner:
             route_matrix=routes,
             travel_summary=summary,
             overall_suggestions=schedule_notes
+            + (
+                " 往返交通占比较高，请以每日时间线中的实际可游览时段为准。"
+                if sum(w["available_minutes"] >= 180 for w in activity_windows) < r.travel_days
+                else ""
+            )
             + " 费用为已知报价与参考估算之和，未含待核实项目；确认行程不代表已预订。",
             budget=BudgetV2(
                 total_hotels=components[0],

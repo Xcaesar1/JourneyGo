@@ -163,7 +163,9 @@ def test_one_click_uses_existing_graph():
 
 
 @pytest.mark.parametrize("available", [True, False])
-def test_one_click_collects_trip_date_weather_without_changing_verified_plan(monkeypatch, available):
+def test_one_click_collects_trip_date_weather_without_changing_verified_plan(
+    monkeypatch, available
+):
     from backend.app.services import weather
 
     r = request()
@@ -172,18 +174,29 @@ def test_one_click_collects_trip_date_weather_without_changing_verified_plan(mon
 
     def collect(city, start, end):
         calls.append((city, start, end))
-        rows = [
-            {"city": city, "date": (start + timedelta(days=i)).isoformat(),
-             "day_temp": 25, "night_temp": 18, "precipitation_probability": 0,
-             "source_url": "https://open-meteo.com/", "fetched_at": "2026-09-17T00:00:00Z"}
-            for i in range((end - start).days + 1)
-        ] if available else []
+        rows = (
+            [
+                {
+                    "city": city,
+                    "date": (start + timedelta(days=i)).isoformat(),
+                    "day_temp": 25,
+                    "night_temp": 18,
+                    "precipitation_probability": 0,
+                    "source_url": "https://open-meteo.com/",
+                    "fetched_at": "2026-09-17T00:00:00Z",
+                }
+                for i in range((end - start).days + 1)
+            ]
+            if available
+            else []
+        )
         return rows, "complete" if available else "weather_unavailable"
 
     monkeypatch.setattr(weather.WeatherProvider, "collect", lambda self, *args: collect(*args))
     config = settings().model_copy(update={"weather_enabled": True})
     result = build_journey_graph(
-        one_click_planner=lambda state: original, weather_settings=config,
+        one_click_planner=lambda state: original,
+        weather_settings=config,
     ).invoke({"request": r, "task_id": "t", "trip_id": "p"})
     plan = result["final_plan"]
     assert calls == [("西安", r.start_date, r.end_date)]
@@ -191,7 +204,9 @@ def test_one_click_collects_trip_date_weather_without_changing_verified_plan(mon
     assert plan.travel_summary == original.travel_summary
     assert plan.days == original.days
     assert plan.budget == original.budget
-    assert result["metrics"]["weather_status"]["西安"] == ("complete" if available else "weather_unavailable")
+    assert result["metrics"]["weather_status"]["西安"] == (
+        "complete" if available else "weather_unavailable"
+    )
     if available:
         assert [row.date for row in plan.weather_info] == [day.date for day in plan.days]
         assert plan.weather_info[0].precipitation_probability == 0
@@ -256,7 +271,13 @@ def test_hard_constraints_cannot_be_fabricated(case):
         }
 
     with pytest.raises(PlanningInputRequired):
-        planner(request(travelers=2), supplier=changed, selector=selection).run()
+        planner(
+            request(
+                travelers=2, accessibility_needs=["轮椅无障碍"] if case == "special_needs" else []
+            ),
+            supplier=changed,
+            selector=selection,
+        ).run()
 
 
 def test_hotel_detail_bound_and_list_reference_fallback():
