@@ -215,13 +215,6 @@
         >
           <PersonalMapExport v-if="taskId" :task-id="taskId" :review-id="currentReview?.review_id" :version="mapVersion" />
           <div v-if="overviewAttractions.length > 0" ref="overviewSwiperContainerRef" class="overview-swiper">
-            <div class="gallery-controls">
-              <span>{{ locale.startsWith('zh') ? '沿途景点' : 'Along the journey' }} · {{ activeOverviewCard + 1 }} / {{ overviewAttractions.length }}</span>
-              <div>
-                <button type="button" :disabled="activeOverviewCard === 0" :aria-label="locale.startsWith('zh') ? '上一个景点' : 'Previous attraction'" @click="overviewSwiper?.slidePrev()">←</button>
-                <button type="button" :disabled="activeOverviewCard === overviewAttractions.length - 1" :aria-label="locale.startsWith('zh') ? '下一个景点' : 'Next attraction'" @click="overviewSwiper?.slideNext()">→</button>
-              </div>
-            </div>
             <div class="swiper">
               <div class="swiper-wrapper">
                 <OverviewAttractionCard
@@ -230,6 +223,7 @@
                   :item="item"
                   :image-src="getAttractionImage(item)"
                   :active="activeOverviewCard === index"
+                  @hover="setActiveOverviewCard(index)"
                   @image-error="handleImageError"
                   @select-day="goToDayFromOverview"
                 />
@@ -871,7 +865,7 @@ import * as echarts from 'echarts'
 import Swiper from 'swiper'
 import '@fontsource/nunito-sans/latin-400.css'
 import '@fontsource/raleway/latin-700.css'
-import { Keyboard, Mousewheel } from 'swiper/modules'
+import { EffectCoverflow, Keyboard, Mousewheel } from 'swiper/modules'
 import NavBar from '@/components/NavBar.vue'
 import OverviewAttractionCard from '@/components/OverviewAttractionCard.vue'
 import AIChat from '@/components/AIChat.vue'
@@ -1242,25 +1236,30 @@ const initOverviewSwiper = async () => {
 
   destroyOverviewSwiper()
   overviewSwiper = new Swiper(root, {
-    modules: [Keyboard, Mousewheel],
-    effect: 'slide',
+    modules: [EffectCoverflow, Keyboard, Mousewheel],
+    effect: 'coverflow',
     grabCursor: true,
-    centeredSlides: false,
-    slideToClickedSlide: true,
-    slidesPerView: 1.08,
+    centeredSlides: true,
+    coverflowEffect: {
+      rotate: 0,
+      stretch: 0,
+      depth: 80,
+      modifier: 1.8,
+    },
     keyboard: {
       enabled: true,
     },
     mousewheel: {
       thresholdDelta: 70,
     },
-    spaceBetween: 16,
+    spaceBetween: 36,
     loop: false,
     breakpoints: {
       769: {
-        centeredSlides: true,
-        slidesPerView: 'auto',
-        spaceBetween: 8,
+        slidesPerView: 3,
+      },
+      1024: {
+        slidesPerView: 4,
       },
     },
     on: {
@@ -1270,8 +1269,7 @@ const initOverviewSwiper = async () => {
     },
   })
 
-  const initialIndex = window.matchMedia('(min-width: 769px)').matches
-    ? Math.min(1, overviewAttractions.value.length - 1) : 0
+  const initialIndex = Math.min(1, overviewAttractions.value.length - 1)
   activeOverviewCard.value = initialIndex
   overviewSwiper.slideTo(initialIndex, 0, false)
 }
@@ -1875,6 +1873,13 @@ const scrollToSection = ({ key: menuKey }: { key: string | number }) => {
 const goToDayFromOverview = (dayArrayIndex: number) => {
   activeDays.value = [dayArrayIndex]
   activeSection.value = 'days'
+}
+
+const setActiveOverviewCard = (index: number) => {
+  activeOverviewCard.value = index
+  if (overviewSwiper && overviewSwiper.activeIndex !== index) {
+    overviewSwiper.slideTo(index)
+  }
 }
 
 // 切换编辑模式
@@ -4310,38 +4315,16 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 .overview-swiper .swiper {
-  padding: 0 0 12px;
-  margin: 12px 0;
+  padding: 0 0 0.6rem;
+  margin-top: -2rem;
+  margin-bottom: -2rem;
   overflow: hidden;
   border-radius: 12px;
 }
 
 .overview-swiper .swiper-wrapper {
-  align-items: stretch;
-  min-height: 0;
-}
-
-@media (min-width: 769px) {
-  .overview-swiper .swiper { padding: 18px 0 26px; }
-  .overview-swiper :deep(.attraction-card) {
-    width: clamp(280px, 30vw, 360px);
-    transform: scale(.9);
-    transform-origin: center center;
-    transition: transform 260ms ease, box-shadow 260ms ease;
-  }
-  .overview-swiper :deep(.attraction-card.swiper-slide-active) {
-    transform: scale(1);
-    box-shadow: 0 10px 28px rgb(30 53 43 / 12%);
-  }
-  .overview-swiper :deep(.attraction-photo) { aspect-ratio: 5 / 4; }
-}
-.gallery-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 12px; color: var(--jg-muted); font-size: 14px; }
-.gallery-controls > div { display: flex; gap: 8px; }
-.gallery-controls button { width: 44px; height: 44px; border: 1px solid var(--jg-border); border-radius: 50%; background: var(--jg-surface); color: var(--jg-accent-strong); font-size: 22px; cursor: pointer; }
-.gallery-controls button:disabled { opacity: .35; cursor: default; }
-.gallery-controls button:focus-visible { outline: 2px solid var(--jg-accent); outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) {
-  .overview-swiper :deep(.attraction-card) { transition: none; }
+  align-items: flex-end;
+  min-height: 32rem;
 }
 
 

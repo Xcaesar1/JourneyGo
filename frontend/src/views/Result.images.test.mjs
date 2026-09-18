@@ -8,16 +8,15 @@ const source = readFileSync(new URL('./Result.vue', import.meta.url), 'utf8')
 const overview = source.slice(source.indexOf('const overviewAttractions ='), source.indexOf('const destroyOverviewSwiper ='))
 const resolver = source.slice(source.indexOf('const getAttractionImage ='), source.indexOf('const handleImageError ='))
 
-test('desktop attraction gallery is a centered single-row carousel without dense coverflow or waves', () => {
+test('original coverflow is retained with lighter depth and a straight image edge', () => {
   const card = readFileSync(new URL('../components/OverviewAttractionCard.vue', import.meta.url), 'utf8')
-  assert.doesNotMatch(source, /effect: 'coverflow'/)
+  assert.match(source, /effect: 'coverflow'/)
   assert.match(source, /centeredSlides: true/)
-  assert.match(source, /slidesPerView: 'auto'/)
-  assert.match(source, /transform: scale\(\.9\)/)
-  assert.match(source, /overviewSwiper\?\.slideNext\(\)/)
-  assert.match(card, /aspect-ratio: 4 \/ 3/)
-  assert.doesNotMatch(card, /shape-fill/)
-  assert.match(card, /@click="emit\('select-day', item.dayArrayIndex\)"/)
+  assert.match(source, /depth: 80/)
+  assert.match(source, /modifier: 1\.8/)
+  assert.doesNotMatch(source, /class="gallery-controls"/)
+  assert.doesNotMatch(card, /shape-fill|data-name="Layer 1"/)
+  assert.match(card, /emit\('select-day', item.dayArrayIndex\)/)
 })
 
 test('daily detail starts with the timeline instead of redundant summary and issue pills', () => {
