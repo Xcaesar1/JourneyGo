@@ -1,0 +1,2334 @@
+{
+  "source": "https://www.csair.com/comp/cityDate.json",
+  "retrieved_on": "2026-09-18",
+  "sha256": "a1d3e0e66dbc31365bf38658cdbd739d85fb9ddde39f174cdae7cdbe9385cff6",
+  "scope": "mainland aviation cities; not a schedule or sale guarantee",
+  "cities": {
+    "万州": {
+      "code": "WXN",
+      "airports": [
+        {
+          "code": "WXN",
+          "name": "万州五桥机场"
+        }
+      ]
+    },
+    "三亚": {
+      "code": "SYX",
+      "airports": [
+        {
+          "code": "SYX",
+          "name": "三亚凤凰国际机场"
+        }
+      ]
+    },
+    "三明": {
+      "code": "SQJ",
+      "airports": [
+        {
+          "code": "SQJ",
+          "name": "三明沙县机场"
+        }
+      ]
+    },
+    "上海": {
+      "code": "SHA",
+      "airports": [
+        {
+          "code": "SHA",
+          "name": "上海虹桥国际机场"
+        },
+        {
+          "code": "PVG",
+          "name": "上海浦东国际机场"
+        }
+      ]
+    },
+    "上饶": {
+      "code": "SQD",
+      "airports": [
+        {
+          "code": "SQD",
+          "name": "上饶三清山机场"
+        }
+      ]
+    },
+    "且末": {
+      "code": "IQM",
+      "airports": [
+        {
+          "code": "IQM",
+          "name": "且末机场"
+        }
+      ]
+    },
+    "东营": {
+      "code": "DOY",
+      "airports": [
+        {
+          "code": "DOY",
+          "name": "东营胜利机场"
+        }
+      ]
+    },
+    "中卫": {
+      "code": "ZHY",
+      "airports": [
+        {
+          "code": "ZHY",
+          "name": "中卫沙坡头机场"
+        }
+      ]
+    },
+    "临汾": {
+      "code": "LFQ",
+      "airports": [
+        {
+          "code": "LFQ",
+          "name": "临汾尧都机场"
+        }
+      ]
+    },
+    "临沂": {
+      "code": "LYI",
+      "airports": [
+        {
+          "code": "LYI",
+          "name": "临沂启阳机场"
+        }
+      ]
+    },
+    "临沧": {
+      "code": "LNJ",
+      "airports": [
+        {
+          "code": "LNJ",
+          "name": "临沧机场"
+        }
+      ]
+    },
+    "丹东": {
+      "code": "DDG",
+      "airports": [
+        {
+          "code": "DDG",
+          "name": "丹东浪头国际机场"
+        }
+      ]
+    },
+    "丽水": {
+      "code": "LIJ",
+      "airports": [
+        {
+          "code": "LIJ",
+          "name": "丽水机场"
+        }
+      ]
+    },
+    "丽江": {
+      "code": "LJG",
+      "airports": [
+        {
+          "code": "LJG",
+          "name": "丽江三义机场"
+        }
+      ]
+    },
+    "义乌": {
+      "code": "YIW",
+      "airports": [
+        {
+          "code": "YIW",
+          "name": "义乌机场"
+        }
+      ]
+    },
+    "乌兰察布": {
+      "code": "UCB",
+      "airports": [
+        {
+          "code": "UCB",
+          "name": "乌兰察布机场"
+        }
+      ]
+    },
+    "乌兰浩特": {
+      "code": "HLH",
+      "airports": [
+        {
+          "code": "HLH",
+          "name": "乌兰浩特义勒力特机场"
+        }
+      ]
+    },
+    "乌海": {
+      "code": "WUA",
+      "airports": [
+        {
+          "code": "WUA",
+          "name": "乌海机场"
+        }
+      ]
+    },
+    "乌鲁木齐": {
+      "code": "URC",
+      "airports": [
+        {
+          "code": "URC",
+          "name": "乌鲁木齐天山国际机场"
+        }
+      ]
+    },
+    "九寨沟": {
+      "code": "JZH",
+      "airports": [
+        {
+          "code": "JZH",
+          "name": "九寨黄龙机场"
+        }
+      ]
+    },
+    "九江": {
+      "code": "JIU",
+      "airports": [
+        {
+          "code": "JIU",
+          "name": "九江庐山机场"
+        }
+      ]
+    },
+    "二连浩特": {
+      "code": "ERL",
+      "airports": [
+        {
+          "code": "ERL",
+          "name": "二连浩特赛乌苏国际机场"
+        }
+      ]
+    },
+    "于田": {
+      "code": "YTW",
+      "airports": [
+        {
+          "code": "YTW",
+          "name": "于田万方机场"
+        }
+      ]
+    },
+    "五大连池": {
+      "code": "DTU",
+      "airports": [
+        {
+          "code": "DTU",
+          "name": "五大连池德都机场"
+        }
+      ]
+    },
+    "井冈山": {
+      "code": "JGS",
+      "airports": [
+        {
+          "code": "JGS",
+          "name": "井冈山机场"
+        }
+      ]
+    },
+    "伊宁": {
+      "code": "YIN",
+      "airports": [
+        {
+          "code": "YIN",
+          "name": "伊犁/伊宁国际机场"
+        }
+      ]
+    },
+    "伊春": {
+      "code": "LDS",
+      "airports": [
+        {
+          "code": "LDS",
+          "name": "伊春林都机场"
+        }
+      ]
+    },
+    "佳木斯": {
+      "code": "JMU",
+      "airports": [
+        {
+          "code": "JMU",
+          "name": "佳木斯松江国际机场"
+        }
+      ]
+    },
+    "保山": {
+      "code": "BSD",
+      "airports": [
+        {
+          "code": "BSD",
+          "name": "保山机场"
+        }
+      ]
+    },
+    "信阳": {
+      "code": "XAI",
+      "airports": [
+        {
+          "code": "XAI",
+          "name": "信阳明港机场"
+        }
+      ]
+    },
+    "克拉玛依": {
+      "code": "KRY",
+      "airports": [
+        {
+          "code": "KRY",
+          "name": "克拉玛依机场"
+        }
+      ]
+    },
+    "六盘水": {
+      "code": "LPF",
+      "airports": [
+        {
+          "code": "LPF",
+          "name": "六盘水月照机场"
+        }
+      ]
+    },
+    "兰州": {
+      "code": "LHW",
+      "airports": [
+        {
+          "code": "LHW",
+          "name": "兰州中川国际机场"
+        }
+      ]
+    },
+    "兴义": {
+      "code": "ACX",
+      "airports": [
+        {
+          "code": "ACX",
+          "name": "兴义万峰林机场"
+        }
+      ]
+    },
+    "凯里": {
+      "code": "KJH",
+      "airports": [
+        {
+          "code": "KJH",
+          "name": "凯里黄平机场"
+        }
+      ]
+    },
+    "加格达奇": {
+      "code": "JGD",
+      "airports": [
+        {
+          "code": "JGD",
+          "name": "大兴安岭鄂伦春机场"
+        }
+      ]
+    },
+    "包头": {
+      "code": "BAV",
+      "airports": [
+        {
+          "code": "BAV",
+          "name": "包头东河机场"
+        }
+      ]
+    },
+    "北京": {
+      "code": "BJS",
+      "airports": [
+        {
+          "code": "PEK",
+          "name": "北京首都国际机场"
+        },
+        {
+          "code": "PKX",
+          "name": "北京大兴国际机场"
+        }
+      ]
+    },
+    "北海": {
+      "code": "BHY",
+      "airports": [
+        {
+          "code": "BHY",
+          "name": "北海福成机场"
+        }
+      ]
+    },
+    "十堰": {
+      "code": "WDS",
+      "airports": [
+        {
+          "code": "WDS",
+          "name": "十堰武当山机场"
+        }
+      ]
+    },
+    "南京": {
+      "code": "NKG",
+      "airports": [
+        {
+          "code": "NKG",
+          "name": "南京禄口国际机场"
+        }
+      ]
+    },
+    "南充": {
+      "code": "NAO",
+      "airports": [
+        {
+          "code": "NAO",
+          "name": "南充高坪机场"
+        }
+      ]
+    },
+    "南宁": {
+      "code": "NNG",
+      "airports": [
+        {
+          "code": "NNG",
+          "name": "南宁吴圩国际机场"
+        }
+      ]
+    },
+    "南昌": {
+      "code": "KHN",
+      "airports": [
+        {
+          "code": "KHN",
+          "name": "南昌昌北国际机场"
+        }
+      ]
+    },
+    "南通": {
+      "code": "NTG",
+      "airports": [
+        {
+          "code": "NTG",
+          "name": "南通兴东国际机场"
+        }
+      ]
+    },
+    "南阳": {
+      "code": "NNY",
+      "airports": [
+        {
+          "code": "NNY",
+          "name": "南阳姜营机场"
+        }
+      ]
+    },
+    "博乐": {
+      "code": "BPL",
+      "airports": [
+        {
+          "code": "BPL",
+          "name": "博乐阿拉山口机场"
+        }
+      ]
+    },
+    "博鳌": {
+      "code": "BAR",
+      "airports": [
+        {
+          "code": "BAR",
+          "name": "琼海博鳌国际机场"
+        }
+      ]
+    },
+    "厦门": {
+      "code": "XMN",
+      "airports": [
+        {
+          "code": "XMN",
+          "name": "厦门高崎国际机场"
+        }
+      ]
+    },
+    "台州": {
+      "code": "HYN",
+      "airports": [
+        {
+          "code": "HYN",
+          "name": "台州路桥机场"
+        }
+      ]
+    },
+    "合肥": {
+      "code": "HFE",
+      "airports": [
+        {
+          "code": "HFE",
+          "name": "合肥新桥国际机场"
+        }
+      ]
+    },
+    "吉首": {
+      "code": "DXJ",
+      "airports": [
+        {
+          "code": "DXJ",
+          "name": "湘西边城机场"
+        }
+      ]
+    },
+    "吐鲁番": {
+      "code": "TLQ",
+      "airports": [
+        {
+          "code": "TLQ",
+          "name": "吐鲁番交河机场"
+        }
+      ]
+    },
+    "吕梁": {
+      "code": "LLV",
+      "airports": [
+        {
+          "code": "LLV",
+          "name": "吕梁大武机场"
+        }
+      ]
+    },
+    "呼和浩特": {
+      "code": "HET",
+      "airports": [
+        {
+          "code": "HET",
+          "name": "呼和浩特白塔国际机场"
+        }
+      ]
+    },
+    "和田": {
+      "code": "HTN",
+      "airports": [
+        {
+          "code": "HTN",
+          "name": "和田昆冈机场"
+        }
+      ]
+    },
+    "和静": {
+      "code": "HJB",
+      "airports": [
+        {
+          "code": "HJB",
+          "name": "和静巴音布鲁克机场"
+        }
+      ]
+    },
+    "哈密": {
+      "code": "HMI",
+      "airports": [
+        {
+          "code": "HMI",
+          "name": "哈密机场"
+        }
+      ]
+    },
+    "哈尔滨": {
+      "code": "HRB",
+      "airports": [
+        {
+          "code": "HRB",
+          "name": "哈尔滨太平国际机场"
+        }
+      ]
+    },
+    "唐山": {
+      "code": "TVS",
+      "airports": [
+        {
+          "code": "TVS",
+          "name": "唐山三女河机场"
+        }
+      ]
+    },
+    "喀什": {
+      "code": "KHG",
+      "airports": [
+        {
+          "code": "KHG",
+          "name": "喀什徕宁国际机场"
+        }
+      ]
+    },
+    "喀纳斯": {
+      "code": "KJI",
+      "airports": [
+        {
+          "code": "KJI",
+          "name": "喀纳斯机场"
+        }
+      ]
+    },
+    "嘉兴": {
+      "code": "JNH",
+      "airports": [
+        {
+          "code": "JNH",
+          "name": "嘉兴南湖机场"
+        }
+      ]
+    },
+    "嘉峪关": {
+      "code": "JGN",
+      "airports": [
+        {
+          "code": "JGN",
+          "name": "嘉峪关酒泉机场"
+        }
+      ]
+    },
+    "固原": {
+      "code": "GYU",
+      "airports": [
+        {
+          "code": "GYU",
+          "name": "固原六盘山机场"
+        }
+      ]
+    },
+    "图木舒克": {
+      "code": "TWC",
+      "airports": [
+        {
+          "code": "TWC",
+          "name": "图木舒克唐王城机场"
+        }
+      ]
+    },
+    "塔什库尔干": {
+      "code": "HQL",
+      "airports": [
+        {
+          "code": "HQL",
+          "name": "塔什库尔干红其拉甫机场"
+        }
+      ]
+    },
+    "塔城": {
+      "code": "TCG",
+      "airports": [
+        {
+          "code": "TCG",
+          "name": "塔城机场"
+        }
+      ]
+    },
+    "夏河": {
+      "code": "GXH",
+      "airports": [
+        {
+          "code": "GXH",
+          "name": "夏河机场"
+        }
+      ]
+    },
+    "大同": {
+      "code": "DAT",
+      "airports": [
+        {
+          "code": "DAT",
+          "name": "大同云冈机场"
+        }
+      ]
+    },
+    "大庆": {
+      "code": "DQA",
+      "airports": [
+        {
+          "code": "DQA",
+          "name": "大庆萨尔图机场"
+        }
+      ]
+    },
+    "大理": {
+      "code": "DLU",
+      "airports": [
+        {
+          "code": "DLU",
+          "name": "大理凤仪机场"
+        }
+      ]
+    },
+    "大连": {
+      "code": "DLC",
+      "airports": [
+        {
+          "code": "DLC",
+          "name": "大连周水子国际机场"
+        }
+      ]
+    },
+    "天水": {
+      "code": "THQ",
+      "airports": [
+        {
+          "code": "THQ",
+          "name": "天水麦积山机场"
+        }
+      ]
+    },
+    "天津": {
+      "code": "TSN",
+      "airports": [
+        {
+          "code": "TSN",
+          "name": "天津滨海国际机场"
+        }
+      ]
+    },
+    "太原": {
+      "code": "TYN",
+      "airports": [
+        {
+          "code": "TYN",
+          "name": "太原武宿国际机场"
+        }
+      ]
+    },
+    "威海": {
+      "code": "WEH",
+      "airports": [
+        {
+          "code": "WEH",
+          "name": "威海大水泊国际机场"
+        }
+      ]
+    },
+    "宁波": {
+      "code": "NGB",
+      "airports": [
+        {
+          "code": "NGB",
+          "name": "宁波栎社国际机场"
+        }
+      ]
+    },
+    "宁蒗": {
+      "code": "NLH",
+      "airports": [
+        {
+          "code": "NLH",
+          "name": "宁蒗泸沽湖机场"
+        }
+      ]
+    },
+    "安庆": {
+      "code": "AQG",
+      "airports": [
+        {
+          "code": "AQG",
+          "name": "安庆天柱山机场"
+        }
+      ]
+    },
+    "安康": {
+      "code": "AKA",
+      "airports": [
+        {
+          "code": "AKA",
+          "name": "安康富强机场"
+        }
+      ]
+    },
+    "安阳": {
+      "code": "AYN",
+      "airports": [
+        {
+          "code": "HQQ",
+          "name": "安阳红旗渠机场"
+        }
+      ]
+    },
+    "安顺": {
+      "code": "AVA",
+      "airports": [
+        {
+          "code": "AVA",
+          "name": "安顺黄果树机场"
+        }
+      ]
+    },
+    "宜宾": {
+      "code": "YBP",
+      "airports": [
+        {
+          "code": "YBP",
+          "name": "宜宾五粮液机场"
+        }
+      ]
+    },
+    "宜昌": {
+      "code": "YIH",
+      "airports": [
+        {
+          "code": "YIH",
+          "name": "宜昌三峡机场"
+        }
+      ]
+    },
+    "宜春": {
+      "code": "YIC",
+      "airports": [
+        {
+          "code": "YIC",
+          "name": "宜春明月山机场"
+        }
+      ]
+    },
+    "富蕴": {
+      "code": "FYN",
+      "airports": [
+        {
+          "code": "FYN",
+          "name": "富蕴可可托海机场"
+        }
+      ]
+    },
+    "岳阳": {
+      "code": "YYA",
+      "airports": [
+        {
+          "code": "YYA",
+          "name": "岳阳三荷机场"
+        }
+      ]
+    },
+    "巫山": {
+      "code": "WSK",
+      "airports": [
+        {
+          "code": "WSK",
+          "name": "重庆巫山机场"
+        }
+      ]
+    },
+    "巴中": {
+      "code": "BZX",
+      "airports": [
+        {
+          "code": "BZX",
+          "name": "巴中恩阳机场"
+        }
+      ]
+    },
+    "巴彦淖尔": {
+      "code": "RLK",
+      "airports": [
+        {
+          "code": "RLK",
+          "name": "巴彦淖尔天吉泰机场"
+        }
+      ]
+    },
+    "巴里坤": {
+      "code": "DHH",
+      "airports": [
+        {
+          "code": "DHH",
+          "name": "巴里坤大河机场"
+        }
+      ]
+    },
+    "常州": {
+      "code": "CZX",
+      "airports": [
+        {
+          "code": "CZX",
+          "name": "常州奔牛国际机场"
+        }
+      ]
+    },
+    "常德": {
+      "code": "CGD",
+      "airports": [
+        {
+          "code": "CGD",
+          "name": "常德桃花源机场"
+        }
+      ]
+    },
+    "广元": {
+      "code": "GYS",
+      "airports": [
+        {
+          "code": "GYS",
+          "name": "广元盘龙机场"
+        }
+      ]
+    },
+    "广州": {
+      "code": "CAN",
+      "airports": [
+        {
+          "code": "CAN",
+          "name": "广州白云国际机场"
+        }
+      ]
+    },
+    "广汉": {
+      "code": "GHN",
+      "airports": [
+        {
+          "code": "GHN",
+          "name": "广汉机场"
+        }
+      ]
+    },
+    "庆阳": {
+      "code": "IQN",
+      "airports": [
+        {
+          "code": "IQN",
+          "name": "庆阳机场"
+        }
+      ]
+    },
+    "库尔勒": {
+      "code": "KRL",
+      "airports": [
+        {
+          "code": "KRL",
+          "name": "库尔勒机场"
+        }
+      ]
+    },
+    "库车": {
+      "code": "KCA",
+      "airports": [
+        {
+          "code": "KCA",
+          "name": "库车龟兹机场"
+        }
+      ]
+    },
+    "康定": {
+      "code": "KGT",
+      "airports": [
+        {
+          "code": "KGT",
+          "name": "康定机场"
+        }
+      ]
+    },
+    "延吉": {
+      "code": "YNJ",
+      "airports": [
+        {
+          "code": "YNJ",
+          "name": "延吉朝阳川国际机场"
+        }
+      ]
+    },
+    "延安": {
+      "code": "ENY",
+      "airports": [
+        {
+          "code": "ENY",
+          "name": "延安南泥湾机场"
+        }
+      ]
+    },
+    "建三江": {
+      "code": "JSJ",
+      "airports": [
+        {
+          "code": "JSJ",
+          "name": "建三江湿地机场"
+        }
+      ]
+    },
+    "张家口": {
+      "code": "ZQZ",
+      "airports": [
+        {
+          "code": "ZQZ",
+          "name": "张家口宁远机场"
+        }
+      ]
+    },
+    "张家界": {
+      "code": "DYG",
+      "airports": [
+        {
+          "code": "DYG",
+          "name": "张家界荷花机场"
+        }
+      ]
+    },
+    "张掖": {
+      "code": "YZY",
+      "airports": [
+        {
+          "code": "YZY",
+          "name": "张掖甘州机场"
+        }
+      ]
+    },
+    "徐州": {
+      "code": "XUZ",
+      "airports": [
+        {
+          "code": "XUZ",
+          "name": "徐州观音国际机场"
+        }
+      ]
+    },
+    "德令哈": {
+      "code": "HXD",
+      "airports": [
+        {
+          "code": "HXD",
+          "name": "德令哈机场"
+        }
+      ]
+    },
+    "忻州": {
+      "code": "WUT",
+      "airports": [
+        {
+          "code": "WUT",
+          "name": "忻州五台山机场"
+        }
+      ]
+    },
+    "怀化": {
+      "code": "HJJ",
+      "airports": [
+        {
+          "code": "HJJ",
+          "name": "怀化芷江机场"
+        }
+      ]
+    },
+    "恩施": {
+      "code": "ENH",
+      "airports": [
+        {
+          "code": "ENH",
+          "name": "恩施许家坪机场"
+        }
+      ]
+    },
+    "惠州": {
+      "code": "HUZ",
+      "airports": [
+        {
+          "code": "HUZ",
+          "name": "惠州平潭机场"
+        }
+      ]
+    },
+    "成都": {
+      "code": "CTU",
+      "airports": [
+        {
+          "code": "CTU",
+          "name": "成都双流国际机场"
+        },
+        {
+          "code": "TFU",
+          "name": "成都天府国际机场"
+        }
+      ]
+    },
+    "扎兰屯": {
+      "code": "NZL",
+      "airports": [
+        {
+          "code": "NZL",
+          "name": "扎兰屯成吉思汗机场"
+        }
+      ]
+    },
+    "扬州泰州": {
+      "code": "YTY",
+      "airports": [
+        {
+          "code": "YTY",
+          "name": "扬州泰州国际机场"
+        }
+      ]
+    },
+    "承德": {
+      "code": "CDE",
+      "airports": [
+        {
+          "code": "CDE",
+          "name": "承德普宁机场"
+        }
+      ]
+    },
+    "抚远": {
+      "code": "FYJ",
+      "airports": [
+        {
+          "code": "FYJ",
+          "name": "抚远东极机场"
+        }
+      ]
+    },
+    "拉萨": {
+      "code": "LXA",
+      "airports": [
+        {
+          "code": "LXA",
+          "name": "拉萨贡嘎国际机场"
+        }
+      ]
+    },
+    "揭阳潮汕": {
+      "code": "SWA",
+      "airports": [
+        {
+          "code": "SWA",
+          "name": "揭阳潮汕国际机场"
+        }
+      ]
+    },
+    "攀枝花": {
+      "code": "PZI",
+      "airports": [
+        {
+          "code": "PZI",
+          "name": "攀枝花保安营机场"
+        }
+      ]
+    },
+    "敦煌": {
+      "code": "DNH",
+      "airports": [
+        {
+          "code": "DNH",
+          "name": "敦煌莫高国际机场"
+        }
+      ]
+    },
+    "文山": {
+      "code": "WNH",
+      "airports": [
+        {
+          "code": "WNH",
+          "name": "文山砚山机场"
+        }
+      ]
+    },
+    "无锡": {
+      "code": "WUX",
+      "airports": [
+        {
+          "code": "WUX",
+          "name": "无锡苏南硕放国际机场"
+        }
+      ]
+    },
+    "日喀则": {
+      "code": "RKZ",
+      "airports": [
+        {
+          "code": "RKZ",
+          "name": "日喀则和平机场"
+        }
+      ]
+    },
+    "日照": {
+      "code": "RIZ",
+      "airports": [
+        {
+          "code": "RIZ",
+          "name": "日照山字河机场"
+        }
+      ]
+    },
+    "昆明": {
+      "code": "KMG",
+      "airports": [
+        {
+          "code": "KMG",
+          "name": "昆明长水国际机场"
+        }
+      ]
+    },
+    "昌吉": {
+      "code": "JBK",
+      "airports": [
+        {
+          "code": "JBK",
+          "name": "奇台江布拉克机场"
+        }
+      ]
+    },
+    "昌都": {
+      "code": "BPX",
+      "airports": [
+        {
+          "code": "BPX",
+          "name": "昌都邦达机场"
+        }
+      ]
+    },
+    "昭苏": {
+      "code": "ZFL",
+      "airports": [
+        {
+          "code": "ZFL",
+          "name": "昭苏天马机场"
+        }
+      ]
+    },
+    "昭通": {
+      "code": "ZAT",
+      "airports": [
+        {
+          "code": "ZAT",
+          "name": "昭通机场"
+        }
+      ]
+    },
+    "晋江": {
+      "code": "JJN",
+      "airports": [
+        {
+          "code": "JJN",
+          "name": "泉州晋江国际机场"
+        }
+      ]
+    },
+    "普洱": {
+      "code": "SYM",
+      "airports": [
+        {
+          "code": "SYM",
+          "name": "普洱思茅机场"
+        }
+      ]
+    },
+    "景德镇": {
+      "code": "JDZ",
+      "airports": [
+        {
+          "code": "JDZ",
+          "name": "景德镇罗家机场"
+        }
+      ]
+    },
+    "朝阳": {
+      "code": "CHG",
+      "airports": [
+        {
+          "code": "CHG",
+          "name": "朝阳机场"
+        }
+      ]
+    },
+    "杭州": {
+      "code": "HGH",
+      "airports": [
+        {
+          "code": "HGH",
+          "name": "杭州萧山国际机场"
+        }
+      ]
+    },
+    "松原": {
+      "code": "YSQ",
+      "airports": [
+        {
+          "code": "YSQ",
+          "name": "松原查干湖机场"
+        }
+      ]
+    },
+    "林芝": {
+      "code": "LZY",
+      "airports": [
+        {
+          "code": "LZY",
+          "name": "林芝米林机场"
+        }
+      ]
+    },
+    "果洛": {
+      "code": "GMQ",
+      "airports": [
+        {
+          "code": "GMQ",
+          "name": "果洛玛沁机场"
+        }
+      ]
+    },
+    "柳州": {
+      "code": "LZH",
+      "airports": [
+        {
+          "code": "LZH",
+          "name": "柳州白莲机场"
+        }
+      ]
+    },
+    "格尔木": {
+      "code": "GOQ",
+      "airports": [
+        {
+          "code": "GOQ",
+          "name": "格尔木机场"
+        }
+      ]
+    },
+    "桂林": {
+      "code": "KWL",
+      "airports": [
+        {
+          "code": "KWL",
+          "name": "桂林两江国际机场"
+        }
+      ]
+    },
+    "梅州": {
+      "code": "MXZ",
+      "airports": [
+        {
+          "code": "MXZ",
+          "name": "梅州梅县机场"
+        }
+      ]
+    },
+    "梧州": {
+      "code": "WUZ",
+      "airports": [
+        {
+          "code": "WUZ",
+          "name": "梧州长洲岛机场"
+        }
+      ]
+    },
+    "榆林": {
+      "code": "UYN",
+      "airports": [
+        {
+          "code": "UYN",
+          "name": "榆林榆阳机场"
+        }
+      ]
+    },
+    "武夷山": {
+      "code": "WUS",
+      "airports": [
+        {
+          "code": "WUS",
+          "name": "武夷山机场"
+        }
+      ]
+    },
+    "武汉": {
+      "code": "WUH",
+      "airports": [
+        {
+          "code": "WUH",
+          "name": "武汉天河国际机场"
+        }
+      ]
+    },
+    "毕节": {
+      "code": "BFJ",
+      "airports": [
+        {
+          "code": "BFJ",
+          "name": "毕节飞雄机场"
+        }
+      ]
+    },
+    "永州": {
+      "code": "LLF",
+      "airports": [
+        {
+          "code": "LLF",
+          "name": "永州零陵机场"
+        }
+      ]
+    },
+    "汉中": {
+      "code": "HZG",
+      "airports": [
+        {
+          "code": "HZG",
+          "name": "汉中城固机场"
+        }
+      ]
+    },
+    "汕头": {
+      "code": "SWA",
+      "airports": [
+        {
+          "code": "SWA",
+          "name": "揭阳潮汕国际机场"
+        }
+      ]
+    },
+    "池州": {
+      "code": "JUH",
+      "airports": [
+        {
+          "code": "JUH",
+          "name": "池州九华山机场"
+        }
+      ]
+    },
+    "沈阳": {
+      "code": "SHE",
+      "airports": [
+        {
+          "code": "SHE",
+          "name": "沈阳桃仙国际机场"
+        }
+      ]
+    },
+    "沧源": {
+      "code": "CWJ",
+      "airports": [
+        {
+          "code": "CWJ",
+          "name": "沧源佤山机场"
+        }
+      ]
+    },
+    "河池": {
+      "code": "HCJ",
+      "airports": [
+        {
+          "code": "HCJ",
+          "name": "河池金城江机场"
+        }
+      ]
+    },
+    "泉州": {
+      "code": "JJN",
+      "airports": [
+        {
+          "code": "JJN",
+          "name": "泉州晋江国际机场"
+        }
+      ]
+    },
+    "泸州": {
+      "code": "LZO",
+      "airports": [
+        {
+          "code": "LZO",
+          "name": "泸州云龙机场"
+        }
+      ]
+    },
+    "泸沽湖": {
+      "code": "NLH",
+      "airports": [
+        {
+          "code": "NLH",
+          "name": "宁蒗泸沽湖机场"
+        }
+      ]
+    },
+    "洛阳": {
+      "code": "LYA",
+      "airports": [
+        {
+          "code": "LYA",
+          "name": "洛阳北郊机场"
+        }
+      ]
+    },
+    "济南": {
+      "code": "TNA",
+      "airports": [
+        {
+          "code": "TNA",
+          "name": "济南遥墙国际机场"
+        }
+      ]
+    },
+    "济宁": {
+      "code": "JNG",
+      "airports": [
+        {
+          "code": "JNG",
+          "name": "济宁大安机场"
+        }
+      ]
+    },
+    "海口": {
+      "code": "HAK",
+      "airports": [
+        {
+          "code": "HAK",
+          "name": "海口美兰国际机场"
+        }
+      ]
+    },
+    "海拉尔": {
+      "code": "HLD",
+      "airports": [
+        {
+          "code": "HLD",
+          "name": "海拉尔东山国际机场"
+        }
+      ]
+    },
+    "淮安": {
+      "code": "HIA",
+      "airports": [
+        {
+          "code": "HIA",
+          "name": "淮安涟水机场"
+        }
+      ]
+    },
+    "深圳": {
+      "code": "SZX",
+      "airports": [
+        {
+          "code": "SZX",
+          "name": "深圳宝安国际机场"
+        }
+      ]
+    },
+    "温州": {
+      "code": "WNZ",
+      "airports": [
+        {
+          "code": "WNZ",
+          "name": "温州龙湾国际机场"
+        }
+      ]
+    },
+    "湛江": {
+      "code": "ZHA",
+      "airports": [
+        {
+          "code": "ZHA",
+          "name": "湛江吴川机场"
+        }
+      ]
+    },
+    "满洲里": {
+      "code": "NZH",
+      "airports": [
+        {
+          "code": "NZH",
+          "name": "满洲里西郊机场"
+        }
+      ]
+    },
+    "漠河": {
+      "code": "OHE",
+      "airports": [
+        {
+          "code": "OHE",
+          "name": "漠河古莲机场"
+        }
+      ]
+    },
+    "潍坊": {
+      "code": "WEF",
+      "airports": [
+        {
+          "code": "WEF",
+          "name": "潍坊机场"
+        }
+      ]
+    },
+    "澜沧": {
+      "code": "JMJ",
+      "airports": [
+        {
+          "code": "JMJ",
+          "name": "澜沧景迈机场"
+        }
+      ]
+    },
+    "烟台": {
+      "code": "YNT",
+      "airports": [
+        {
+          "code": "YNT",
+          "name": "烟台蓬莱国际机场"
+        }
+      ]
+    },
+    "牡丹江": {
+      "code": "MDG",
+      "airports": [
+        {
+          "code": "MDG",
+          "name": "牡丹江海浪机场"
+        }
+      ]
+    },
+    "玉林": {
+      "code": "YLX",
+      "airports": [
+        {
+          "code": "YLX",
+          "name": "玉林福绵机场"
+        }
+      ]
+    },
+    "玉树": {
+      "code": "YUS",
+      "airports": [
+        {
+          "code": "YUS",
+          "name": "玉树巴塘机场"
+        }
+      ]
+    },
+    "珠海": {
+      "code": "ZUH",
+      "airports": [
+        {
+          "code": "ZUH",
+          "name": "珠海金湾机场"
+        }
+      ]
+    },
+    "甘孜": {
+      "code": "GZG",
+      "airports": [
+        {
+          "code": "GZG",
+          "name": "甘孜格萨尔机场"
+        }
+      ]
+    },
+    "白山": {
+      "code": "NBS",
+      "airports": [
+        {
+          "code": "NBS",
+          "name": "白山长白山机场"
+        }
+      ]
+    },
+    "百色": {
+      "code": "AEB",
+      "airports": [
+        {
+          "code": "AEB",
+          "name": "百色巴马机场"
+        }
+      ]
+    },
+    "盐城": {
+      "code": "YNZ",
+      "airports": [
+        {
+          "code": "YNZ",
+          "name": "盐城南洋机场"
+        }
+      ]
+    },
+    "石家庄": {
+      "code": "SJW",
+      "airports": [
+        {
+          "code": "SJW",
+          "name": "石家庄正定国际机场"
+        }
+      ]
+    },
+    "石河子": {
+      "code": "SHF",
+      "airports": [
+        {
+          "code": "SHF",
+          "name": "石河子花园机场"
+        }
+      ]
+    },
+    "神农架": {
+      "code": "HPG",
+      "airports": [
+        {
+          "code": "HPG",
+          "name": "神农架红坪机场"
+        }
+      ]
+    },
+    "福州": {
+      "code": "FOC",
+      "airports": [
+        {
+          "code": "FOC",
+          "name": "福州长乐国际机场"
+        }
+      ]
+    },
+    "秦皇岛": {
+      "code": "BPE",
+      "airports": [
+        {
+          "code": "BPE",
+          "name": "秦皇岛北戴河国际机场"
+        }
+      ]
+    },
+    "稻城": {
+      "code": "DCY",
+      "airports": [
+        {
+          "code": "DCY",
+          "name": "稻城亚丁机场"
+        }
+      ]
+    },
+    "红原": {
+      "code": "AHJ",
+      "airports": [
+        {
+          "code": "AHJ",
+          "name": "阿坝红原机场"
+        }
+      ]
+    },
+    "绥芬河": {
+      "code": "HSF",
+      "airports": [
+        {
+          "code": "HSF",
+          "name": "绥芬河东宁机场"
+        }
+      ]
+    },
+    "绵阳": {
+      "code": "MIG",
+      "airports": [
+        {
+          "code": "MIG",
+          "name": "绵阳南郊机场"
+        }
+      ]
+    },
+    "腾冲": {
+      "code": "TCZ",
+      "airports": [
+        {
+          "code": "TCZ",
+          "name": "腾冲驼峰机场"
+        }
+      ]
+    },
+    "舟山": {
+      "code": "HSN",
+      "airports": [
+        {
+          "code": "HSN",
+          "name": "舟山普陀山机场"
+        }
+      ]
+    },
+    "芒市": {
+      "code": "LUM",
+      "airports": [
+        {
+          "code": "LUM",
+          "name": "德宏芒市机场"
+        }
+      ]
+    },
+    "芜湖": {
+      "code": "WHA",
+      "airports": [
+        {
+          "code": "WHA",
+          "name": "芜湖宣州机场"
+        }
+      ]
+    },
+    "若羌": {
+      "code": "RQA",
+      "airports": [
+        {
+          "code": "RQA",
+          "name": "若羌楼兰机场"
+        }
+      ]
+    },
+    "荆州": {
+      "code": "SHS",
+      "airports": [
+        {
+          "code": "SHS",
+          "name": "荆州沙市机场"
+        }
+      ]
+    },
+    "荔波": {
+      "code": "LLB",
+      "airports": [
+        {
+          "code": "LLB",
+          "name": "黔南/荔波机场"
+        }
+      ]
+    },
+    "莎车": {
+      "code": "QSZ",
+      "airports": [
+        {
+          "code": "QSZ",
+          "name": "莎车机场"
+        }
+      ]
+    },
+    "菏泽": {
+      "code": "HZA",
+      "airports": [
+        {
+          "code": "HZA",
+          "name": "菏泽牡丹机场"
+        }
+      ]
+    },
+    "营口": {
+      "code": "YKH",
+      "airports": [
+        {
+          "code": "YKH",
+          "name": "营口兰旗机场"
+        }
+      ]
+    },
+    "衡阳": {
+      "code": "HNY",
+      "airports": [
+        {
+          "code": "HNY",
+          "name": "衡阳南岳机场"
+        }
+      ]
+    },
+    "衢州": {
+      "code": "JUZ",
+      "airports": [
+        {
+          "code": "JUZ",
+          "name": "衢州机场"
+        }
+      ]
+    },
+    "襄阳": {
+      "code": "XFN",
+      "airports": [
+        {
+          "code": "XFN",
+          "name": "襄阳刘集机场"
+        }
+      ]
+    },
+    "西双版纳": {
+      "code": "JHG",
+      "airports": [
+        {
+          "code": "JHG",
+          "name": "西双版纳嘎洒国际机场"
+        }
+      ]
+    },
+    "西宁": {
+      "code": "XNN",
+      "airports": [
+        {
+          "code": "XNN",
+          "name": "西宁曹家堡机场"
+        }
+      ]
+    },
+    "西安": {
+      "code": "SIA",
+      "airports": [
+        {
+          "code": "XIY",
+          "name": "西安咸阳国际机场"
+        }
+      ]
+    },
+    "西昌": {
+      "code": "XIC",
+      "airports": [
+        {
+          "code": "XIC",
+          "name": "西昌青山机场"
+        }
+      ]
+    },
+    "贵阳": {
+      "code": "KWE",
+      "airports": [
+        {
+          "code": "KWE",
+          "name": "贵阳龙洞堡国际机场"
+        }
+      ]
+    },
+    "赣州": {
+      "code": "KOW",
+      "airports": [
+        {
+          "code": "KOW",
+          "name": "赣州黄金机场"
+        }
+      ]
+    },
+    "赤峰": {
+      "code": "CIF",
+      "airports": [
+        {
+          "code": "CIF",
+          "name": "赤峰玉龙机场"
+        }
+      ]
+    },
+    "达州": {
+      "code": "DAX",
+      "airports": [
+        {
+          "code": "DAX",
+          "name": "达州河市机场"
+        },
+        {
+          "code": "DZH",
+          "name": "达州金垭机场"
+        }
+      ]
+    },
+    "运城": {
+      "code": "YCU",
+      "airports": [
+        {
+          "code": "YCU",
+          "name": "运城盐湖国际机场"
+        }
+      ]
+    },
+    "连云港": {
+      "code": "LYG",
+      "airports": [
+        {
+          "code": "LYG",
+          "name": "连云港花果山机场"
+        }
+      ]
+    },
+    "迪庆": {
+      "code": "DIG",
+      "airports": [
+        {
+          "code": "DIG",
+          "name": "迪庆香格里拉机场"
+        }
+      ]
+    },
+    "通化": {
+      "code": "TNH",
+      "airports": [
+        {
+          "code": "TNH",
+          "name": "通化三源浦机场"
+        }
+      ]
+    },
+    "通辽": {
+      "code": "TGO",
+      "airports": [
+        {
+          "code": "TGO",
+          "name": "通辽机场"
+        }
+      ]
+    },
+    "遵义新舟": {
+      "code": "ZYI",
+      "airports": [
+        {
+          "code": "ZYI",
+          "name": "遵义新舟国际机场"
+        }
+      ]
+    },
+    "遵义茅台": {
+      "code": "WMT",
+      "airports": [
+        {
+          "code": "WMT",
+          "name": "遵义茅台机场"
+        }
+      ]
+    },
+    "邢台": {
+      "code": "XNT",
+      "airports": [
+        {
+          "code": "XNT",
+          "name": "邢台褡裢机场"
+        }
+      ]
+    },
+    "那拉提": {
+      "code": "NLT",
+      "airports": [
+        {
+          "code": "NLT",
+          "name": "那拉提机场"
+        }
+      ]
+    },
+    "邯郸": {
+      "code": "HDG",
+      "airports": [
+        {
+          "code": "HDG",
+          "name": "邯郸机场"
+        }
+      ]
+    },
+    "邵阳": {
+      "code": "WGN",
+      "airports": [
+        {
+          "code": "WGN",
+          "name": "邵阳武冈机场"
+        }
+      ]
+    },
+    "郑州": {
+      "code": "CGO",
+      "airports": [
+        {
+          "code": "CGO",
+          "name": "郑州新郑国际机场"
+        }
+      ]
+    },
+    "郴州": {
+      "code": "HCZ",
+      "airports": [
+        {
+          "code": "HCZ",
+          "name": "郴州北湖机场"
+        }
+      ]
+    },
+    "鄂尔多斯": {
+      "code": "DSN",
+      "airports": [
+        {
+          "code": "DSN",
+          "name": "鄂尔多斯伊金霍洛国际机场"
+        }
+      ]
+    },
+    "鄂州": {
+      "code": "EHU",
+      "airports": [
+        {
+          "code": "EHU",
+          "name": "鄂州花湖机场"
+        }
+      ]
+    },
+    "重庆": {
+      "code": "CKG",
+      "airports": [
+        {
+          "code": "CKG",
+          "name": "重庆江北国际机场"
+        },
+        {
+          "code": "CQW",
+          "name": "重庆武隆区仙女山机场"
+        }
+      ]
+    },
+    "金昌": {
+      "code": "JIC",
+      "airports": [
+        {
+          "code": "JIC",
+          "name": "金昌金川机场"
+        }
+      ]
+    },
+    "铜仁": {
+      "code": "TEN",
+      "airports": [
+        {
+          "code": "TEN",
+          "name": "铜仁凤凰机场"
+        }
+      ]
+    },
+    "银川": {
+      "code": "INC",
+      "airports": [
+        {
+          "code": "INC",
+          "name": "银川河东国际机场"
+        }
+      ]
+    },
+    "锡林浩特": {
+      "code": "XIL",
+      "airports": [
+        {
+          "code": "XIL",
+          "name": "锡林浩特机场"
+        }
+      ]
+    },
+    "锦州": {
+      "code": "JNZ",
+      "airports": [
+        {
+          "code": "JNZ",
+          "name": "锦州锦州湾机场"
+        }
+      ]
+    },
+    "长春": {
+      "code": "CGQ",
+      "airports": [
+        {
+          "code": "CGQ",
+          "name": "长春龙嘉国际机场"
+        }
+      ]
+    },
+    "长沙": {
+      "code": "CSX",
+      "airports": [
+        {
+          "code": "CSX",
+          "name": "长沙黄花国际机场"
+        }
+      ]
+    },
+    "长治": {
+      "code": "CIH",
+      "airports": [
+        {
+          "code": "CIH",
+          "name": "长治王村机场"
+        }
+      ]
+    },
+    "阆中": {
+      "code": "LZG",
+      "airports": [
+        {
+          "code": "LZG",
+          "name": "阆中古城机场"
+        }
+      ]
+    },
+    "阜阳": {
+      "code": "FUG",
+      "airports": [
+        {
+          "code": "FUG",
+          "name": "阜阳机场"
+        }
+      ]
+    },
+    "阿克苏": {
+      "code": "AKU",
+      "airports": [
+        {
+          "code": "AKU",
+          "name": "阿克苏机场"
+        }
+      ]
+    },
+    "阿勒泰": {
+      "code": "AAT",
+      "airports": [
+        {
+          "code": "AAT",
+          "name": "阿勒泰机场"
+        }
+      ]
+    },
+    "阿尔山": {
+      "code": "YIE",
+      "airports": [
+        {
+          "code": "YIE",
+          "name": "阿尔山伊尔施机场"
+        }
+      ]
+    },
+    "阿拉善盟": {
+      "code": "AXF",
+      "airports": [
+        {
+          "code": "RHT",
+          "name": "阿拉善右旗巴丹吉林机场"
+        },
+        {
+          "code": "AXF",
+          "name": "阿拉善左旗巴彦浩特机场"
+        }
+      ]
+    },
+    "阿拉尔": {
+      "code": "ACF",
+      "airports": [
+        {
+          "code": "ACF",
+          "name": "阿拉尔塔里木机场"
+        }
+      ]
+    },
+    "阿里": {
+      "code": "NGQ",
+      "airports": [
+        {
+          "code": "NGQ",
+          "name": "阿里昆莎机场"
+        }
+      ]
+    },
+    "陇南": {
+      "code": "LNL",
+      "airports": [
+        {
+          "code": "LNL",
+          "name": "陇南成县机场"
+        }
+      ]
+    },
+    "青岛": {
+      "code": "TAO",
+      "airports": [
+        {
+          "code": "TAO",
+          "name": "青岛胶东国际机场"
+        }
+      ]
+    },
+    "鞍山": {
+      "code": "AOG",
+      "airports": [
+        {
+          "code": "AOG",
+          "name": "鞍山腾鳌机场"
+        }
+      ]
+    },
+    "韶关": {
+      "code": "HSC",
+      "airports": [
+        {
+          "code": "HSC",
+          "name": "韶关丹霞机场"
+        }
+      ]
+    },
+    "额济纳旗": {
+      "code": "EJN",
+      "airports": [
+        {
+          "code": "EJN",
+          "name": "额济纳旗桃来机场"
+        }
+      ]
+    },
+    "鸡西": {
+      "code": "JXA",
+      "airports": [
+        {
+          "code": "JXA",
+          "name": "鸡西兴凯湖机场"
+        }
+      ]
+    },
+    "黄山": {
+      "code": "TXN",
+      "airports": [
+        {
+          "code": "TXN",
+          "name": "黄山屯溪国际机场"
+        }
+      ]
+    },
+    "黎平": {
+      "code": "HZH",
+      "airports": [
+        {
+          "code": "HZH",
+          "name": "黎平机场"
+        }
+      ]
+    },
+    "黑河": {
+      "code": "HEK",
+      "airports": [
+        {
+          "code": "HEK",
+          "name": "黑河瑷珲机场"
+        }
+      ]
+    },
+    "黔江": {
+      "code": "JIQ",
+      "airports": [
+        {
+          "code": "JIQ",
+          "name": "黔江武陵山机场"
+        }
+      ]
+    },
+    "齐齐哈尔": {
+      "code": "NDG",
+      "airports": [
+        {
+          "code": "NDG",
+          "name": "齐齐哈尔三家子机场"
+        }
+      ]
+    },
+    "龙岩": {
+      "code": "LCX",
+      "airports": [
+        {
+          "code": "LCX",
+          "name": "龙岩连城冠豸山机场"
+        }
+      ]
+    }
+  },
+  "aliases": {
+    "香格里拉": "迪庆",
+    "迪庆藏族自治州": "迪庆",
+    "德宏": "芒市",
+    "德宏傣族景颇族自治州": "芒市",
+    "揭阳": "揭阳潮汕",
+    "潮州": "揭阳潮汕",
+    "扬州": "扬州泰州",
+    "泰州": "扬州泰州",
+    "呼伦贝尔": "海拉尔",
+    "西双版纳傣族自治州": "西双版纳",
+    "景洪": "西双版纳",
+    "湘西": "吉首",
+    "湘西土家族苗族自治州": "吉首",
+    "奇台": "昌吉"
+  }
+}

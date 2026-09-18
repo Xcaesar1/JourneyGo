@@ -716,7 +716,7 @@ def test_replan_flight_refresh_requires_new_consent():
     assert preserved.quote_revision == {"hotel": 2, "model": 3}
 
 
-@pytest.mark.parametrize("route", [("上海", "西安", "SHA", "SIA"), ("昆明市", "丽江市", "KMG", "LJG")])
+@pytest.mark.parametrize("route", [("上海", "西安", "SHA", "SIA"), ("昆明市", "丽江市", "KMG", "LJG"), ("深圳", "武汉", "SZX", "WUH"), ("深圳市", "武汉市", "SZX", "WUH")])
 def test_flight_roundtrip_once_each_and_unknown_taxes(route):
     from pydantic import SecretStr
 

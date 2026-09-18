@@ -11,6 +11,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from redis import Redis
 
+from ..domain.flight_cities import flight_city_code
 from ..domain.travel_models import TravelSearchRequest
 from ..domain.trip_models import (
     AttractionV2,
@@ -32,13 +33,6 @@ from .travel_ledger import PlanningInputRequired, QueryLedger, QueryReuseUnavail
 from .travel_place_selection import PlaceSelection, select_places, selection_notices
 from .travel_search import RESERVE, arguments, capabilities, flight_time, run_readonly_mcp
 
-# Only codes already verified in this integration are enabled. Never guess airport codes.
-# Xi'an city code (not airport XIY): CAAC P020160122452786310808.pdf.
-# Kunming/Lijiang: CAAC P020160122452510922835.pdf, route KMG-LJG.
-FLIGHT_CITIES = {
-    "北京": "BJS", "上海": "SHA", "广州": "CAN", "合肥": "HFE",
-    "西安": "SIA", "昆明": "KMG", "丽江": "LJG",
-}
 TIERS = {"economy": (0, 3), "business": (3, 4.5), "premium": (4.5, 5)}
 
 
@@ -68,11 +62,8 @@ def preflight(request, settings):
     if request.intercity_mode == "flight":
         if not request.flight_confirmed:
             raise ValueError("请确认往返航班最多各查询一次，可能消耗余额。")
-        if any(
-            city.removesuffix("市") not in FLIGHT_CITIES
-            for city in [request.origin, request.destinations[0].city]
-        ):
-            raise ValueError("该城市的航班代码尚未核实，请使用火车高铁或已支持的航班城市。")
+        if flight_city_code(request.origin) == flight_city_code(request.destinations[0].city):
+            raise ValueError("出发地与目的地属于同一航空城市，请选择不同城市。")
 
 
 def cents(value):
@@ -512,7 +503,7 @@ class OneClickPlanner:
         ]:
             if r.intercity_mode == "flight":
                 origin, destination = [
-                    FLIGHT_CITIES[x.removesuffix("市")] for x in (origin, destination)
+                    flight_city_code(x) for x in (origin, destination)
                 ]
             query = TravelSearchRequest(
                 provider=r.intercity_mode,

@@ -327,7 +327,11 @@ def test_api_paid_auth_consent_and_no_secrets(monkeypatch):
         assert len(calls) == 1
         public = client.get("/api/v2/travel/capabilities")
         assert "fake-" not in public.text
-        assert public.json()["flight"] == {"enabled": True, "paid": True}
+        flight = public.json()["flight"]
+        assert flight["enabled"] is True and flight["paid"] is True
+        assert flight["city_codes"]["深圳"] == "SZX"
+        assert flight["city_codes"]["武汉"] == "WUH"
+        assert len(flight["city_codes"]) >= 250
 
 
 def test_provider_empty_has_timestamp(monkeypatch):

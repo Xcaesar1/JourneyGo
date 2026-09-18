@@ -32,7 +32,7 @@
             <label>每间房成人数<input v-model.number="form.adults" type="number" required min="1" max="4" /></label>
           </template>
         </div>
-        <datalist id="flight-city-codes"><option v-for="(code, city) in cityCodes" :key="code" :value="code">{{ city }}</option></datalist>
+        <datalist id="flight-city-codes"><option v-for="(code, city) in cityCodes" :key="city" :value="code">{{ city }}</option></datalist>
         <datalist id="trip-city-options"><option v-for="city in cities" :key="city" :value="city" /></datalist>
         <label v-if="provider === 'train'" class="travel-check"><input v-model="form.high_speed_only" type="checkbox" />仅高铁 / 动车（最多查询未来 15 天）</label>
         <p v-if="provider === 'hotel'" class="travel-note">当前按 1 间房、成人入住查询；暂不包含儿童和多房组合。请核对晚数，单日行程不默认代表需要住宿。</p>
@@ -73,7 +73,7 @@ const props = defineProps<{ plan: TripPlan }>()
 const tabs: { key: TravelProvider; label: string }[] = [
   { key: 'train', label: '火车高铁' }, { key: 'hotel', label: '酒店住宿' }, { key: 'flight', label: '飞机航班' },
 ]
-const cityCodes: Record<string, string> = { 北京: 'BJS', 上海: 'SHA', 广州: 'CAN', 合肥: 'HFE', 西安: 'SIA', 昆明: 'KMG', 丽江: 'LJG' }
+const cityCodes = computed(() => capabilities.value?.flight.city_codes || {})
 const provider = ref<TravelProvider>('train')
 const capabilities = ref<TravelCapabilities | null>(null)
 const capabilityError = ref(false)
@@ -93,14 +93,14 @@ const form = reactive<TravelSearchRequest>({ provider: 'train', origin: '', dest
 function reset() {
   const origin = props.plan.origin || ''
   const destination = props.plan.days[0]?.city || props.plan.city
-  form.origin = provider.value === 'flight' ? cityCodes[origin.replace(/市$/, '')] || '' : origin
-  form.destination = provider.value === 'flight' ? cityCodes[destination.replace(/市$/, '')] || '' : destination
+  form.origin = provider.value === 'flight' ? cityCodes.value[origin.trim()] || cityCodes.value[origin.trim().replace(/市$/, '')] || '' : origin
+  form.destination = provider.value === 'flight' ? cityCodes.value[destination.trim()] || cityCodes.value[destination.trim().replace(/市$/, '')] || '' : destination
   form.date = props.plan.start_date
   form.confirm_paid = false
   result.value = null
   error.value = ''
 }
-watch([provider, () => props.plan], reset, { immediate: true })
+watch([provider, () => props.plan, cityCodes], reset, { immediate: true })
 watch(() => [form.origin, form.destination, form.date, form.country, form.nights, form.adults, form.high_speed_only], () => {
   result.value = null
   error.value = ''
