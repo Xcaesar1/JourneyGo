@@ -215,6 +215,13 @@
         >
           <PersonalMapExport v-if="taskId" :task-id="taskId" :review-id="currentReview?.review_id" :version="mapVersion" />
           <div v-if="overviewAttractions.length > 0" ref="overviewSwiperContainerRef" class="overview-swiper">
+            <div class="gallery-controls">
+              <span>{{ locale.startsWith('zh') ? '沿途景点' : 'Along the journey' }} · {{ activeOverviewCard + 1 }} / {{ overviewAttractions.length }}</span>
+              <div>
+                <button type="button" :disabled="activeOverviewCard === 0" :aria-label="locale.startsWith('zh') ? '上一个景点' : 'Previous attraction'" @click="overviewSwiper?.slidePrev()">←</button>
+                <button type="button" :disabled="activeOverviewCard === overviewAttractions.length - 1" :aria-label="locale.startsWith('zh') ? '下一个景点' : 'Next attraction'" @click="overviewSwiper?.slideNext()">→</button>
+              </div>
+            </div>
             <div class="swiper">
               <div class="swiper-wrapper">
                 <OverviewAttractionCard
@@ -1239,6 +1246,7 @@ const initOverviewSwiper = async () => {
     effect: 'slide',
     grabCursor: true,
     centeredSlides: false,
+    slideToClickedSlide: true,
     slidesPerView: 1.08,
     keyboard: {
       enabled: true,
@@ -1250,7 +1258,9 @@ const initOverviewSwiper = async () => {
     loop: false,
     breakpoints: {
       769: {
-        enabled: false,
+        centeredSlides: true,
+        slidesPerView: 'auto',
+        spaceBetween: 8,
       },
     },
     on: {
@@ -1260,7 +1270,8 @@ const initOverviewSwiper = async () => {
     },
   })
 
-  const initialIndex = 0
+  const initialIndex = window.matchMedia('(min-width: 769px)').matches
+    ? Math.min(1, overviewAttractions.value.length - 1) : 0
   activeOverviewCard.value = initialIndex
   overviewSwiper.slideTo(initialIndex, 0, false)
 }
@@ -4311,16 +4322,26 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 @media (min-width: 769px) {
-  .overview-swiper .swiper-wrapper {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 24px;
-    transform: none !important;
+  .overview-swiper .swiper { padding: 18px 0 26px; }
+  .overview-swiper :deep(.attraction-card) {
+    width: clamp(280px, 30vw, 360px);
+    transform: scale(.9);
+    transform-origin: center center;
+    transition: transform 260ms ease, box-shadow 260ms ease;
   }
-  .overview-swiper :deep(.swiper-slide) { width: auto !important; margin: 0 !important; }
+  .overview-swiper :deep(.attraction-card.swiper-slide-active) {
+    transform: scale(1);
+    box-shadow: 0 10px 28px rgb(30 53 43 / 12%);
+  }
+  .overview-swiper :deep(.attraction-photo) { aspect-ratio: 5 / 4; }
 }
-@media (min-width: 769px) and (max-width: 1100px) {
-  .overview-swiper .swiper-wrapper { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gallery-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 0 12px; color: var(--jg-muted); font-size: 14px; }
+.gallery-controls > div { display: flex; gap: 8px; }
+.gallery-controls button { width: 44px; height: 44px; border: 1px solid var(--jg-border); border-radius: 50%; background: var(--jg-surface); color: var(--jg-accent-strong); font-size: 22px; cursor: pointer; }
+.gallery-controls button:disabled { opacity: .35; cursor: default; }
+.gallery-controls button:focus-visible { outline: 2px solid var(--jg-accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .overview-swiper :deep(.attraction-card) { transition: none; }
 }
 
 

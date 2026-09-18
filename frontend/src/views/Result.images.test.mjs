@@ -8,10 +8,13 @@ const source = readFileSync(new URL('./Result.vue', import.meta.url), 'utf8')
 const overview = source.slice(source.indexOf('const overviewAttractions ='), source.indexOf('const destroyOverviewSwiper ='))
 const resolver = source.slice(source.indexOf('const getAttractionImage ='), source.indexOf('const handleImageError ='))
 
-test('desktop attraction gallery has aligned cards without coverflow or image waves', () => {
+test('desktop attraction gallery is a centered single-row carousel without dense coverflow or waves', () => {
   const card = readFileSync(new URL('../components/OverviewAttractionCard.vue', import.meta.url), 'utf8')
   assert.doesNotMatch(source, /effect: 'coverflow'/)
-  assert.match(source, /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/)
+  assert.match(source, /centeredSlides: true/)
+  assert.match(source, /slidesPerView: 'auto'/)
+  assert.match(source, /transform: scale\(\.9\)/)
+  assert.match(source, /overviewSwiper\?\.slideNext\(\)/)
   assert.match(card, /aspect-ratio: 4 \/ 3/)
   assert.doesNotMatch(card, /shape-fill/)
   assert.match(card, /@click="emit\('select-day', item.dayArrayIndex\)"/)

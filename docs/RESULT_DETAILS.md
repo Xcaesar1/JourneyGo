@@ -17,9 +17,10 @@
   `AMAP_ENABLEMENT_HANDOFF.md`. No claim of free billing follows from success.
 - The attraction map uses the standard light AMap basemap and a white container
   background, replacing the fixed dark-blue theme without changing routes or markers.
-- Desktop overview photos use an aligned three-column gallery (two columns at
-  tablet widths), consistent 4:3 crops, day labels and always-visible itinerary
-  buttons. Mobile retains swipe browsing. Coverflow overlap and dark waves are removed.
+- Desktop overview photos use one centered, draggable row with the active card
+  enlarged relative to its neighbors (1 versus 0.9 scale), generous spacing,
+  5:4 crops and previous/next controls. Day labels and itinerary buttons stay visible.
+  Mobile retains swipe browsing. Dense coverflow overlap and dark waves are removed.
 - Daily panels omit the redundant description/transport/accommodation summary and
   per-day validation pills. Timeline, navigation, hotel details and overview critical
   notices remain; saved snapshots and validation reports are not modified.
