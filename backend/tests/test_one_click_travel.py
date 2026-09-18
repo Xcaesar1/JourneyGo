@@ -215,17 +215,27 @@ def test_train_selection_considers_terminal_distance_not_only_ticket_price():
         field = "to_station" if outbound else "from_station"
         far = {**rows[0], field: "远郊站", "start_train_code": "G100"}
         near = {**rows[0], field: "市区站", "start_train_code": "G200", "prices": [{"seat_name": "二等座", "num": "有", "price": "680"}]}
-        return [far.copy() for _ in range(40)] + [near]
+        early_choices = [far.copy() for _ in range(40)] if outbound else [{**far, field: f"远郊站{i}"} for i in range(7)]
+        return early_choices + [near]
 
     def station_maps(city, keyword, kind):
         result = maps(city, keyword, kind)
-        if keyword == "远郊站":
+        if keyword.startswith("远郊站"):
             result["pois"][0]["location"] = "109.1,34.26"
         return result
 
     summary = planner(supplier=station_supplier, maps=station_maps).run().travel_summary
     assert summary["outbound"]["to_name"] == "市区站"
     assert summary["return"]["from_name"] == "市区站"
+
+
+def test_timeline_and_meal_windows_are_consistent():
+    result = build_journey_graph(one_click_planner=lambda state: planner().run()).invoke(
+        {"request": request(), "task_id": "test", "trip_id": "test"}
+    )
+    assert not {"timeline_gap", "timeline_overlap", "timeline_not_closed", "meal_time_unreasonable"} & {
+        issue.code for issue in result["validation_report"].issues
+    }
 
 
 @pytest.mark.parametrize("scope", ["outbound", "return"])

@@ -710,15 +710,15 @@ class OneClickPlanner:
         viable = None
         terminal_pairs = []
         if r.intercity_mode == "train":
-            seen_terminals = set()
+            arrivals, departures = {}, {}
             for a, b in combinations:
-                key = (a["from_name"], a["to_name"], b["from_name"], b["to_name"])
-                if key in seen_terminals:
-                    continue
-                seen_terminals.add(key)
-                terminal_pairs.append((a, b))
-                if len(terminal_pairs) == 8:
+                if len(arrivals) < 8:
+                    arrivals.setdefault(a["to_name"], a)
+                if len(departures) < 8:
+                    departures.setdefault(b["from_name"], b)
+                if len(arrivals) == len(departures) == 8:
                     break
+            terminal_pairs = [(a, b) for a in arrivals.values() for b in departures.values()]
         terminal_cache = {}
 
         def terminal(city_name, name):
@@ -1045,9 +1045,9 @@ class OneClickPlanner:
                     meal_start = current + timedelta(minutes=travel)
                     meal_type = (
                         "breakfast"
-                        if meal_start.hour < 11
+                        if meal_start.hour * 60 + meal_start.minute <= 630
                         else "lunch"
-                        if meal_start.hour < 16
+                        if meal_start.hour * 60 + meal_start.minute <= 870
                         else "dinner"
                     )
                     served = {meal.type for meal in meals}
@@ -1167,6 +1167,17 @@ class OneClickPlanner:
             timeline.sort(key=lambda item: item.start)
             if any(a.end > b.start for a, b in zip(timeline, timeline[1:])):
                 raise PlanningInputRequired("time_conflict", "交通接驳时间冲突，请调整出发日期。")
+            continuous = []
+            cursor = min(datetime.combine(day, r.daily_start_time), timeline[0].start) if timeline else start
+            for item in timeline:
+                if item.start > cursor:
+                    continuous.append(entry(i, "自由安排 / 休息（含入住、离店准备）", cursor, int((item.start - cursor).total_seconds() / 60), "free_time"))
+                continuous.append(item)
+                cursor = item.end
+            daily_end = datetime.combine(day, r.daily_end_time)
+            if cursor < daily_end:
+                continuous.append(entry(i, "自由安排 / 休息", cursor, int((daily_end - cursor).total_seconds() / 60), "free_time"))
+            timeline = continuous
             meals_cents += (
                 sum(meal.price_reference.amount_cents for meal in meals if meal.price_reference)
                 * r.travelers
