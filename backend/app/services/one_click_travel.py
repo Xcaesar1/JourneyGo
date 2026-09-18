@@ -708,22 +708,48 @@ class OneClickPlanner:
         failure = None
         failed_hotel_codes = {}
         viable = None
+        terminal_pairs = []
+        if r.intercity_mode == "train":
+            seen_terminals = set()
+            for a, b in combinations:
+                key = (a["from_name"], a["to_name"], b["from_name"], b["to_name"])
+                if key in seen_terminals:
+                    continue
+                seen_terminals.add(key)
+                terminal_pairs.append((a, b))
+                if len(terminal_pairs) == 8:
+                    break
+        terminal_cache = {}
+
+        def terminal(city_name, name):
+            key = (city_name, name)
+            if key not in terminal_cache:
+                terminal_cache[key] = self.pois(city_name, name, terminal_type, exact=True)[0]
+            return terminal_cache[key]
+
         for hotel_index, hotel in enumerate(ranked_hotels):
             hotel_failures = []
-            for candidate_outbound, candidate_inbound in combinations[:30]:
+            hotel_pairs = combinations[:30]
+            if terminal_pairs:
+                mapped_pairs = []
+                for a, b in terminal_pairs:
+                    try:
+                        distance = place_distance_meters(terminal(city, a["to_name"]), hotel) + place_distance_meters(hotel, terminal(city, b["from_name"]))
+                        mapped_pairs.append((distance, pair_score((a, b)), a, b))
+                    except PlanningInputRequired as exc:
+                        failure = exc
+                        hotel_failures.append(exc.payload["code"])
+                hotel_pairs = [(a, b) for _, _, a, b in sorted(mapped_pairs, key=lambda item: item[:2])]
+                # Keep alternative times if the best service for a terminal pair is infeasible.
+                hotel_pairs += [pair for pair in combinations[:30] if pair not in hotel_pairs]
+            for candidate_outbound, candidate_inbound in hotel_pairs:
                 try:
-                    candidate_outbound["location"] = self.pois(
-                        city, candidate_outbound["to_name"], terminal_type, exact=True
-                    )[0]
-                    candidate_outbound["origin_location"] = self.pois(
+                    candidate_outbound["location"] = terminal(city, candidate_outbound["to_name"])
+                    candidate_outbound["origin_location"] = terminal(
                         r.origin,
                         candidate_outbound["from_name"],
-                        terminal_type,
-                        exact=True,
-                    )[0]
-                    candidate_inbound["location"] = self.pois(
-                        city, candidate_inbound["from_name"], terminal_type, exact=True
-                    )[0]
+                    )
+                    candidate_inbound["location"] = terminal(city, candidate_inbound["from_name"])
                     total = (
                         candidate_outbound["price_cents"] + candidate_inbound["price_cents"]
                     ) * r.travelers

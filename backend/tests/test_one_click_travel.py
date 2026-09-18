@@ -206,6 +206,28 @@ def test_dense_train_route_does_not_truncate_later_return_services():
     assert summary["return"]["number"] == "G999"
 
 
+def test_train_selection_considers_terminal_distance_not_only_ticket_price():
+    def station_supplier(provider, tool, args):
+        rows = supplier(provider, tool, args)
+        if provider != "train":
+            return rows
+        outbound = args["fromStation"] == "上海"
+        field = "to_station" if outbound else "from_station"
+        far = {**rows[0], field: "远郊站", "start_train_code": "G100"}
+        near = {**rows[0], field: "市区站", "start_train_code": "G200", "prices": [{"seat_name": "二等座", "num": "有", "price": "680"}]}
+        return [far.copy() for _ in range(40)] + [near]
+
+    def station_maps(city, keyword, kind):
+        result = maps(city, keyword, kind)
+        if keyword == "远郊站":
+            result["pois"][0]["location"] = "109.1,34.26"
+        return result
+
+    summary = planner(supplier=station_supplier, maps=station_maps).run().travel_summary
+    assert summary["outbound"]["to_name"] == "市区站"
+    assert summary["return"]["from_name"] == "市区站"
+
+
 @pytest.mark.parametrize("scope", ["outbound", "return"])
 @pytest.mark.parametrize("empty", [True, False])
 def test_transport_failure_identifies_leg_and_returned_data(scope, empty):
