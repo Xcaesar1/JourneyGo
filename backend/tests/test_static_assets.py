@@ -1,8 +1,7 @@
+from backend.app.api.static_assets import build_assets
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from fastapi.testclient import TestClient
-
-from backend.app.api.static_assets import build_assets
 
 
 def test_assets_compress_and_cache_without_touching_api_streams(tmp_path):
@@ -32,6 +31,6 @@ def test_assets_compress_and_cache_without_touching_api_streams(tmp_path):
     assert "immutable" in cached.headers["cache-control"]
     assert client.get("/assets/plain.js").headers["cache-control"] == "no-cache"
     assert client.get("/assets/missing-abcdefgh.js").status_code == 404
-    events = client.get("/api/events", headers={"Accept-Encoding": "gzip"})
-    assert "content-encoding" not in events.headers
-    assert "cache-control" not in events.headers
+    event_response = client.get("/api/events", headers={"Accept-Encoding": "gzip"})
+    assert "content-encoding" not in event_response.headers
+    assert "cache-control" not in event_response.headers

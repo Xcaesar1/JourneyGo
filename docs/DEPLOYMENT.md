@@ -1,5 +1,21 @@
 # Deployment And Rollback
 
+## Planning Recovery And Form Alignment (2026-09-18)
+
+- Source `f1efb26`; API and Worker image `journeyops-app:recovery-f1efb26`.
+- Release directory `/opt/tripstar/releases/recovery-f1efb26-20260918`.
+- Includes feasible-plan recovery, advisory notices, responsive form alignment and
+  obsolete planning-document cleanup. No database migration or dependency change.
+- Backend suite passed with four integration tests skipped locally; 48 frontend tests,
+  production build and pre-release Android form/calendar touch checks passed.
+- Both staging services passed health, feature-gate, route and asset checks; authenticated
+  ingress passed. Production, demo, PostgreSQL and Redis container identities were unchanged.
+- No real task was resumed or approved. Flights and personal-map writes remain disabled.
+- Rollback: read this release's `previous-compose-files.txt`, use those Compose files
+  in their recorded order with `/opt/tripstar/JourneyOps-staging/.env.staging`, check
+  for active tasks, then run `up -d --no-deps --no-build worker trip-planner`.
+  The previous image is `journeyops-app:costs-f784506`; preserve all data volumes.
+
 ## Mobile UI Release (2026-09-17)
 
 - Source `4129750`; staging API image `journeyops-app:mobile-4129750`.
