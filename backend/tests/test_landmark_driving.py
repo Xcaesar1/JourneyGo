@@ -13,6 +13,26 @@ def driving(_args, duration="2400"):
     return {"status": "1", "route": {"paths": [{"duration": duration, "distance": "35000", "tolls": "100", "taxi_cost": "200"}]}}
 
 
+def test_airport_arrive_by_rechecks_earlier_departure_and_retains_buffer():
+    p, _ = landmark_planner(LANDMARKS[1])
+    times = []
+    def route(left, right, departure):
+        times.append(departure.strftime("%H:%M"))
+        return {"minutes": 80 if len(times) == 1 else 60, "mode": "public_transit"}
+    p.landmark_route = route
+    result = p.airport_route({}, {}, arrive_by=datetime(2026, 9, 24, 10))
+    assert times == ["09:30", "08:40"]
+    assert result["minutes"] == 80
+
+
+def test_airport_missing_route_stops_instead_of_inventing_driving_time():
+    p, _ = landmark_planner(LANDMARKS[1])
+    p.landmark_route = lambda *args: None
+    with pytest.raises(PlanningInputRequired) as exc:
+        p.airport_route({}, {}, datetime(2026, 9, 20, 12))
+    assert exc.value.payload["code"] == "airport_transfer_unavailable"
+
+
 @pytest.mark.parametrize("distance,car_duration,expected,calls_expected", [
     (9999, "600", "public_transit", 0),
     (10000, "600", "driving", 1),

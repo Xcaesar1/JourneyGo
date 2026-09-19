@@ -70,6 +70,21 @@ test('fixed segment and explicit web fallback preserve mode and coordinates', ()
   assert.equal(url.searchParams.get('mode'), 'bus')
 })
 
+test('airport driving links resolve both endpoints on arrival and return days', () => {
+  const module = { exports: {} }
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL('./transferDetails.ts', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, module)
+  const airport = { ...place, name: '机场' }
+  const hotel = { ...place, name: '酒店', location: { longitude: 104.1, latitude: 30.6 } }
+  const summary = { hotel, outbound: { location: airport }, return: { location: airport } }
+  for (const [from, to] of [[airport, hotel], [hotel, airport]]) {
+    const route = { estimate_id: 'airport', origin: from.name, destination: to.name, mode: 'driving', provider: 'amap-driving' }
+    const segment = module.exports.drivingTransfers({ item_type: 'transport', route_estimate_id: 'airport' }, { attractions: [], meals: [] }, [route], summary)[0]
+    assert.equal(segment.from.name, from.name)
+    assert.equal(segment.place.name, to.name)
+  }
+  assert.match(module.exports.transferDetails({ title: '酒店至返程枢纽（驾车，费用未评估）' }, summary).title, /驾车，费用未评估/)
+})
+
 test('unknown providers, missing and invalid coordinates use scoped search', () => {
   for (const p of [meal, { ...place, poi_id: 'google-id' }, { ...place, location: undefined },
     { ...place, location: { longitude: 0, latitude: 0 } },

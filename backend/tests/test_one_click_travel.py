@@ -783,7 +783,8 @@ def test_replan_flight_refresh_requires_new_consent():
 
 
 @pytest.mark.parametrize("route", [("上海", "西安", "SHA", "SIA"), ("昆明市", "丽江市", "KMG", "LJG"), ("深圳", "武汉", "SZX", "WUH"), ("深圳市", "武汉市", "SZX", "WUH")])
-def test_flight_roundtrip_once_each_and_unknown_taxes(route):
+@pytest.mark.parametrize("distant_airport", [False, True])
+def test_flight_roundtrip_once_each_and_unknown_taxes(route, distant_airport):
     from pydantic import SecretStr
 
     calls = []
@@ -820,9 +821,14 @@ def test_flight_roundtrip_once_each_and_unknown_taxes(route):
     trip_request.excluded_attractions = [item["name"] for item in city_landmarks(route[1])]
     def flight_maps(city, keyword, kind):
         # Return stable ordinary places: this test exercises flights, not landmarks.
-        return maps(city, "测试景点" if kind == "110000" else keyword, kind)
+        result = maps(city, "测试景点" if kind == "110000" else keyword, kind)
+        if distant_airport and "机场" in keyword:
+            result["pois"][0]["location"] = "109.95,34.26"
+        return result
 
     p = planner(trip_request, supplier=flights, maps=flight_maps)
+    p.transit = lambda _: {"status": "1", "route": {"transits": []}}
+    p.driving = lambda _: {"status": "1", "route": {"paths": [{"duration": "2400", "distance": "100000"}]}}
     p.settings = p.settings.model_copy(
         update={
             "travel_flight_enabled": True,
@@ -836,12 +842,24 @@ def test_flight_roundtrip_once_each_and_unknown_taxes(route):
     assert len(calls) == 2
     assert calls[0]["dep_city"] == route[2] and calls[0]["arr_city"] == route[3]
     assert calls[1]["dep_city"] == route[3] and calls[1]["arr_city"] == route[2]
-    assert first.travel_summary["cost_items"][-1] == {
+    assert next(item for item in first.travel_summary["cost_items"] if item["category"] == "flight_taxes") == {
         "category": "flight_taxes",
         "status": "unknown",
         "amount_cents": None,
     }
     assert second.travel_summary["known_cents"] == 140100
+    if distant_airport:
+        driving_routes = [r for r in first.route_matrix if r.provider == "amap-driving"]
+        assert len(driving_routes) == 2
+        assert all(r.duration_minutes == 70 for r in driving_routes)
+        assert len(first.travel_summary["driving_fallback_days"]) == 2
+        assert next(i for i in first.travel_summary["cost_items"] if i["category"] == "driving_transfers")["amount_cents"] is None
+        final = first.days[-1].timeline
+        airport_leg = next(t for t in final if t.title.startswith("酒店至返程枢纽"))
+        check_in = next(t for t in final if t.title == "候车 / 值机预留")
+        assert airport_leg.end == check_in.start
+        assert check_in.duration_minutes == 120
+        assert all(a.end == b.start for day in first.days for a, b in zip(day.timeline, day.timeline[1:]))
 
 
 def test_fixed_september_20_five_day_acceptance(monkeypatch):

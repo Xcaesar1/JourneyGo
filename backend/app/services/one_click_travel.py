@@ -465,6 +465,27 @@ class OneClickPlanner:
             provider, scope, {"tool": tool, **args}, lambda: self.supplier(provider, tool, args)
         )
 
+    def airport_route(self, left, right, departure=None, *, arrive_by=None):
+        if arrive_by is None:
+            route = self.landmark_route(left, right, departure)
+            if route:
+                return route
+        else:
+            # Query at the actual reserved departure time, retaining any spare buffer.
+            reserved = 30
+            for _ in range(3):
+                route = self.landmark_route(left, right, arrive_by - timedelta(minutes=reserved))
+                if not route:
+                    break
+                if route["minutes"] <= reserved:
+                    return {**route, "minutes": reserved}
+                reserved = route["minutes"]
+        raise PlanningInputRequired(
+            "airport_transfer_unavailable",
+            "机场与酒店之间未取得可用的公交或驾车接驳方案，请调整住宿或交通时间。",
+            provider="amap",
+        )
+
     def _maps(self, city, keyword, kind):
         if not self.settings.vite_amap_web_key:
             raise ValueError("map_not_configured")
@@ -1079,18 +1100,26 @@ class OneClickPlanner:
                         int((arrival - dep).total_seconds() / 60),
                     )
                 )
-                minutes = transfer(outbound["location"], hotel)
                 exit_minutes = 60 if r.intercity_mode == "flight" else 30
                 terminal_exit = arrival + timedelta(minutes=exit_minutes)
+                arrival_route = None
+                if r.intercity_mode == "flight" and place_distance_meters(outbound["location"], hotel) >= DISTANT_TRANSFER_METERS:
+                    arrival_route = self.airport_route(outbound["location"], hotel, terminal_exit)
+                minutes = arrival_route["minutes"] if arrival_route else transfer(outbound["location"], hotel)
                 if (terminal_exit + timedelta(minutes=minutes + 30)).date() != day:
                     raise PlanningInputRequired(
                         "late_arrival", "抵达酒店已跨日，请选择更早到达的交通方案。"
                     )
                 timeline.append(entry(i, "下机 / 出站预留（估算）", arrival, exit_minutes, "free_time", outbound["location"]))
-                timeline.append(entry(i, "到站后接驳至酒店（估算）", terminal_exit, minutes, poi=hotel))
+                arrival_label = "驾车，费用未评估" if arrival_route and arrival_route["mode"] == "driving" else "公交 / 地铁方案估算" if arrival_route else "估算"
+                timeline.append(entry(i, f"到站后接驳至酒店（{arrival_label}）", terminal_exit, minutes, poi=hotel, route_info=arrival_route))
                 local_minutes += minutes
                 start = max(start, terminal_exit + timedelta(minutes=minutes + 30))
             return_minutes = transfer(hotel, inbound["location"])
+            return_route = None
+            if i == r.travel_days - 1 and r.intercity_mode == "flight" and place_distance_meters(hotel, inbound["location"]) >= DISTANT_TRANSFER_METERS:
+                return_route = self.airport_route(hotel, inbound["location"], arrive_by=departure - timedelta(minutes=buffer))
+                return_minutes = return_route["minutes"]
             reserved_return_minutes = return_minutes if i == r.travel_days - 1 else 0
             if local_minutes + reserved_return_minutes > commute_limit:
                 raise PlanningInputRequired(
@@ -1291,10 +1320,11 @@ class OneClickPlanner:
                 timeline.append(
                     entry(
                         i,
-                        "酒店至返程枢纽（估算）",
+                        "酒店至返程枢纽（驾车，费用未评估）" if return_route and return_route["mode"] == "driving" else "酒店至返程枢纽（公交 / 地铁方案估算）" if return_route else "酒店至返程枢纽（估算）",
                         station_start,
                         return_minutes,
                         poi=inbound["location"],
+                        route_info=return_route,
                     )
                 )
                 local_minutes += return_minutes
