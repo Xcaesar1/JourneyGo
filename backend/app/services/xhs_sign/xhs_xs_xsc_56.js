@@ -479,9 +479,9 @@ function get_x_s() {
         "image_formats": ["jpg", "webp", "avif"],
         "extra": {"need_body_topic": "1"},
         "xsec_source": "pc_feed",
-        "xsec_token": "ABfuVL1abrca5AtSMfNR0pWGBkZh387i3pykPOCHh4QbA="
+        "xsec_token": "replace-with-note-access-token"
     };
-    var a1 = "1908d1a0b6eb13b5egsm8ggm97q17yfuv92n4l0g850000266761";
+    var a1 = "replace-with-client-cookie";
     return get_request_headers_params(url_param, json_data, a1, 'POST');
 }
 

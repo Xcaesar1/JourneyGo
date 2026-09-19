@@ -106,5 +106,5 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: README links and branding entry points
-        run: node --test tests/readme.test.cjs
+      - name: README links and private configuration boundaries
+        run: node --test tests/readme.test.cjs tests/secrets-config.test.cjs

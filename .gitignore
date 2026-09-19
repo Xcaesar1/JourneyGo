@@ -9,3 +9,10 @@ __pycache__/
 .venv/
 artifacts/
 .playwright-cli/
+
+# Keep real environment files private at every directory level.
+.env*
+!.env*.example
+*.pem
+*.key
+.secrets/

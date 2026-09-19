@@ -16,3 +16,12 @@ MiroFish-main
 .venv
 backend/.venv
 backend/data
+
+# Secrets and local evidence must never enter a Docker build context.
+.env*
+**/.env*
+**/runtime_settings.json
+**/*.pem
+**/*.key
+.secrets
+artifacts
