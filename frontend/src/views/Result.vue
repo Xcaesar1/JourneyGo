@@ -235,9 +235,6 @@
             <span class="overview-meta-item">
               {{ t('result.dateRange', { start: tripPlan.start_date, end: tripPlan.end_date }) }}
             </span>
-            <span v-if="planId" class="overview-meta-item">
-              Plan ID: {{ planId }}
-            </span>
             <details v-if="tripPlan.overall_suggestions && !tripPlan.travel_summary" class="overview-meta-item">
               <summary>{{ t('result.side.overview') }}</summary>
               {{ tripPlan.overall_suggestions }}
@@ -675,7 +672,6 @@
           :bordered="false"
           class="section-shellless weather-section-card"
         >
-          <p>{{ t('result.weatherCoverage') }}</p>
           <p v-if="weatherMissingDates.length" class="weather-missing" role="status">{{ t('result.weatherMissingDates', { dates: weatherMissingDates.join('、') }) }}</p>
           <a-empty v-if="!selectedWeather" class="weather-empty" :description="t('result.weatherUnavailable')">
             <p>{{ t('result.weatherUnavailableDetail') }}</p>
@@ -741,7 +737,7 @@
                   </template>
                 </div>
                 <h1 class="weather-temp">{{ formatWeatherTemp(selectedWeather.day_temp) }}</h1>
-                <h3 class="weather-desc">{{ selectedWeather.day_weather }}</h3>
+                <h3 class="weather-desc">{{ weatherText(selectedWeather.day_weather, locale) }}</h3>
               </div>
             </section>
 
@@ -801,11 +797,11 @@
                 <div class="today-info">
                   <div class="today-info-item">
                     <span class="wea-title">{{ t(selectedWeather.source_url ? 'result.weatherHigh' : 'result.weatherDay') }}</span>
-                    <span class="value">{{ selectedWeather.day_weather }} · {{ formatWeatherTemp(selectedWeather.day_temp) }}</span>
+                    <span class="value">{{ weatherText(selectedWeather.day_weather, locale) }} · {{ formatWeatherTemp(selectedWeather.day_temp) }}</span>
                   </div>
                   <div class="today-info-item">
                     <span class="wea-title">{{ t(selectedWeather.source_url ? 'result.weatherLow' : 'result.weatherNight') }}</span>
-                    <span class="value">{{ selectedWeather.night_weather }} · {{ formatWeatherTemp(selectedWeather.night_temp) }}</span>
+                    <span class="value">{{ weatherText(selectedWeather.night_weather, locale) }} · {{ formatWeatherTemp(selectedWeather.night_temp) }}</span>
                   </div>
                   <div class="today-info-item">
                     <span class="wea-title">{{ t('result.weatherPrecipitation') }}</span>
@@ -857,6 +853,7 @@ import { journeyTheme, journeyThemeName, journeyVariables, journeyPalette } from
 import { computed, reactive, ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { weatherText } from '@/services/weatherText'
 import {
   message, Alert as AAlert, BackTop as ABackTop, Card as ACard,
   Collapse as ACollapse, CollapsePanel as ACollapsePanel,
@@ -2542,13 +2539,13 @@ const buildExportHTML = (mapDataUrl: string = ''): string => {
             <div style="display:flex;align-items:center;margin-bottom:10px;">
               <div style="line-height:1.2;">
                 <div style="font-size:12px;color:#58717a;margin-bottom:2px;">${t(w.source_url ? 'result.weatherHigh' : 'result.export.daytime')}</div>
-                <div style="font-size:14px;color:#fff;font-weight:600;">${w.day_weather} ${w.day_temp}°C</div>
+                <div style="font-size:14px;color:#fff;font-weight:600;">${weatherText(w.day_weather, locale.value)} ${w.day_temp}°C</div>
               </div>
             </div>
             <div style="display:flex;align-items:center;margin-bottom:12px;">
               <div style="line-height:1.2;">
                 <div style="font-size:12px;color:#58717a;margin-bottom:2px;">${t(w.source_url ? 'result.weatherLow' : 'result.export.nighttime')}</div>
-                <div style="font-size:14px;color:#fff;font-weight:600;">${w.night_weather} ${w.night_temp}°C</div>
+                <div style="font-size:14px;color:#fff;font-weight:600;">${weatherText(w.night_weather, locale.value)} ${w.night_temp}°C</div>
               </div>
             </div>
             <div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:10px;text-align:center;font-size:12px;color:#58717a;">
@@ -3706,6 +3703,11 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 .weather-side {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 28px;
+  box-sizing: border-box;
   flex: 0 0 300px;
   /* min-height: 360px; */
   /* border-radius: 26px; */
@@ -3727,10 +3729,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 .date-container {
-  position: absolute;
-  top: 38px;
-  left: 38px;
-  right: 28px;
+  position: relative;
   z-index: 2;
 }
 
@@ -3764,10 +3763,8 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 .weather-container {
-  position: absolute;
-  left: 28px;
-  right: 28px;
-  bottom: 28px;
+  position: relative;
+  margin-top: auto;
   z-index: 2;
 }
 
@@ -3776,8 +3773,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   color: var(--jg-text);
   font-size: 0.78em;
   line-height: 1;
-  margin-bottom: -22px;
-  margin-left: -20px;
+  margin: 0;
   filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.18));
 }
 

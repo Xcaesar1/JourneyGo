@@ -30,5 +30,5 @@ test('local transport estimate excludes unpriced driving-fallback days', () => {
   assert.equal(costScope('local_transport', {}).scopeLabel, '全程')
   const view = readFileSync(new URL('../components/TravelSummary.vue', import.meta.url), 'utf8')
   assert.match(view, /v-if="summary.driving_fallback_days\?\.length"/)
-  assert.match(view, /未评估、不计入总额（不是免费）/)
+  assert.match(view, /驾车日市内交通费另计，车辆需自行安排/)
 })

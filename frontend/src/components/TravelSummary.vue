@@ -1,14 +1,5 @@
 <template>
   <section class="trip-logistics">
-    <p>{{ t('oneClick.notBooked') }}</p>
-    <p v-if="limitedSightseeing" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '往返交通占比较高，主要可游览日期：' : 'Travel takes a substantial part of this trip. Main sightseeing dates: ' }}{{ sightseeingDates }}{{ locale.startsWith('zh') ? '。抵达和返程当天按剩余时间安排，不代表完整游览日。' : '. Arrival and departure days use only the remaining time.' }}</p>
-    <p v-for="notice in summary.planning_notices || []" :key="notice" class="planning-notice" role="note">{{ notice }}</p>
-    <p v-for="window in windows.filter((item: any) => item.sightseeing_note)" :key="window.date" class="planning-notice" role="note">{{ window.sightseeing_note }}</p>
-    <details v-if="summary.landmark_coverage?.length || summary.deduplicated_places?.length" class="planning-notice">
-      <summary>{{ locale.startsWith('zh') ? '代表景点与去重说明' : 'Landmarks and duplicate experiences' }}</summary>
-      <p v-for="item in summary.landmark_coverage || []" :key="item.name">{{ item.name }} · {{ item.status === 'scheduled' ? (locale.startsWith('zh') ? '已安排，时长为规划估算' : 'Scheduled; estimated visit time') : item.reason }} <a v-if="item.identity_source" :href="item.identity_source" target="_blank" rel="noopener noreferrer">{{ locale.startsWith('zh') ? '景点资料' : 'Source' }}</a></p>
-      <p v-for="item in summary.deduplicated_places || []" :key="item.removed">{{ item.removed }} → {{ locale.startsWith('zh') ? '同类体验只保留' : 'Same experience; retained' }} {{ item.kept }}</p>
-    </details>
     <div class="logistics-grid">
       <article v-for="direction in ['outbound', 'return']" :key="direction">
         <h3>{{ t(direction === 'outbound' ? 'oneClick.outbound' : 'oneClick.inbound') }} · <span class="train-number">{{ summary[direction].number }}</span></h3>
@@ -30,13 +21,12 @@
       </article>
       <article>
         <h3>{{ locale.startsWith('zh') ? '已统计费用' : 'Counted costs' }} · CNY {{ money(summary.expected_cents) }}</h3>
-        <p v-if="summary.driving_fallback_days?.length" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '驾车兜底日的市内交通费用未评估、不计入总额（不是免费），需自行确认车辆与费用：' : 'Local transport on driving-fallback days is unpriced and excluded (not free). Arrange and price vehicles separately: ' }}{{ summary.driving_fallback_days.join(' / ') }}</p>
+        <p v-if="summary.driving_fallback_days?.length" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '驾车日市内交通费另计，车辆需自行安排。' : 'Local transport on driving days is excluded. Arrange vehicles separately.' }}</p>
         <p>{{ locale.startsWith('zh') ? '部分餐费未计入，实际以店内为准。' : 'Some meals are excluded; confirm prices in store.' }}</p>
         <p v-if="!summary.meal_pricing_policy">{{ locale.startsWith('zh') ? '餐费沿用历史估算，非商家报价。' : 'Meal costs are historical estimates, not restaurant quotes.' }}</p>
         <p>{{ t('oneClick.quoted') }}: {{ money(summary.known_cents) }}</p>
         <p>{{ t('oneClick.estimated') }}: {{ money(summary.estimated_cents) }}</p>
         <p>{{ t('oneClick.unknown') }}</p>
-        <details><summary>{{ t('oneClick.retained') }}</summary><p v-for="(quote, i) in summary.quotes" :key="i"><a :href="quote.source_url" target="_blank" rel="noopener noreferrer">{{ quote.provider }}</a> · {{ quote.fetched_at }}</p></details>
       </article>
     </div>
     <form v-if="editing && draft" class="quote-editor" @submit.prevent="submit">
@@ -56,17 +46,13 @@
 
 <script setup lang="ts">
 import HotelPhoto from './HotelPhoto.vue'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import { amapUrl } from '@/services/navigation'
 const props = defineProps<{ summary: Record<string, any>; city: string; busy: boolean }>()
 const emit = defineEmits<{ change: [value: Record<string, any>] }>()
 const { t, locale } = useI18n()
-const windows = computed(() => props.summary.activity_windows || [])
-const hasSightseeing = (window: any) => window.scheduled_attractions !== undefined ? window.scheduled_attractions > 0 : window.available_minutes >= 180
-const limitedSightseeing = computed(() => windows.value.some((window: any) => window.is_transfer_day && !hasSightseeing(window)))
-const sightseeingDates = computed(() => windows.value.filter(hasSightseeing).map((window: any) => window.date).join(' / ') || (locale.value.startsWith('zh') ? '请查看每日时间线' : 'See the daily timeline'))
 const editing = ref('')
 const draft = ref<Record<string, any> | null>(null)
 const consent = ref(false)
