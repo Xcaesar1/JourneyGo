@@ -1,5 +1,14 @@
 # Deployment And Rollback
 
+## Mobile Cleanup And Airport Transfers (2026-09-19, Latest)
+
+- UI `a2599a1` simplified the overview, removed the weather coverage paragraph, localized weather descriptions and fixed date/icon overlap. Staging API image `journeyops-app:ui-a2599a1`; worker was initially unchanged.
+- New Chengdu live verification exposed estimated airport transfers exceeding the commute cap. `23bb1cc` adds evidenced public-transit/driving comparison for flight airport/hotel legs at least 10 km apart, without relaxing commute or check-in constraints. Current staging images: `journeyops-app:cities-api-23bb1cc` and `journeyops-app:cities-worker-23bb1cc`.
+- Release directories: `/opt/tripstar/releases/ui-a2599a1-20260919` and `/opt/tripstar/releases/airports-23bb1cc-20260919`. Both deployments checked active_tasks=0, preserved the Compose chain including quota 15, and compared task state, quota and protected containers before/after. No production changes or migrations.
+- Both current services healthy; deployed index/Result JS hashes match the local build. Full backend regression passed with four infrastructure skips; frontend 69 tests, Ruff and build passed. Existing build warnings about legacy assets and large bundles remain.
+- Rollback with the selected release's `previous-compose-files.txt` in recorded order and `.env.staging`, after checking active tasks. Recreate only the services changed by that release. Never reset the quota counter or overwrite live task data.
+- Latest new-city evidence, limitations and recovery details: [round three](demo/mobile-e2e/20260919-r3/README.md). Earlier records below are historical.
+
 ## Staging Flight Quota 15 And Mobile Retest (2026-09-19)
 
 - User explicitly authorized raising the total flight-call limit from 10 to 15. Applied `TRAVEL_FLIGHT_CALL_LIMIT=15` to staging API and worker only, retaining the existing Compose chain and `fbd5a45` images.

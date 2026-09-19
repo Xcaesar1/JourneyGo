@@ -51,27 +51,27 @@ docker compose --env-file .env.demo -f docker-compose.yaml -f docker-compose.dem
 
 ## 真机实测：高铁与飞机五天行程
 
-2026-09-19 在真实 Android 手机上完成两条五天四晚行程并审核保存：深圳到武汉往返 G1040 / G1042，黄鹤楼 120 分钟，已统计费用 2900 元；广州到丽江复用 ZH8903 / JD5132 航班报价，玉龙雪山完整游览 360 分钟，采用高德驾车路线完成往返，已统计费用 2566 元。金额包含估算，不含全部待核实费用；驾车费用未评估，不是零元，未发生预订。
+最新一轮使用新城市、新任务在真实 Android 手机上验证：上海到杭州高铁，以及广州到成都飞机，均为五天四晚。成都在补齐机场接驳、人工排除不合适的夜景与重复子地点后完成并保存，往返 JD5161 / ZH9442，已统计费用 2370 元；机场往返提供高德驾车路线，驾车日交通费另计。不是无人干预一次成功，也不是全包价，未发生预订。
 
 <p>
-  <img src="docs/demo/mobile-e2e/20260919-r2/shenzhen-wuhan/saved-overview.png" alt="真机保存的深圳到武汉行程" width="260" />
-  <img src="docs/demo/mobile-e2e/20260919-r2/guangzhou-lijiang/saved-overview.png" alt="真机保存的广州到丽江行程" width="260" />
-  <img src="docs/demo/mobile-e2e/20260919-r2/guangzhou-lijiang/driving-leg-1.png" alt="玉龙雪山返程驾车路线及费用边界" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/saved-overview.png" alt="本轮广州到成都正式行程" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/airport-day-5.png" alt="成都返程机场驾车接驳" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/weather-localized.png" alt="跟随语言显示的手机天气" width="260" />
 </p>
 
-本轮为一次新高铁任务和一次丽江旧任务恢复，未新增付费航班查询。完整结果、精选截图、验证数据及限制见 [第二轮真机实测记录](docs/demo/mobile-e2e/20260919-r2/README.md)。
+杭州高铁流程与新版界面通过，但人工发现灯光秀被排在上午等质量问题，不包装成优秀整趟案例。以 [第三轮新城市实测](docs/demo/mobile-e2e/20260919-r3/README.md) 为当前依据；[第二轮武汉、丽江记录](docs/demo/mobile-e2e/20260919-r2/README.md) 保留为历史。
 
 ## 产品亮点：整趟地点带进高德
 
-不止生成攻略或逐个跳转地点：将景点、餐厅、酒店和车站整合进一张高德专属地图，按旅行日期组织，直接在手机高德 App 中查看。武汉五天真机实测成功创建 1 张地图、5 条每日行程、20 个地点记录，无地点因坐标缺失被省略。
+不止生成攻略或逐个跳转地点：将景点、餐厅、酒店和车站整合进一张高德专属地图，按旅行日期组织，直接在手机高德 App 中查看。本轮成都、杭州各创建一次，分别为 5 天19条、5天25条每日地点记录，均无坐标缺失遗漏；以下优先展示成都最终结果。
 
 <p>
-  <img src="docs/demo/mobile-e2e/20260919/amap-export/02-map-ready.png" alt="JourneyGo 整趟地点导出成功入口" width="260" />
-  <img src="docs/demo/mobile-e2e/20260919/amap-export/04-list.png" alt="手机高德内的五天日期分组" width="260" />
-  <img src="docs/demo/mobile-e2e/20260919/amap-export/03-native.png" alt="手机高德内的整趟地点地图" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/amap-02-map-ready.png" alt="成都整趟地点导出成功入口" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/amap-05-list.png" alt="本轮手机高德五天日期分组" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/amap-04-map.png" alt="本轮成都整趟地点地图" width="260" />
 </p>
 
-这里导入的是地点与每日分组，不是公交班次、门票或预订；高德显示的默认驾车路线不等于原攻略交通安排。酒店等跨日地点会重复计数。详见 [整趟导入真机演示与边界](docs/demo/mobile-e2e/20260919/amap-export/README.md)。
+这里导入的是地点与每日分组，不是公交班次、门票或预订；高德显示的默认驾车路线不等于原攻略交通安排。酒店等跨日地点会重复计数。详见 [本轮整趟导入演示与边界](docs/demo/mobile-e2e/20260919-r3/README.md)。
 
 ## 核心流程
 
