@@ -1,5 +1,7 @@
 <div align="center">
 
+[中文](README.md) | [English](README_en.md)
+
 <img src="docs/assets/journeygo-logo.png" alt="JourneyGo" width="420" />
 
 # JourneyGo · AI 旅行规划助手
@@ -71,6 +73,12 @@ JourneyGo 把**旅行需求、真实交通查询、每日安排与地图出行**
 机场往返使用高德驾车路线证据，分别预留 80 分钟和 79 分钟。返程为 03:21 从酒店出发、04:40 到机场，为 06:40 航班预留两小时；车辆需自行安排。
 
 本次结果是在修复机场接驳并人工排除不合适的夜景与重复子地点后完成，原航班报价保留，不表述为无人干预一次成功。
+
+### 桌面端 · 整趟景点概览
+
+<p align="center">
+  <img src="docs/assets/showcase/chengdu-desktop-overview.png" alt="成都已保存行程的桌面端景点照片概览" width="1200" />
+</p>
 
 ### 核心演示：把五天地点带进高德
 
@@ -236,8 +244,10 @@ npm --prefix frontend run dev
 
 ```bash
 python -m pytest
+python -m mypy backend/app/domain backend/app/evaluation backend/app/services/replanning.py backend/app/services/routing
 npm --prefix frontend test
 npm --prefix frontend run build
+node --test tests/readme.test.cjs tests/secrets-config.test.cjs
 python -m backend.scripts.run_evaluation --minimum-pass-rate 0.75 --output artifacts/evaluation-report.json
 ```
 
@@ -283,7 +293,7 @@ JourneyGo/
 | 手机路书与天气翻译 | [结果页](frontend/src/views/Result.vue) · [天气文案](frontend/src/services/weatherText.ts) |
 | 回归数据与评测入口 | [数据集](backend/evaluation/datasets/journeygo_v1.json) · [评测脚本](backend/scripts/run_evaluation.py) |
 
-[API 文档](docs/API_V2.md) · [备份与恢复](docs/BACKUP_RESTORE_ROLLBACK.md) · [安全边界](docs/SECURITY.md) · [更新记录](docs/CHANGELOG.md)
+[API 文档](docs/API_V2.md) · [备份与恢复](docs/BACKUP_RESTORE_ROLLBACK.md) · [安全说明](docs/SECURITY_GUIDE.md) · [更新记录](docs/CHANGELOG.md)
 
 ## Star History
 

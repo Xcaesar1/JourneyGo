@@ -5,17 +5,24 @@ const test = require('node:test');
 
 const root = path.resolve(__dirname, '..');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+const english = fs.readFileSync(path.join(root, 'README_en.md'), 'utf8');
 
-test('README local links and screenshots exist', () => {
-  const links = [...readme.matchAll(/\]\(([^)]+)\)|(?:src|href)="([^"]+)"/g)]
+for (const [name, content] of [['Chinese', readme], ['English', english]]) {
+test(`${name} README local links and screenshots exist`, () => {
+  const links = [...content.matchAll(/\]\(([^)]+)\)|(?:src|href)="([^"]+)"/g)]
     .map(match => match[1] || match[2])
     .filter(link => !/^(https?:|#)/.test(link));
   assert.ok(links.length > 25);
   for (const link of links) {
     assert.ok(fs.existsSync(path.resolve(root, link.split('#')[0])), link);
   }
-  assert.equal((readme.match(/<img /g) || []).length, 7);
+  assert.equal((content.match(/<img /g) || []).length, 8);
+  assert.match(content, /chengdu-desktop-overview\.png[^>]*width="1200"/);
+  assert.match(content, /\[English\]\(README_en.md\)/);
+  assert.match(content, /\[中文\]\(README.md\)/);
+  assert.doesNotMatch(content, /docs\/SECURITY\.md/);
 });
+}
 
 test('README architecture fences and repository links stay consistent', () => {
   assert.equal((readme.match(/^```/gm) || []).length % 2, 0);

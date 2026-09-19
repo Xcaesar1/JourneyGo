@@ -1,8 +1,24 @@
 """Sourced identity rules, not a live popularity ranking or opening-hours feed."""
 
 import re
+from typing import TypedDict
 
-LANDMARKS = [
+
+class PlaceIdentity(TypedDict):
+    city: str
+    name: str
+    aliases: list[str]
+    group: str
+    source: str
+
+
+class LandmarkRule(PlaceIdentity, total=False):
+    minutes: int
+    style: str
+    landmark: bool
+
+
+LANDMARKS: list[LandmarkRule] = [
     dict(
         city="上海",
         name="东方明珠广播电视塔",
@@ -69,7 +85,7 @@ LANDMARKS = [
 ]
 
 # Curated equivalent experiences, not containment of all POIs within the old city.
-EXPERIENCES = [
+EXPERIENCES: list[LandmarkRule] = [
     dict(
         city="丽江",
         name="玉龙雪山国家级风景名胜区-玉液湖",

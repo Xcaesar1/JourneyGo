@@ -1,4 +1,4 @@
-# Security Boundaries
+# Security Guide
 
 ## Public Deployment Defaults
 
