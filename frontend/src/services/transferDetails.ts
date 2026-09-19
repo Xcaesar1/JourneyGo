@@ -1,3 +1,15 @@
+import type { DayPlan, RouteEstimate, ScheduleItem } from '@/types'
+
+export function drivingTransfers(item: ScheduleItem, day: DayPlan, routes: RouteEstimate[] = [], summary?: Record<string, any> | null) {
+  const route = routes.find(route => route.estimate_id === item.route_estimate_id
+    && route.provider === 'amap-driving' && route.mode === 'driving' && route.status !== 'unavailable')
+  if (!route || item.item_type !== 'transport') return []
+  const places = [...day.attractions, ...day.meals, day.hotel, summary?.hotel].filter(Boolean)
+  const from = places.find(place => place.name === route.origin)
+  const place = places.find(place => place.name === route.destination)
+  return from && place ? [{ from, place, detail: route.detail }] : []
+}
+
 // Enrich existing transfer rows without changing saved times or itinerary versions.
 export function transferDetails(item: { title: string }, summary?: Record<string, any> | null) {
   if (!summary) return null

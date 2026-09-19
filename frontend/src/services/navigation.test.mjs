@@ -30,8 +30,8 @@ const day = { date: '2026-09-16', day_index: 0, attractions: [place], meals: [me
   { item_id: 'wall', item_type: 'attraction', reference_name: place.name, start: '2026-09-16T13:00:00' },
 ] }
 
-test('walking and transit pass the destination without a fixed current-location origin', () => {
-  for (const mode of ['walk', 'bus']) {
+test('walking, transit and driving pass the destination without a fixed current-location origin', () => {
+  for (const mode of ['walk', 'bus', 'car']) {
     const url = new URL(amapUrl(place, '西安', mode))
     assert.equal(url.pathname, '/navigation')
     assert.equal(url.searchParams.get('mode'), mode)
@@ -41,6 +41,26 @@ test('walking and transit pass the destination without a fixed current-location 
     assert.equal(url.searchParams.has('from'), false)
     assert.equal(url.searchParams.has('via'), false)
   }
+})
+
+test('driving fallback links preserve saved direction and never imply a vehicle booking', () => {
+  const code = readFileSync(new URL('./transferDetails.ts', import.meta.url), 'utf8')
+  const module = { exports: {} }
+  vm.runInNewContext(ts.transpileModule(code, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, module)
+  const hotel = { ...place, name: '酒店', location: { longitude: 100.1, latitude: 26.8 } }
+  const item = { item_type: 'transport', route_estimate_id: 'return' }
+  const routes = [{ estimate_id: 'return', origin: place.name, destination: hotel.name, mode: 'driving', provider: 'amap-driving', status: 'estimated', detail: '费用未评估' }]
+  const segment = module.exports.drivingTransfers(item, day, routes, { hotel })[0]
+  const url = new URL(amapUrl(segment.place, '丽江', 'car', true, segment.from))
+  assert.equal(url.searchParams.get('mode'), 'car')
+  assert.equal(url.searchParams.get('to'), '100.1,26.8,酒店')
+  assert.ok(url.searchParams.get('from').startsWith('108.94,34.25,'))
+  assert.equal(segment.detail, '费用未评估')
+  assert.equal(module.exports.drivingTransfers(item, day, [{ ...routes[0], status: 'unavailable' }], { hotel }).length, 0)
+  assert.equal(module.exports.drivingTransfers(item, day, routes).length, 0)
+  const component = readFileSync(new URL('../components/PlaceNavigation.vue', import.meta.url), 'utf8')
+  assert.ok(component.includes("amapUrl(place, city, 'car', true, from)"))
+  assert.ok(component.includes("amapUrl(place, city, 'car', false, from)"))
 })
 
 test('fixed segment and explicit web fallback preserve mode and coordinates', () => {

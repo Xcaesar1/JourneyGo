@@ -24,6 +24,9 @@ export function costScope(category: string, summary: Record<string, any>, chines
     const nights = start && end ? Math.round((Date.parse(end) - Date.parse(start)) / 86400000) : 0
     return { scopeLabel: start && end && nights > 0 ? `${start} ~ ${end} · ${nights}${chinese ? '晚' : ' nights'}` : pending, sortDate: start }
   }
+  if (category === 'local_transport' && summary.driving_fallback_days?.length) {
+    return { scopeLabel: chinese ? '仅非驾车兜底日' : 'Excludes driving-fallback days', sortDate: '' }
+  }
   return { scopeLabel: chinese ? '全程' : 'Whole trip', sortDate: '' }
 }
 

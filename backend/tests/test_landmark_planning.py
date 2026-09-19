@@ -72,7 +72,7 @@ def landmark_planner(item, **changes):
             ]
         return {"status": "1", "pois": rows}
 
-    return planner(r, maps=search, transit=transit), queries
+    return planner(r, maps=search, transit=transit, driving=lambda args: {"status": "1", "route": {"paths": []}}), queries
 
 
 @pytest.mark.parametrize("item", LANDMARKS, ids=[item["group"] for item in LANDMARKS])
@@ -141,7 +141,7 @@ def test_missing_return_bus_never_reuses_outward_route():
         return transit(args) if args["time"] == "09:00" else {"status": "1", "route": {"transits": []}}
 
     p.transit = outbound_only
-    with pytest.raises(PlanningInputRequired, match="往返公交"):
+    with pytest.raises(PlanningInputRequired, match="往返接驳"):
         p.run()
     assert len({args["date"] for args in calls}) == 3
 
@@ -274,7 +274,7 @@ def test_exclusion_applies_to_landmark_aliases_and_survives_scheduling():
     )
 
 
-def test_missing_public_transit_does_not_become_driving_or_silent_omission():
+def test_missing_transit_and_driving_do_not_silently_omit_landmark():
     p, _ = landmark_planner(LANDMARKS[3])
     p.transit = lambda args: {"status": "1", "route": {"transits": []}}
     with pytest.raises(PlanningInputRequired) as caught:

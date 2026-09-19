@@ -30,6 +30,7 @@
       </article>
       <article>
         <h3>{{ locale.startsWith('zh') ? '已统计费用' : 'Counted costs' }} · CNY {{ money(summary.expected_cents) }}</h3>
+        <p v-if="summary.driving_fallback_days?.length" class="planning-notice" role="note">{{ locale.startsWith('zh') ? '驾车兜底日的市内交通费用未评估、不计入总额（不是免费），需自行确认车辆与费用：' : 'Local transport on driving-fallback days is unpriced and excluded (not free). Arrange and price vehicles separately: ' }}{{ summary.driving_fallback_days.join(' / ') }}</p>
         <p>{{ locale.startsWith('zh') ? '部分餐费未计入，实际以店内为准。' : 'Some meals are excluded; confirm prices in store.' }}</p>
         <p v-if="!summary.meal_pricing_policy">{{ locale.startsWith('zh') ? '餐费沿用历史估算，非商家报价。' : 'Meal costs are historical estimates, not restaurant quotes.' }}</p>
         <p>{{ t('oneClick.quoted') }}: {{ money(summary.known_cents) }}</p>

@@ -526,6 +526,10 @@
                       </div>
                       <span>{{ t('result.execution.minutes', { minutes: item.duration_minutes }) }}</span>
                       <PlaceNavigation v-if="transferDetails(item, tripPlan.travel_summary)" :place="transferDetails(item, tripPlan.travel_summary)!.place" :from="transferDetails(item, tripPlan.travel_summary)!.from" :city="transferDetails(item, tripPlan.travel_summary)!.city || day.city || tripPlan.city" />
+                      <template v-for="segment in drivingTransfers(item, day, tripPlan.route_matrix, tripPlan.travel_summary)" :key="item.item_id + '-driving'">
+                        <p>{{ segment.detail }}</p>
+                        <PlaceNavigation :place="segment.place" :from="segment.from" :city="day.city || tripPlan.city" driving />
+                      </template>
                     </div>
                   </article>
                 </div>
@@ -871,7 +875,7 @@ import OverviewAttractionCard from '@/components/OverviewAttractionCard.vue'
 import AIChat from '@/components/AIChat.vue'
 import PlaceNavigation from '@/components/PlaceNavigation.vue'
 import HotelPhoto from '@/components/HotelPhoto.vue'
-import { transferDetails } from '@/services/transferDetails'
+import { drivingTransfers, transferDetails } from '@/services/transferDetails'
 import AttractionIntro from '@/components/AttractionIntro.vue'
 import TripNavigator from '@/components/TripNavigator.vue'
 import TravelSearch from '@/components/TravelSearch.vue'

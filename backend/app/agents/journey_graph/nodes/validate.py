@@ -323,15 +323,14 @@ def _validate_routes(state: TripState, plan: TripPlanV2) -> list[ValidationIssue
             if day.is_transfer_day
             else 180
         )
-        # Dedicated sightseeing days budget both evidenced bus legs separately.
+        # Dedicated sightseeing days budget both provider-backed transfer legs separately.
         # Do not grant this allowance to transfer days or multi-sight itineraries.
         if request.planning_mode == "one_click" and not day.is_transfer_day and len(day.attractions) == 1:
             bus_items = [
                 item for item in day.timeline
                 if item.item_type == "transport"
                 and (route := route_by_id.get(item.route_estimate_id or "")) is not None
-                and route.provider == "amap-transit"
-                and route.mode == "public_transit"
+                and (route.provider, route.mode) in {("amap-transit", "public_transit"), ("amap-driving", "driving")}
                 and route.status != "unavailable"
                 and route.duration_minutes is not None
                 and item.duration_minutes >= route.duration_minutes

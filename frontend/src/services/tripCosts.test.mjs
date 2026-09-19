@@ -22,3 +22,13 @@ test('date scopes include cross-month stays and whole-trip costs', () => {
   assert.ok(compareCostDates('', '2026-09-30', true) > 0)
   assert.ok(compareCostDates('2026-10-02', '2026-09-30', true) < 0)
 })
+
+test('local transport estimate excludes unpriced driving-fallback days', () => {
+  const summary = { driving_fallback_days: ['2026-09-21'] }
+  assert.equal(costScope('local_transport', summary).scopeLabel, '仅非驾车兜底日')
+  assert.equal(costScope('local_transport', summary, false).scopeLabel, 'Excludes driving-fallback days')
+  assert.equal(costScope('local_transport', {}).scopeLabel, '全程')
+  const view = readFileSync(new URL('../components/TravelSummary.vue', import.meta.url), 'utf8')
+  assert.match(view, /v-if="summary.driving_fallback_days\?\.length"/)
+  assert.match(view, /未评估、不计入总额（不是免费）/)
+})

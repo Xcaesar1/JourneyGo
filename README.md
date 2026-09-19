@@ -60,6 +60,18 @@ docker compose --env-file .env.demo -f docker-compose.yaml -f docker-compose.dem
 
 广州到丽江测试仍因玉龙雪山返程公交证据不足而暂停，不计为成功案例。完整结果、截图、限制及修复版本见 [真机实测记录](docs/demo/mobile-e2e/20260919/README.md)。
 
+## 产品亮点：整趟地点带进高德
+
+不止生成攻略或逐个跳转地点：将景点、餐厅、酒店和车站整合进一张高德专属地图，按旅行日期组织，直接在手机高德 App 中查看。武汉五天真机实测成功创建 1 张地图、5 条每日行程、20 个地点记录，无地点因坐标缺失被省略。
+
+<p>
+  <img src="docs/demo/mobile-e2e/20260919/amap-export/02-map-ready.png" alt="JourneyGo 整趟地点导出成功入口" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919/amap-export/04-list.png" alt="手机高德内的五天日期分组" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919/amap-export/03-native.png" alt="手机高德内的整趟地点地图" width="260" />
+</p>
+
+这里导入的是地点与每日分组，不是公交班次、门票或预订；高德显示的默认驾车路线不等于原攻略交通安排。酒店等跨日地点会重复计数。详见 [整趟导入真机演示与边界](docs/demo/mobile-e2e/20260919/amap-export/README.md)。
+
 ## 核心流程
 
 ```mermaid

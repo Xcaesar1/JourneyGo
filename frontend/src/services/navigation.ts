@@ -10,7 +10,7 @@ export interface NavigationStop extends NavigationPlace {
   id: string
   time?: string
 }
-export type TravelMode = 'walk' | 'bus'
+export type TravelMode = 'walk' | 'bus' | 'car'
 export type StopStatus = 'done' | 'skipped'
 
 export function canRoute(place: NavigationPlace): boolean {

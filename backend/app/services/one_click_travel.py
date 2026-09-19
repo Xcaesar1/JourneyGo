@@ -35,7 +35,13 @@ from ..domain.trip_models import (
 from .attraction_discovery import parse_amap_pois, rank_amap_pois, resolve_experience_groups
 from .hotel_detail import detail_arguments, inspect_detail
 from .hotel_pricing import amount, estimate_stay
-from .landmark_transit import choose_transit, query_transit
+from .landmark_transit import (
+    DRIVING_NOTE,
+    choose_driving,
+    choose_transit,
+    query_driving,
+    query_transit,
+)
 from .meal_pricing import meal_reference
 from .task_events import redis_url
 from .travel_ledger import PlanningInputRequired, QueryLedger, QueryReuseUnavailable
@@ -43,6 +49,7 @@ from .travel_place_selection import PlaceSelection, select_places, selection_not
 from .travel_search import RESERVE, arguments, capabilities, flight_time, run_readonly_mcp
 
 TIERS = {"economy": (0, 3), "business": (3, 4.5), "premium": (4.5, 5)}
+DISTANT_TRANSFER_METERS = 10_000
 
 
 def preflight(request, settings):
@@ -292,6 +299,7 @@ class OneClickPlanner:
         progress=None,
         selector=None,
         transit=None,
+        driving=None,
     ):
         self.request, self.settings = request, settings
         self.ledger = ledger or QueryLedger(trip_id, request)
@@ -304,6 +312,8 @@ class OneClickPlanner:
         self.planning_notices = []
         self.transit = transit or self._transit
         self.transit_cache = {}
+        self.driving = driving or self._driving
+        self.driving_cache = {}
         self.deduplicated_places = []
         self.missing_landmarks = []
         self.attraction_evidence = {}
@@ -423,6 +433,9 @@ class OneClickPlanner:
     def _transit(self, arguments):
         return query_transit(self.settings.vite_amap_web_key, arguments)
 
+    def _driving(self, arguments):
+        return query_driving(self.settings.vite_amap_web_key, arguments)
+
     def landmark_route(self, left, right, departure):
         city = self.request.destinations[0].city
         def coordinate(place):
@@ -433,7 +446,19 @@ class OneClickPlanner:
             raw = self.ledger.execute("amap", "landmark_transit", args, lambda: self.transit(args))
             walking = self.request.max_daily_walking_minutes
             self.transit_cache[key] = choose_transit(raw, (walking if walking is not None else 180) // 2)
-        return self.transit_cache[key]
+        route = self.transit_cache[key]
+        distance = (route.get("distance_meters") if route else None) or place_distance_meters(left, right)
+        if route is None or distance >= DISTANT_TRANSFER_METERS:
+            driving_args = {"origin": args["origin"], "destination": args["destination"], "strategy": 0, "extensions": "base"}
+            driving_key = (args["origin"], args["destination"])
+            if driving_key not in self.driving_cache:
+                raw = self.ledger.execute("amap", "landmark_driving", driving_args, lambda: self.driving(driving_args))
+                self.driving_cache[driving_key] = choose_driving(raw)
+            driving = self.driving_cache[driving_key]
+            if driving and (route is None or driving["minutes"] < route["minutes"]):
+                reason = "未取得可用公共交通方案" if route is None else "接驳距离达到10公里，驾车含预留时间比公共交通更短"
+                route = {**driving, "note": reason + "；" + driving["note"]}
+        return {**route, "origin": left.get("name", city), "destination": right.get("name", city)} if route else None
 
     def query(self, provider, scope, tool, args):
         return self.ledger.execute(
@@ -972,11 +997,12 @@ class OneClickPlanner:
                 routes.append(
                     RouteEstimateV2(
                         estimate_id=item_id,
-                        origin=city,
-                        destination=title,
+                        origin=route_info["origin"] if route_info else city,
+                        destination=route_info["destination"] if route_info else title,
                         duration_minutes=duration,
-                        mode="public_transit" if route_info else "straight_line",
-                        provider=r.intercity_mode if actual else "amap-transit" if route_info else "local-estimate",
+                        distance_meters=route_info.get("distance_meters") if route_info else None,
+                        mode=route_info["mode"] if route_info else "straight_line",
+                        provider=r.intercity_mode if actual else ("amap-driving" if route_info["mode"] == "driving" else "amap-transit") if route_info else "local-estimate",
                         status="verified" if actual else "estimated",
                         detail="供应商时刻" if actual else ("、".join(route_info["lines"]) + "；" + route_info["note"]) if route_info else "基于地点距离估算，非实时路况",
                     )
@@ -1001,6 +1027,7 @@ class OneClickPlanner:
         scheduled_restaurant_ids = set()
         scheduled_attraction_count = 0
         meals_cents = local_cents = 0
+        driving_fallback_days = []
         for i in range(r.travel_days):
             day = r.start_date + timedelta(days=i)
             start = datetime.combine(day, r.daily_start_time)
@@ -1093,7 +1120,7 @@ class OneClickPlanner:
                     return_start = start + timedelta(minutes=(outward["minutes"] if outward else 0) + duration + 60)
                     backward = self.landmark_route(poi, hotel, return_start) if outward else None
                     if not outward or not backward:
-                        landmark_failures[poi["poi_id"]] = "未取得往返公交接驳方案，不能默认包车或用驾车时间代替"
+                        landmark_failures[poi["poi_id"]] = "公交及驾车兜底仍未取得可用的往返接驳路线"
                         continue
                     if start + timedelta(minutes=outward["minutes"] + duration + 60 + backward["minutes"]) > end:
                         landmark_failures[poi["poi_id"]] = "往返接驳、游览及必要休息超出当天可用时间"
@@ -1133,7 +1160,8 @@ class OneClickPlanner:
                         *_, travel, _name, poi = min(feasible, key=lambda item: item[:-1])
                         remaining.remove(poi)
                         is_dedicated = dedicated is not None and poi["poi_id"] == dedicated[0]["poi_id"]
-                        timeline.append(entry(i, "公交接驳至景点（方案估算）" if is_dedicated else "市内接驳（估算）", current, travel, poi=poi, route_info=dedicated[1] if is_dedicated else None))
+                        outward_title = "驾车接驳至景点（自行安排车辆，费用未评估）" if is_dedicated and dedicated[1]["mode"] == "driving" else "公交接驳至景点（方案估算）"
+                        timeline.append(entry(i, outward_title if is_dedicated else "市内接驳（估算）", current, travel, poi=poi, route_info=dedicated[1] if is_dedicated else None))
                         local_minutes += travel
                         current += timedelta(minutes=travel)
                         duration = poi.get("recommended_minutes", 90)
@@ -1160,7 +1188,8 @@ class OneClickPlanner:
                             timeline.append(entry(i, "景区用餐 / 休息（餐厅与费用待核实）", current, 60, "free_time", poi))
                             current += timedelta(minutes=60)
                             back = dedicated[2]["minutes"]
-                            timeline.append(entry(i, "公交返回酒店（方案估算）", current, back, poi=hotel, route_info=dedicated[2]))
+                            back_title = "驾车返回酒店（自行安排车辆，费用未评估）" if dedicated[2]["mode"] == "driving" else "公交返回酒店（方案估算）"
+                            timeline.append(entry(i, back_title, current, back, poi=hotel, route_info=dedicated[2]))
                             current += timedelta(minutes=back)
                             local_minutes += back
                             previous = hotel
@@ -1311,7 +1340,11 @@ class OneClickPlanner:
                 sum(meal.price_reference.amount_cents for meal in meals if meal.price_reference)
                 * r.travelers
             )
-            local_cents += 3000 * r.travelers
+            has_driving = any(route.mode == "driving" and route.estimate_id in {item.route_estimate_id for item in timeline} for route in routes)
+            if has_driving:
+                driving_fallback_days.append(day.isoformat())
+            else:
+                local_cents += 3000 * r.travelers
             days.append(
                 DayPlanV2(
                     date=day,
@@ -1319,7 +1352,7 @@ class OneClickPlanner:
                     city=city,
                     is_transfer_day=i in {0, r.travel_days - 1},
                     description="按实际交通时间与地点距离安排。",
-                    transportation="公共交通与必要步行",
+                    transportation="公共交通（公交、地铁）优先，远距离或无方案路段驾车兜底（车辆自行安排，费用未评估）" if has_driving else "公共交通（公交、地铁）与必要步行",
                     attractions=day_attractions,
                     meals=meals,
                     timeline=timeline,
@@ -1355,6 +1388,10 @@ class OneClickPlanner:
             if p.get("selected") and p["poi_id"] not in scheduled_restaurant_ids
         )
         schedule_notes = self.selection_notes + " " + " ".join(first_day_notes)
+        driving_notice = ""
+        if driving_fallback_days:
+            driving_notice = "、".join(driving_fallback_days) + "：" + DRIVING_NOTE + "。这些日期的市内交通费用均未评估，不含在已统计费用中，不能据此认定整趟费用在预算内。"
+            schedule_notes += " " + driving_notice
         if omitted_places:
             schedule_notes += (
                 " 为控制每日市内接驳和时间冲突，以下偏好候选未排入时间线："
@@ -1389,6 +1426,8 @@ class OneClickPlanner:
         ]
         if r.intercity_mode == "flight":
             items.append({"category": "flight_taxes", "status": "unknown", "amount_cents": None})
+        if driving_fallback_days:
+            items.append({"category": "driving_transfers", "status": "unknown", "amount_cents": None, "dates": driving_fallback_days})
         summary = {
             "outbound": outbound,
             "return": inbound,
@@ -1398,13 +1437,14 @@ class OneClickPlanner:
             "activity_windows": activity_windows,
             "landmark_coverage": [{"name": p["name"], "poi_id": p["poi_id"], "status": "scheduled", "duration_basis": p.get("duration_basis", "planning_estimate"), "identity_source": p.get("identity_source", "")} for p in attractions if p.get("is_landmark")] + [{"name": name, "status": "unverified", "reason": "未取得可核实POI"} for name in self.missing_landmarks],
             "deduplicated_places": self.deduplicated_places,
-            "planning_notices": self.planning_notices,
+            "planning_notices": [*self.planning_notices, *([driving_notice] if driving_notice else [])],
+            "driving_fallback_days": driving_fallback_days,
             "known_cents": known_cents,
             "estimated_cents": estimated_cents,
             "expected_cents": known_cents + estimated_cents,
             "meal_pricing_policy": "amap_reference_only",
             "costs_complete": False,
-            "excluded_costs": ["unpriced_meals", "tickets", "hotel_taxes"],
+            "excluded_costs": ["unpriced_meals", "tickets", "hotel_taxes", *(["driving_transfers"] if driving_fallback_days else [])],
             "currency": "CNY",
             "quotes": [q for q in self.ledger.records if q["provider"] != "model"],
             "booking_status": "not_booked",

@@ -1,6 +1,7 @@
 <template>
   <div class="place-navigation">
     <div class="navigation-actions">
+      <a v-if="driving && canRoute(place)" :href="amapUrl(place, city, 'car', true, from)" target="_blank" rel="noopener noreferrer">{{ locale.startsWith('zh') ? '高德驾车路线' : 'AMap driving route' }}</a>
       <a :href="amapUrl(place, city, 'walk', true, from)" target="_blank" rel="noopener noreferrer">{{ t(canRoute(place) ? 'navigation.walk' : 'navigation.search') }}</a>
       <a v-if="canRoute(place)" :href="amapUrl(place, city, 'bus', true, from)" target="_blank" rel="noopener noreferrer">{{ t('navigation.bus') }}</a>
       <button type="button" @click="expanded = !expanded" :aria-expanded="expanded">{{ t('navigation.more') }}</button>
@@ -13,6 +14,7 @@
         <a :href="amapUrl(place, city, 'bus', true, from)" target="_blank" rel="noopener noreferrer">{{ t('navigation.bus') }}</a>
       </template>
       <p>{{ t('navigation.fallback') }}</p>
+      <a v-if="driving && canRoute(place)" :href="amapUrl(place, city, 'car', false, from)" target="_blank" rel="noopener noreferrer">{{ locale.startsWith('zh') ? '网页版驾车路线' : 'Driving route on web' }}</a>
       <a :href="amapUrl(place, city, 'walk', false)" target="_blank" rel="noopener noreferrer">{{ t('navigation.webWalk') }}</a>
       <a v-if="canRoute(place)" :href="amapUrl(place, city, 'bus', false)" target="_blank" rel="noopener noreferrer">{{ t('navigation.webBus') }}</a>
       <button type="button" @click="copyAddress">{{ t('navigation.copy') }}</button>
@@ -26,8 +28,8 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { amapUrl, canRoute, type NavigationPlace } from '@/services/navigation'
-const props = defineProps<{ place: NavigationPlace; city: string; from?: NavigationPlace }>()
-const { t } = useI18n()
+const props = defineProps<{ place: NavigationPlace; city: string; from?: NavigationPlace; driving?: boolean }>()
+const { t, locale } = useI18n()
 const expanded = ref(false)
 const feedback = ref('')
 const copyFailed = ref(false)
