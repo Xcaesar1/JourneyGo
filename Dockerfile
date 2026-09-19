@@ -58,12 +58,12 @@ COPY --from=frontend-builder /build/dist ./frontend/dist
 # 复制启动脚本
 COPY start.sh ./start.sh
 RUN sed -i 's/\r$//' ./start.sh && chmod +x ./start.sh \
-    && useradd --create-home --uid 10001 journeyops \
+    && useradd --create-home --uid 10001 journeygo \
     && mkdir -p /app/backend/data /app/.cache/uv \
-    && chown -R journeyops:journeyops /app
+    && chown -R journeygo:journeygo /app
 
 ENV UV_CACHE_DIR=/app/.cache/uv
-USER journeyops
+USER journeygo
 
 # Keep the optional legacy AMap MCP executable available without a root-owned runtime cache.
 RUN uvx amap-mcp-server --help >/dev/null 2>&1 || true

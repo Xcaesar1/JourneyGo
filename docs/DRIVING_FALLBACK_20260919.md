@@ -1,5 +1,7 @@
 # 代表景点接驳：公共交通优先，远距离驾车兜底
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## 产品规则
 
 - 用户于 2026-09-19 明确调整丽江受阻场景：没有公交可提供驾车路线，无车用户自行尝试网约车或顺风车，不评估费用。
@@ -43,7 +45,7 @@
 - 前端回归：65 passed，覆盖驾车 URI 模式、固定起终点方向、不可用路线不显示入口、费用范围文案。
 - 覆盖：公交成功不调用驾车、仅返程驾车、往返独立驾车、无道路证据仍受阻、不缩短游览凑时间、无效响应拒绝、未知费用不入总额、专日路线校验。
 - 代码与真机地图展示材料已提交并推送：`fbd5a45`。
-- 已仅部署 staging：API `journeyops-app:cities-api-fbd5a45`，worker `journeyops-app:cities-worker-fbd5a45`，均通过 healthy 检查和镜像内离线功能检查。
-- 发布目录 `/opt/tripstar/releases/landmarks-fbd5a45-20260919` 保存构建日志及 state/quota/protected 前后比对结果，均一致；发布前 active_tasks=0，生产、数据库和 Redis 容器未替换。
+- 已仅部署 staging：API `journeygo-app:cities-api-fbd5a45`，worker `journeygo-app:cities-worker-fbd5a45`，均通过 healthy 检查和镜像内离线功能检查。
+- 发布目录 `/opt/journeygo/releases/landmarks-fbd5a45-20260919` 保存构建日志及 state/quota/protected 前后比对结果，均一致；发布前 active_tasks=0，生产、数据库和 Redis 容器未替换。
 - 外部 HTTPS 核验：测试站首页引用新 bundle；`index-DSasKnsk.js` 与 `Result-DWtNOokM.js` 均返回 200，SHA-256 与本地构建一致。
 - 初次发布时手机 CDP 拒绝连接，彼时未恢复丽江任务。随后用户重新连接 ADB，第二轮已完成真机恢复和审核保存：玉龙雪山游览 360 分钟，往返驾车 74 / 68 分钟，固定起终点链接检查通过，费用明确未评估。见 [第二轮实测](demo/mobile-e2e/20260919-r2/README.md)。未刷新航班、未预订、未新建地图；原生导航未打开。

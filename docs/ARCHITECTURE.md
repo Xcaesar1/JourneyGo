@@ -2,7 +2,7 @@
 
 ## Before And After
 
-### Before: Upstream Runtime
+### Before: Initial Runtime
 
 ```mermaid
 flowchart LR
@@ -14,7 +14,7 @@ flowchart LR
     JSON --> Browser
 ```
 
-The upstream path coupled HTTP availability, task execution and mutable JSON state to one process. A restart
+The initial path coupled HTTP availability, task execution and mutable JSON state to one process. A restart
 could interrupt work, external failures crossed component boundaries as untyped text, and generated values were
 not independently validated before presentation.
 

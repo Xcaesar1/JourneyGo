@@ -61,7 +61,7 @@ x-app-environment: &app-environment
   SOURCE_CACHE_TTL_SECONDS: ${SOURCE_CACHE_TTL_SECONDS:-21600}
   GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
   GOOGLE_MAPS_PROXY: ${GOOGLE_MAPS_PROXY:-}
-  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-journeyops}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-journeyops}
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-journeygo}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-journeygo}
   REDIS_URL: redis://redis:6379/0
   CELERY_BROKER_URL: redis://redis:6379/1
   CELERY_VISIBILITY_TIMEOUT: ${CELERY_VISIBILITY_TIMEOUT:-720}
@@ -77,8 +77,8 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-journeyops}
-      POSTGRES_DB: ${POSTGRES_DB:-journeyops}
+      POSTGRES_USER: ${POSTGRES_USER:-journeygo}
+      POSTGRES_DB: ${POSTGRES_DB:-journeygo}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -108,7 +108,7 @@ services:
     restart: unless-stopped
 
   migrate:
-    image: journeyops-app:${IMAGE_TAG:-latest}
+    image: journeygo-app:${IMAGE_TAG:-latest}
     build: *app-build
     command:
       - sh
@@ -126,7 +126,7 @@ services:
     restart: "no"
 
   data-init:
-    image: journeyops-app:${IMAGE_TAG:-latest}
+    image: journeygo-app:${IMAGE_TAG:-latest}
     build: *app-build
     user: "0:0"
     command: ["sh", "-c", "chown -R 10001:10001 /app/backend/data"]
@@ -138,7 +138,7 @@ services:
     restart: "no"
 
   worker:
-    image: journeyops-app:${IMAGE_TAG:-latest}
+    image: journeygo-app:${IMAGE_TAG:-latest}
     build: *app-build
     command:
       - celery
@@ -146,7 +146,7 @@ services:
       - backend.app.workers.celery_app:celery_app
       - worker
       - --loglevel=INFO
-      - --hostname=journeyops@%h
+      - --hostname=journeygo@%h
     environment: *app-environment
     volumes:
       - trip_data:/app/backend/data
@@ -160,7 +160,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - celery -A backend.app.workers.celery_app:celery_app inspect ping -d "journeyops@$${HOSTNAME}" --timeout=5 | grep -q pong
+        - celery -A backend.app.workers.celery_app:celery_app inspect ping -d "journeygo@$${HOSTNAME}" --timeout=5 | grep -q pong
       interval: 15s
       timeout: 8s
       retries: 8
@@ -171,9 +171,9 @@ services:
     restart: unless-stopped
 
   trip-planner:
-    image: journeyops-app:${IMAGE_TAG:-latest}
+    image: journeygo-app:${IMAGE_TAG:-latest}
     build: *app-build
-    container_name: helloagents-trip-planner
+    container_name: journeygo
     ports:
       - "7860:7860"
     environment:

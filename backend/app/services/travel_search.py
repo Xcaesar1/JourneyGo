@@ -290,7 +290,7 @@ def search(query: TravelSearchRequest, settings: Settings, client=None) -> Trave
     account = hashlib.sha256(credential.encode()).hexdigest()[:24]
     digest = hashlib.sha256(json.dumps(arguments(query), sort_keys=True).encode()).hexdigest()
     cache_version = "v2" if query.provider == "hotel" else "v1"
-    cache_key = f"journeyops:travel:{cache_version}:{query.provider}:{account}:{digest}"
+    cache_key = f"journeygo:travel:{cache_version}:{query.provider}:{account}:{digest}"
     owns_client = client is None
     store = client or Redis.from_url(
         redis_url(), decode_responses=True, socket_timeout=3, socket_connect_timeout=3
@@ -305,7 +305,7 @@ def search(query: TravelSearchRequest, settings: Settings, client=None) -> Trave
         if not store.set(cache_key + ":lock", "1", nx=True, ex=60):
             return response(query, "busy", "相同查询正在处理或刚刚失败，请一分钟后重试。")
         if query.provider == "flight":
-            quota_key = f"journeyops:travel:flight:calls:{account}"
+            quota_key = f"journeygo:travel:flight:calls:{account}"
             if not store.eval(RESERVE, 1, quota_key, settings.travel_flight_call_limit):
                 return response(query, "budget_exhausted", "已达到管理员设置的飞常准累计查询上限。")
         try:

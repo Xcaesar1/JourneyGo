@@ -5,16 +5,16 @@ map $http_upgrade $connection_upgrade {
 
 server {
     listen 80;
-    server_name journeyops.example.com;
+    server_name journeygo.example.com;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name journeyops.example.com;
+    server_name journeygo.example.com;
 
-    ssl_certificate /etc/letsencrypt/live/journeyops.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/journeyops.example.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/journeygo.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/journeygo.example.com/privkey.pem;
 
     client_max_body_size 32k;
     proxy_read_timeout 660s;

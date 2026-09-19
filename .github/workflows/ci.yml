@@ -12,13 +12,13 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: journeyops
-          POSTGRES_PASSWORD: journeyops_ci
-          POSTGRES_DB: journeyops
+          POSTGRES_USER: journeygo
+          POSTGRES_PASSWORD: journeygo_ci
+          POSTGRES_DB: journeygo
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U journeyops -d journeyops"
+          --health-cmd "pg_isready -U journeygo -d journeygo"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 12
@@ -58,19 +58,19 @@ jobs:
 
       - name: Apply database migrations
         env:
-          DATABASE_URL: postgresql+psycopg://journeyops:journeyops_ci@localhost:5432/journeyops
+          DATABASE_URL: postgresql+psycopg://journeygo:journeygo_ci@localhost:5432/journeygo
         run: python -m alembic -c backend/alembic.ini upgrade head
 
       - name: Initialize LangGraph checkpoints
         env:
-          DATABASE_URL: postgresql+psycopg://journeyops:journeyops_ci@localhost:5432/journeyops
+          DATABASE_URL: postgresql+psycopg://journeygo:journeygo_ci@localhost:5432/journeygo
           LANGGRAPH_STRICT_MSGPACK: "true"
         run: python -m backend.scripts.setup_langgraph_checkpoints
 
       - name: Pytest
         env:
           PYTHONPATH: .
-          TEST_DATABASE_URL: postgresql+psycopg://journeyops:journeyops_ci@localhost:5432/journeyops
+          TEST_DATABASE_URL: postgresql+psycopg://journeygo:journeygo_ci@localhost:5432/journeygo
           TEST_REDIS_URL: redis://localhost:6379/0
           LANGGRAPH_STRICT_MSGPACK: "true"
         run: python -m pytest
@@ -83,7 +83,7 @@ jobs:
       - name: Upload evaluation report
         uses: actions/upload-artifact@v4
         with:
-          name: journeyops-offline-evaluation
+          name: journeygo-offline-evaluation
           path: artifacts/evaluation-report.json
 
   frontend:
@@ -105,3 +105,6 @@ jobs:
       - name: Build frontend
         working-directory: frontend
         run: npm run build
+
+      - name: README links and branding entry points
+        run: node --test tests/readme.test.cjs

@@ -103,7 +103,7 @@ const fs = require('node:fs');
     assert.equal(await page.locator('.candidate-search input').inputValue(), 'Bund');
     for (const [code, locale] of [['zh', 'zh-CN'], ['en', 'en-US'], ['ja', 'ja-JP'], ['ko', 'ko-KR']]) {
       const pack = JSON.parse(fs.readFileSync(`frontend/src/i18n/locales/${code}.json`, 'utf8'));
-      await page.evaluate(locale => localStorage.setItem('tripstar-locale', locale), locale);
+      await page.evaluate(locale => localStorage.setItem('journeygo-locale', locale), locale);
       for (const width of [360, 390, 1440]) {
         await page.setViewportSize({ width, height: 844 });
         await page.goto(base, { waitUntil: 'domcontentloaded' });

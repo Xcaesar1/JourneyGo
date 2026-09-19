@@ -1,5 +1,7 @@
 # 景点发现与图片源改造：阶段一验收
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 验收日期：2026-08-21
 
 ## 1. 结论
@@ -78,8 +80,8 @@ flowchart LR
 - Staging 仅监听 Oracle 回环地址 `127.0.0.1:17861`。
 - Demo 保持旧镜像和独立数据卷。
 - Production 未修改，验收期间 readiness 保持 HTTP 200。
-- 阶段一部署前备份：`/var/backups/tripstar/20260821T113228Z-attraction-phase1-predeploy`。
-- 阶段一前端补测部署前备份：`/var/backups/tripstar/20260821T142927Z-attraction-frontend-predeploy`。
+- 阶段一部署前备份：`/var/backups/journeygo/20260821T113228Z-attraction-phase1-predeploy`。
+- 阶段一前端补测部署前备份：`/var/backups/journeygo/20260821T142927Z-attraction-frontend-predeploy`。
 
 回滚时恢复部署前 Git bundle 和 `.env.staging`，再用备份中记录的镜像重新创建 staging API/Worker。不得把阶段一 staging 镜像直接提升到生产。
 

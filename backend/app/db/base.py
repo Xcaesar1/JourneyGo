@@ -13,6 +13,6 @@ NAMING_CONVENTION = {
 
 
 class Base(DeclarativeBase):
-    """Base class used by all JourneyOps ORM models."""
+    """Base class used by all JourneyGo ORM models."""
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)

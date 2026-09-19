@@ -1,5 +1,7 @@
 # Phase 3 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 阶段 3 将 legacy 单体 Planner 渐进迁移为可恢复、可切换的 JourneyGraph，同时保持旧 API
@@ -93,8 +95,8 @@ Primary failure cancels outstanding comparison work. These flags are deployment 
 | GitHub CI | runs `31199315423`, `31201825838`, `31202578603`, `31203240101`, `31204907871`, `31205764332`, `31209573618` passed |
 | Structured output evaluation | DeepSeek native JSON output: 30/30 valid, 0 uncaught parse errors, 151.637 seconds |
 | Disposable engine smoke | graph output, Adapter, checkpoint and revision `20260808_02` passed |
-| Oracle pre-deploy backup | `/var/backups/tripstar/20260807T181543Z-phase3-predeploy`, directory `0700`, files `0600`, SHA-256 passed |
-| Oracle deployment | source `909e8ba`, image `journeyops-app:phase3-909e8ba`, migration exit `0` |
+| Oracle pre-deploy backup | `/var/backups/journeygo/20260807T181543Z-phase3-predeploy`, directory `0700`, files `0600`, SHA-256 passed |
+| Oracle deployment | source `909e8ba`, image `journeygo-app:phase3-909e8ba`, migration exit `0` |
 | Oracle schema | Alembic `20260808_02`, 4 version metadata columns, 4 checkpoint tables |
 | Oracle services | PostgreSQL, Redis, Worker and API healthy; staging and production `/health/ready` passed together |
 | Real graph task | completed, one day, client success, legacy client contract, native schema `2.0`, 7 checkpoints |
@@ -145,7 +147,7 @@ No open P0 issue was found in the stage 3 implementation or staging deployment.
 Fast functional rollback requires no database change:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 sed -i 's/^PLANNER_ENGINE=.*/PLANNER_ENGINE=legacy/' .env.staging
 sed -i 's/^PLANNER_COMPARE_ENGINES=.*/PLANNER_COMPARE_ENGINES=false/' .env.staging
 chmod 0600 .env.staging

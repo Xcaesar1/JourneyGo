@@ -1,4 +1,4 @@
-"""Offline regression evaluation for JourneyOps planner engines."""
+"""Offline regression evaluation for JourneyGo planner engines."""
 
 from .evaluator import evaluate_dataset, load_dataset, load_fixture_observations
 

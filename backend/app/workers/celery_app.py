@@ -12,7 +12,7 @@ broker_url = os.getenv("CELERY_BROKER_URL", redis_url())
 visibility_timeout = int(os.getenv("CELERY_VISIBILITY_TIMEOUT", "720"))
 
 celery_app = Celery(
-    "journeyops",
+    "journeygo",
     broker=broker_url,
     include=["backend.app.workers.trip_tasks"],
 )

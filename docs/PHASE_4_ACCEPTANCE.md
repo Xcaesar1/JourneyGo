@@ -1,5 +1,7 @@
 # Phase 4 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 阶段 4 为 JourneyGraph 增加来源化旅行研究和 Provider 降级，并把小红书从必需依赖改为可选
@@ -81,7 +83,7 @@ flowchart LR
 - Missing non-critical travel tips do not invent evidence. Missing critical opening, closure, reservation or
   event sources create explicit `unknown` records with URL `null`, trust `unknown` and confidence `0`.
 - The draft node overwrites model-supplied source fields with graph-owned evidence before Pydantic validation.
-- Redis stores serialized evidence under the `journeyops:research:v1` namespace with an explicit TTL.
+- Redis stores serialized evidence under the `journeygo:research:v1` namespace with an explicit TTL.
 - XHS context is subjective enrichment only. It is disabled by default and cannot abort the main task.
 
 ## Executed Evidence
@@ -95,9 +97,9 @@ Execution date: 2026-08-08 Asia/Shanghai.
 | Compose config | PASS with staging example environment |
 | Alembic loop | `20260808_03 -> 20260808_02 -> 20260808_03` on disposable SQLite |
 | GitHub CI for implementation commits | run `31231345575` passed |
-| Oracle pre-deploy backup | `/var/backups/tripstar/20260808T005836Z-phase4-predeploy`; SHA-256 and Git bundle verified |
+| Oracle pre-deploy backup | `/var/backups/journeygo/20260808T005836Z-phase4-predeploy`; SHA-256 and Git bundle verified |
 | Backup permissions | directory `0700`; dump, environment copy, bundle and manifest `0600` |
-| Oracle deployment | source `946cee3`; image `journeyops-app:phase4-946cee3`; migration exit `0` |
+| Oracle deployment | source `946cee3`; image `journeygo-app:phase4-946cee3`; migration exit `0` |
 | Oracle schema | Alembic `20260808_03`; 4 source rows and 4 version links for the acceptance task |
 | Health isolation | staging live/ready `200`; production ready remained `200` |
 | Real no-Key task | completed in JourneyGraph; research unavailable; 4/4 evidence records unknown; 0 source URLs; no error |
@@ -148,7 +150,7 @@ No open P0 issue was found in the phase 4 implementation or staging deployment.
 Fast functional rollback keeps schema and data intact:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 sed -i 's/^PLANNER_ENGINE=.*/PLANNER_ENGINE=legacy/' .env.staging
 sed -i 's/^PLANNER_COMPARE_ENGINES=.*/PLANNER_COMPARE_ENGINES=false/' .env.staging
 sed -i 's/^XHS_ENABLED=.*/XHS_ENABLED=false/' .env.staging

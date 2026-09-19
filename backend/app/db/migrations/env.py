@@ -1,4 +1,4 @@
-"""Alembic environment for JourneyOps database migrations."""
+"""Alembic environment for JourneyGo database migrations."""
 
 from logging.config import fileConfig
 

@@ -34,7 +34,7 @@ const assert = require('node:assert/strict');
     ]) {
       const plan = { ...fixture, origin, city: destination, travel_summary: undefined,
         days: fixture.days.map(day => ({ ...day, city: destination })) };
-      await page.evaluate(plan => { sessionStorage.clear(); sessionStorage.setItem('tripPlan', JSON.stringify(plan)); localStorage.setItem('tripstar-locale', 'zh-CN'); }, plan);
+      await page.evaluate(plan => { sessionStorage.clear(); sessionStorage.setItem('tripPlan', JSON.stringify(plan)); localStorage.setItem('journeygo-locale', 'zh-CN'); }, plan);
       await page.goto(new URL('/result', base).href);
       const panel = page.locator('.travel-search');
       await panel.getByRole('button', { name: '飞机航班', exact: true }).click();

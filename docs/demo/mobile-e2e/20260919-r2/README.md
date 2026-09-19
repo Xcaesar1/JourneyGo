@@ -1,5 +1,7 @@
 # 第二轮真机实测：高铁与飞机
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## 结果
 
 2026-09-19，通过 ADB 转发的真实 Android Chrome 完成表单操作、结果检查、触摸滑动和审核保存。使用 staging 已部署代码 `fbd5a45`，不是 Fixture。两条行程均为 2026-09-20 至 09-24，一人、五天四晚、输入预算 5000 元，最终 completed / 正式 V1。
@@ -43,4 +45,4 @@
 - 当前代表景点专日可使用真实高德公交/驾车证据；其他短途接驳仍有基于距离的估算，不能宣称所有路段都已获得高德公交方案。
 - 航班使用既有真实报价，未验证本轮时刻的新价格或剩余座位；无机票、酒店、门票或车辆预订。
 - 本轮新建高德专属地图 0 张。此前整趟地点导入创新点的独立真机证据仍见 [整趟地图演示](../20260919/amap-export/README.md)，不重复创建。
-- 只调整 staging 额度，API/worker 均 healthy；生产与既有数据未变。额度覆盖文件位于 `/opt/tripstar/releases/quota15-20260919/quota.compose.yaml`。
+- 只调整 staging 额度，API/worker 均 healthy；生产与既有数据未变。额度覆盖文件位于 `/opt/journeygo/releases/quota15-20260919/quota.compose.yaml`。

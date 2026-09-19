@@ -1,5 +1,7 @@
 # One-click travel implementation status
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Nationwide City Coverage (2026-09-18)
 
 - The seven-city whitelist is superseded by the 254-entry, versioned mainland
@@ -47,7 +49,7 @@
 ### Approved staging release
 
 - The user approved deployment before live functional acceptance. Staging now
-  runs `journeyops-app:one-click-f35652d`, including integrated workflow commit
+  runs `journeygo-app:one-click-f35652d`, including integrated workflow commit
   `d7fe4a2` and homepage language commit `f35652d`.
 - Homepage language selection is Chinese/English only. Saved Japanese/Korean
   selections fall back to Chinese on entering the homepage; locale packs remain

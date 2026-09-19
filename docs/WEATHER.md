@@ -1,5 +1,7 @@
 # Weather MCP
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 - Scope: JourneyGraph only; legacy planner and saved trip versions are unchanged.
 - Open-Meteo public API is non-commercial only, with attribution and rate limits.
 - Install `backend/weather-requirements.lock` into a separate Python 3.10+ venv.
@@ -40,25 +42,25 @@ The subsequent travel release now supersedes this image on staging while keeping
 Use the current [travel release commands](TRAVEL_MCP.md#staging-release-2026-09-16) for normal
 recreation; the commands below describe the historical weather-only release and rollback.
 
-- Image: `journeyops-app:weather-20260916-r3`, layered on `mobile-f62e7bd`.
-- Release directory: `/opt/tripstar/releases/weather-20260916`.
+- Image: `journeygo-app:weather-20260916-r3`, layered on `mobile-f62e7bd`.
+- Release directory: `/opt/journeygo/releases/weather-20260916`.
 - The server's original checkout/environment remain unchanged. Use the weather override
   for subsequent recreations; running the old two-file Compose command omits this release.
 - Deploy only API and Worker, preserving databases, Redis, volumes and ingress:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
-  -f /opt/tripstar/releases/weather-20260916/weather.compose.yaml \
+  -f /opt/journeygo/releases/weather-20260916/weather.compose.yaml \
   up -d --no-deps --no-build worker trip-planner
 ```
 
 - Roll back using the recorded per-service tags:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
-  -f /opt/tripstar/releases/weather-20260916/rollback.weather.yaml \
+  -f /opt/journeygo/releases/weather-20260916/rollback.weather.yaml \
   up -d --no-deps --no-build worker trip-planner
 ```
 

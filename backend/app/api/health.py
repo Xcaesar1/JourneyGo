@@ -53,7 +53,7 @@ def _redis_check() -> dict[str, str]:
 @router.get("/health/live")
 async def health_live():
     """Report only whether the API process can serve requests."""
-    return {"status": "alive", "service": "tripstar-api"}
+    return {"status": "alive", "service": "journeygo-api"}
 
 
 @router.get("/health/ready")
@@ -70,7 +70,7 @@ async def health_ready():
     ready = all(check["status"] == "ready" for check in checks.values())
     payload = {
         "status": "ready" if ready else "not_ready",
-        "service": "tripstar-api",
+        "service": "journeygo-api",
         "checks": checks,
     }
     if payload["status"] != "ready":

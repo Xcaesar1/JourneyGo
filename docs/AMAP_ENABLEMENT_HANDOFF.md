@@ -1,9 +1,11 @@
 # AMap Website Enablement Handoff
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Completed Follow-Up (2026-09-18)
 
 - Staging API now persistently has `AMAP_PERSONAL_MAP_ENABLED=true` through
-  `/opt/tripstar/releases/amap-enable-20260918/amap-enable.compose.yaml`.
+  `/opt/journeygo/releases/amap-enable-20260918/amap-enable.compose.yaml`.
   Historical statements below describe the pre-enablement handoff.
 - Real Android Chrome day-2 export was confirmed twice with the exact identity
   below; both responses reused the original six-point link. Browser touch on
@@ -27,14 +29,14 @@
 ## Workspace And Deployment
 
 - Workspace: Q:/VPS/JourneyGo, branch main. Current HEAD: 9be791b.
-- SSH alias: oracle-cpamp. Deployment working directory: /opt/tripstar/JourneyOps-staging.
-- API container: helloagents-trip-planner-staging, image journeyops-app:form-help-9be791b.
-- Worker container: journeyops-worker-staging, image journeyops-app:brand-cleanup-a5ccfb1.
-- Current API release: /opt/tripstar/releases/form-help-9be791b-20260918.
+- SSH alias: oracle-cpamp. Deployment working directory: /opt/journeygo/JourneyGo-staging.
+- API container: journeygo-staging, image journeygo-app:form-help-9be791b.
+- Worker container: journeygo-worker-staging, image journeygo-app:brand-cleanup-a5ccfb1.
+- Current API release: /opt/journeygo/releases/form-help-9be791b-20260918.
 - Global AMAP_PERSONAL_MAP_ENABLED remains false. Credentials already exist server-side; never print or expose them.
 - Deployed Compose configuration is layered. Obtain the active config_files label from docker inspect; append a narrow override setting AMAP_PERSONAL_MAP_ENABLED=true. Do not replace the historical overrides or rebuild from the stale host checkout.
 - Preserve distinct API/Worker image tags, paid-flight disablement, provider quotas, database volumes, authentication and ingress.
-- Before any recreation, run the existing read-only active-task check at /opt/tripstar/releases/travel-d7f99ce-20260916/travel-active-check.py inside Worker. Wait if active tasks exist.
+- Before any recreation, run the existing read-only active-task check at /opt/journeygo/releases/travel-d7f99ce-20260916/travel-active-check.py inside Worker. Wait if active tasks exist.
 - Save previous Compose file list for rollback. Recreate only services whose config must change. No database migration is needed.
 
 ## Existing Verified Map: Reuse, Do Not Recreate

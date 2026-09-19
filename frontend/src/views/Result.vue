@@ -2894,13 +2894,13 @@ const escapeHtml = (value: unknown): string => {
 
 const buildMarkerContent = (dayNo: number, stopNo: number): string => {
   return `
-    <div class="tripstar-map-marker">
-      <span class="tripstar-map-marker__core" aria-hidden="true">
+    <div class="journeygo-map-marker">
+      <span class="journeygo-map-marker__core" aria-hidden="true">
         <svg style="fill:var(--jg-accent)" width="30px" height="30px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
           <path d="M231.4248,109.2041,169.36426,86.63574,146.7959,24.57422a19.99984,19.99984,0,0,0-37.5918.001L86.63574,86.63574,24.57422,109.2041a19.99984,19.99984,0,0,0,.001,37.5918l62.06054,22.56836,22.56836,62.06152a19.99984,19.99984,0,0,0,37.5918-.001l22.56836-62.06054,62.06152-22.56836a19.99984,19.99984,0,0,0-.001-37.5918Zm-72.01562,38.24219a19.95591,19.95591,0,0,0-11.96289,11.96289l.001-.001L128,212.88672l-19.44629-53.47754A19.95279,19.95279,0,0,0,96.5918,147.44727L43.11328,128l53.47754-19.44629A19.95279,19.95279,0,0,0,108.55273,96.5918L128,43.11328l19.44629,53.47754a19.95279,19.95279,0,0,0,11.96191,11.96191L212.88672,128Z"/>
         </svg>
       </span>
-      <span class="tripstar-map-marker__index" aria-hidden="true">${dayNo}-${stopNo}</span>
+      <span class="journeygo-map-marker__index" aria-hidden="true">${dayNo}-${stopNo}</span>
     </div>
   `
 }
@@ -2915,11 +2915,11 @@ const buildInfoWindowContent = (attraction: any): string => {
   const minuteUnit = escapeHtml(t('result.minuteUnit'))
 
   return `
-    <div class="tripstar-map-tooltip tripstar-map-tooltip--plain">
-      <p class="tripstar-map-tooltip__line tripstar-map-tooltip__line--title">${name}</p>
-      <p class="tripstar-map-tooltip__line">${dayAttractionText}</p>
-      <p class="tripstar-map-tooltip__line">${address}</p>
-      <p class="tripstar-map-tooltip__line">${visitDuration}${minuteUnit}</p>
+    <div class="journeygo-map-tooltip journeygo-map-tooltip--plain">
+      <p class="journeygo-map-tooltip__line journeygo-map-tooltip__line--title">${name}</p>
+      <p class="journeygo-map-tooltip__line">${dayAttractionText}</p>
+      <p class="journeygo-map-tooltip__line">${address}</p>
+      <p class="journeygo-map-tooltip__line">${visitDuration}${minuteUnit}</p>
     </div>
   `
 }
@@ -5491,15 +5491,15 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 <style>
 .result-container {
-  --tripstar-map-accent: var(--jg-accent);
-  --tripstar-map-accent-strong: var(--jg-accent-strong);
-  --tripstar-map-surface: var(--jg-surface);
-  --tripstar-map-border: var(--jg-border);
-  --tripstar-map-text-main: var(--jg-text);
-  --tripstar-map-text-sub: var(--jg-muted);
+  --journeygo-map-accent: var(--jg-accent);
+  --journeygo-map-accent-strong: var(--jg-accent-strong);
+  --journeygo-map-surface: var(--jg-surface);
+  --journeygo-map-border: var(--jg-border);
+  --journeygo-map-text-main: var(--jg-text);
+  --journeygo-map-text-sub: var(--jg-muted);
 }
 
-.tripstar-map-marker {
+.journeygo-map-marker {
   position: relative;
   width: 34px;
   height: 34px;
@@ -5509,7 +5509,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   cursor: pointer;
 }
 
-.tripstar-map-marker__core {
+.journeygo-map-marker__core {
   position: relative;
   z-index: 1;
   width: 20px;
@@ -5523,7 +5523,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   box-shadow: var(--jg-shadow); */
 }
 
-.tripstar-map-marker__icon {
+.journeygo-map-marker__icon {
   width: 12px;
   height: 12px;
   stroke: var(--jg-text);
@@ -5533,7 +5533,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   fill: none;
 }
 
-.tripstar-map-marker__index {
+.journeygo-map-marker__index {
   position: absolute;
   top: calc(100% + 1px);
   left: 50%;
@@ -5547,17 +5547,17 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   pointer-events: none;
 }
 
-.tripstar-map-tooltip {
+.journeygo-map-tooltip {
   max-width: min(320px, calc(100vw - 40px));
   background: transparent;
   border: none;
   box-shadow: var(--jg-shadow);
   padding: 0;
-  color: var(--tripstar-map-text-main);
+  color: var(--journeygo-map-text-main);
   pointer-events: none;
 }
 
-.tripstar-map-tooltip__line {
+.journeygo-map-tooltip__line {
   margin: 0;
   font-size: 16px;
   line-height: 1.45;
@@ -5567,11 +5567,11 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   white-space: nowrap;
 }
 
-.tripstar-map-tooltip__line + .tripstar-map-tooltip__line {
+.journeygo-map-tooltip__line + .journeygo-map-tooltip__line {
   margin-top: 2px;
 }
 
-.tripstar-map-tooltip__line--title {
+.journeygo-map-tooltip__line--title {
   font-size: 16px;
   text-shadow: none;
   font-weight: 700;

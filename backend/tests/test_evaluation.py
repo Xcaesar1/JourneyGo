@@ -8,7 +8,7 @@ import pytest
 from backend.app.evaluation import evaluate_dataset, load_dataset, load_fixture_observations
 
 ROOT = Path(__file__).resolve().parents[2]
-DATASET = ROOT / "backend" / "evaluation" / "datasets" / "journeyops_v1.json"
+DATASET = ROOT / "backend" / "evaluation" / "datasets" / "journeygo_v1.json"
 FIXTURE = ROOT / "backend" / "evaluation" / "fixtures" / "offline_observations_v1.json"
 
 

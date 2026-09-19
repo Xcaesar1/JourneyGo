@@ -55,7 +55,7 @@ const assert = require('node:assert/strict');
     await page.evaluate(plan => {
       sessionStorage.setItem('tripPlan', JSON.stringify(plan));
       sessionStorage.setItem('tripId', 'ui-fixture-trip');
-      localStorage.setItem('tripstar-locale', 'zh-CN');
+      localStorage.setItem('journeygo-locale', 'zh-CN');
     }, plan);
     await page.goto(`${base}/result`);
     const panel = page.locator('.travel-search');

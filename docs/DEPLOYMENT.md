@@ -1,10 +1,12 @@
 # Deployment And Rollback
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Mobile Cleanup And Airport Transfers (2026-09-19, Latest)
 
-- UI `a2599a1` simplified the overview, removed the weather coverage paragraph, localized weather descriptions and fixed date/icon overlap. Staging API image `journeyops-app:ui-a2599a1`; worker was initially unchanged.
-- New Chengdu live verification exposed estimated airport transfers exceeding the commute cap. `23bb1cc` adds evidenced public-transit/driving comparison for flight airport/hotel legs at least 10 km apart, without relaxing commute or check-in constraints. Current staging images: `journeyops-app:cities-api-23bb1cc` and `journeyops-app:cities-worker-23bb1cc`.
-- Release directories: `/opt/tripstar/releases/ui-a2599a1-20260919` and `/opt/tripstar/releases/airports-23bb1cc-20260919`. Both deployments checked active_tasks=0, preserved the Compose chain including quota 15, and compared task state, quota and protected containers before/after. No production changes or migrations.
+- UI `a2599a1` simplified the overview, removed the weather coverage paragraph, localized weather descriptions and fixed date/icon overlap. Staging API image `journeygo-app:ui-a2599a1`; worker was initially unchanged.
+- New Chengdu live verification exposed estimated airport transfers exceeding the commute cap. `23bb1cc` adds evidenced public-transit/driving comparison for flight airport/hotel legs at least 10 km apart, without relaxing commute or check-in constraints. Current staging images: `journeygo-app:cities-api-23bb1cc` and `journeygo-app:cities-worker-23bb1cc`.
+- Release directories: `/opt/journeygo/releases/ui-a2599a1-20260919` and `/opt/journeygo/releases/airports-23bb1cc-20260919`. Both deployments checked active_tasks=0, preserved the Compose chain including quota 15, and compared task state, quota and protected containers before/after. No production changes or migrations.
 - Both current services healthy; deployed index/Result JS hashes match the local build. Full backend regression passed with four infrastructure skips; frontend 69 tests, Ruff and build passed. Existing build warnings about legacy assets and large bundles remain.
 - Rollback with the selected release's `previous-compose-files.txt` in recorded order and `.env.staging`, after checking active tasks. Recreate only the services changed by that release. Never reset the quota counter or overwrite live task data.
 - Latest new-city evidence, limitations and recovery details: [round three](demo/mobile-e2e/20260919-r3/README.md). Earlier records below are historical.
@@ -12,15 +14,15 @@
 ## Staging Flight Quota 15 And Mobile Retest (2026-09-19)
 
 - User explicitly authorized raising the total flight-call limit from 10 to 15. Applied `TRAVEL_FLIGHT_CALL_LIMIT=15` to staging API and worker only, retaining the existing Compose chain and `fbd5a45` images.
-- Overlay and verification evidence: `/opt/tripstar/releases/quota15-20260919/`. Both services healthy; active tasks were zero before recreation. Counter, task data and protected production state matched before/after; no counter reset or database replacement.
+- Overlay and verification evidence: `/opt/journeygo/releases/quota15-20260919/`. Both services healthy; active tasks were zero before recreation. Counter, task data and protected production state matched before/after; no counter reset or database replacement.
 - End-of-test counter: 8 used, 7 remaining. This round made no new paid flight calls: Lijiang recovered with unchanged retained quotes. Any further quota increase requires authorization.
 - Real Android verification completed and approved both fresh Wuhan rail and recovered Lijiang flight itineraries. See [round-two evidence](demo/mobile-e2e/20260919-r2/README.md). Older quota and blocked-phone entries below are historical.
 
 ## Nationwide Flight City Registry (2026-09-18)
 
-- Source `55c42d4`; staging API `journeyops-app:cities-api-55c42d4`, worker
-  `journeyops-app:cities-worker-55c42d4`. Release directory:
-  `/opt/tripstar/releases/cities-55c42d4-20260918`.
+- Source `55c42d4`; staging API `journeygo-app:cities-api-55c42d4`, worker
+  `journeygo-app:cities-worker-55c42d4`. Release directory:
+  `/opt/journeygo/releases/cities-55c42d4-20260918`.
 - Replaces the small whitelist with 254 sourced mainland aviation city/place
   entries and explicit aliases. Backend planning and public quote-form mapping
   share the same snapshot; see `FLIGHT_CITY_REGISTRY.md` for scope and refresh.
@@ -39,9 +41,9 @@
 
 - User approved enabling staging flights with a cumulative limit of 10 calls.
   Do not increase the limit or reset the shared credential counter without approval.
-- Source `b061105`; API `journeyops-app:flight-api-b061105`, worker
-  `journeyops-app:flight-worker-b061105`. Release
-  `/opt/tripstar/releases/flight-b061105-20260918` appends persistent
+- Source `b061105`; API `journeygo-app:flight-api-b061105`, worker
+  `journeygo-app:flight-worker-b061105`. Release
+  `/opt/journeygo/releases/flight-b061105-20260918` appends persistent
   `TRAVEL_FLIGHT_ENABLED=true` and `TRAVEL_FLIGHT_CALL_LIMIT=10` for both services.
 - Existing supplier credential, access protection and paid consent are retained.
   Production, demo and data containers are unchanged. No migrations or bookings.
@@ -52,7 +54,7 @@
   planning filters. Reference fares were CNY 280 and CNY 920 per person, excluding
   unverified taxes; these are historical probe results, not a fare guarantee.
 - Counter after verification: 2 used, 8 remaining. Captured supplier responses are
-  retained privately in `/opt/tripstar/releases/flight-enable-20260918`; do not repeat
+  retained privately in `/opt/journeygo/releases/flight-enable-20260918`; do not repeat
   calls just to inspect them. A new uncached round trip normally consumes two calls.
 - 88 targeted backend tests, 60 frontend tests, Ruff and frontend build passed.
   Both services passed health/config/quota checks. Live authenticated capability
@@ -66,9 +68,9 @@
 
 ## Contextual Pause Choices (2026-09-18)
 
-- Source `0aa75b1`; staging API image `journeyops-app:recovery-0aa75b1`, based on
-  `journeyops-app:train-c-api-588213d`. Worker remains `journeyops-app:train-c-worker-588213d`.
-- Release `/opt/tripstar/releases/recovery-0aa75b1-20260918` contains the frontend
+- Source `0aa75b1`; staging API image `journeygo-app:recovery-0aa75b1`, based on
+  `journeygo-app:train-c-api-588213d`. Worker remains `journeygo-app:train-c-worker-588213d`.
+- Release `/opt/journeygo/releases/recovery-0aa75b1-20260918` contains the frontend
   archive, Dockerfile, deployment script, Compose override and previous Compose file list.
 - Pause UI explains model uncertainty separately from unavailable trains, retains
   specific server reasons, and offers two or three contextual actions. Budget and
@@ -86,8 +88,8 @@
 
 ## Planning Recovery And Form Alignment (2026-09-18)
 
-- Source `f1efb26`; API and Worker image `journeyops-app:recovery-f1efb26`.
-- Release directory `/opt/tripstar/releases/recovery-f1efb26-20260918`.
+- Source `f1efb26`; API and Worker image `journeygo-app:recovery-f1efb26`.
+- Release directory `/opt/journeygo/releases/recovery-f1efb26-20260918`.
 - Includes feasible-plan recovery, advisory notices, responsive form alignment and
   obsolete planning-document cleanup. No database migration or dependency change.
 - Backend suite passed with four integration tests skipped locally; 48 frontend tests,
@@ -96,18 +98,18 @@
   ingress passed. Production, demo, PostgreSQL and Redis container identities were unchanged.
 - No real task was resumed or approved. Flights and personal-map writes remain disabled.
 - Rollback: read this release's `previous-compose-files.txt`, use those Compose files
-  in their recorded order with `/opt/tripstar/JourneyOps-staging/.env.staging`, check
+  in their recorded order with `/opt/journeygo/JourneyGo-staging/.env.staging`, check
   for active tasks, then run `up -d --no-deps --no-build worker trip-planner`.
-  The previous image is `journeyops-app:costs-f784506`; preserve all data volumes.
+  The previous image is `journeygo-app:costs-f784506`; preserve all data volumes.
 
 ## Mobile UI Release (2026-09-17)
 
-- Source `4129750`; staging API image `journeyops-app:mobile-4129750`.
-- Release directory `/opt/tripstar/releases/mobile-4129750-20260917` contains
+- Source `4129750`; staging API image `journeygo-app:mobile-4129750`.
+- Release directory `/opt/journeygo/releases/mobile-4129750-20260917` contains
   the frontend archive, layered Dockerfile, deployment script and Compose override.
 - Keeps text over the mobile hero with `cover` and `80% center` focus. Compact
   mobile controls and white form copy are included. Desktop hero is unchanged.
-- Frontend-only release layered on `journeyops-app:one-click-f35652d`; only the
+- Frontend-only release layered on `journeygo-app:one-click-f35652d`; only the
   staging API container was recreated. Worker, production API, PostgreSQL and
   Redis identities/start times were verified unchanged. No migration or quota change.
 - Health, authenticated ingress and feature capabilities passed. Connected Android
@@ -164,7 +166,7 @@ curl --fail --silent http://127.0.0.1:17862/health/ready
 ```
 
 公网 TLS 终止示例位于 `deploy/caddy/Caddyfile.example` 和
-`deploy/nginx/journeyops.conf.example`。反向代理只应指向 loopback Compose 端口。
+`deploy/nginx/journeygo.conf.example`。反向代理只应指向 loopback Compose 端口。
 
 本地前端联调可通过 `VITE_PROXY_TARGET` 指向 API；Vite 会同时代理 HTTP 和 WebSocket：
 
@@ -183,11 +185,11 @@ rollback tags. Production is still the old single-service deployment and is unch
 
 ### Mobile Frontend Release (2026-09-16)
 
-- Source `f62e7bd`, image `journeyops-app:mobile-f62e7bd`, staging only.
-- Frontend-only layer based on `journeyops-app:branding-732d191`; includes walking/transit
+- Source `f62e7bd`, image `journeygo-app:mobile-f62e7bd`, staging only.
+- Frontend-only layer based on `journeygo-app:branding-732d191`; includes walking/transit
   controls, mobile layout/map lifecycle fixes and temporary `/amap-test.html`.
   The temporary page token is not in Git. No API/schema/history changes.
-- Release directory `/opt/tripstar/releases/mobile-20260916` contains deployment script,
+- Release directory `/opt/journeygo/releases/mobile-20260916` contains deployment script,
   private env backup and before/after production/worker container snapshots.
 - Verified 23 frontend tests, build, supplemental fixture smoke, real Android touch
   navigation and actual AMap tiles/markers before and after publication. See
@@ -197,7 +199,7 @@ rollback tags. Production is still the old single-service deployment and is unch
 - Roll back only staging frontend, without migrations or worker restart:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=branding-732d191/' .env.staging
 docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml up -d --no-deps --no-build trip-planner
 curl --fail --silent http://127.0.0.1:17861/health/ready
@@ -209,27 +211,27 @@ The earlier HTTPS entry section below records its original deployment snapshot.
 
 - Authorized staging URL: `https://staging.elonmusk0.asia`. Cloudflare A record points to
   `158.101.42.174` in DNS-only mode; HTTP redirects to HTTPS. Production and demo hostnames are unchanged.
-- `/etc/caddy/Caddyfile` imports `/etc/caddy/journeyops-staging.caddy`. The imported file is
+- `/etc/caddy/Caddyfile` imports `/etc/caddy/journeygo-staging.caddy`. The imported file is
   `root:caddy`, mode `0640`; it contains the independent Basic Auth hash and upstream access code.
   Never print or commit this file. Authentication covers both frontend and API/WebSocket paths.
 - Caddy strips the browser Authorization header and supplies `X-Access-Code` to loopback port `17861`.
   Staging `.env.staging` enables `API_ACCESS_CODE_REQUIRED=true`; runtime secret updates stay disabled.
   The code remains server-side. Invited users share this login and staging data; this is not user isolation.
-- The deployed image remains `journeyops-app:branding-732d191`. This ingress change does not deploy the
+- The deployed image remains `journeygo-app:branding-732d191`. This ingress change does not deploy the
   later navigation commit, migrate databases, or restart production, worker, PostgreSQL, or Redis.
-- Login credentials are in `/opt/tripstar/private/staging-access.json` (root-only, `0600`); a restricted
+- Login credentials are in `/opt/journeygo/private/staging-access.json` (root-only, `0600`); a restricted
   local copy was delivered outside the repository. Do not include credentials in URLs, logs, or commits.
 - Verified: public DNS via `1.1.1.1` and `8.8.8.8`; valid TLS; anonymous homepage/API `401`;
   authenticated homepage/settings/readiness `200`; HTTP `308`; backend missing/wrong access code `401`.
   No model task was submitted for this check. Local DNS may temporarily retain the earlier NXDOMAIN.
-- Pre-change backups: `/var/backups/tripstar/staging-https-20260916T032001Z/` contains `Caddyfile` and
+- Pre-change backups: `/var/backups/journeygo/staging-https-20260916T032001Z/` contains `Caddyfile` and
   `env.staging`. For an authorized rollback, first verify no subsequent unrelated Caddy edits exist,
   restore those two files to their original locations, validate/reload Caddy, then recreate only
   `trip-planner` with the staging Compose files and `--no-deps --no-build`. The separate imported site
   file becomes inactive once the original Caddyfile is restored. No data restore is required.
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 git status --short --branch
 git pull --ff-only origin staging
 cp -n .env.staging.example .env.staging
@@ -311,16 +313,16 @@ PostgreSQL 是任务事实源。部署迁移和回滚前创建逻辑备份：
 ```bash
 set -euo pipefail
 STAMP=$(date -u +%Y%m%dT%H%M%SZ)
-BACKUP=/var/backups/tripstar/$STAMP
+BACKUP=/var/backups/journeygo/$STAMP
 sudo install -d -m 0700 "$BACKUP"
-docker exec journeyops-postgres-staging \
-  pg_dump -U journeyops -d journeyops -Fc \
-  | sudo tee "$BACKUP/journeyops-staging.pgdump" >/dev/null
-sudo chmod 0600 "$BACKUP/journeyops-staging.pgdump"
-sudo sha256sum "$BACKUP/journeyops-staging.pgdump" \
-  | sudo tee "$BACKUP/journeyops-staging.pgdump.sha256" >/dev/null
-sudo chmod 0600 "$BACKUP/journeyops-staging.pgdump.sha256"
-sudo sha256sum -c "$BACKUP/journeyops-staging.pgdump.sha256"
+docker exec journeygo-postgres-staging \
+  pg_dump -U journeygo -d journeygo -Fc \
+  | sudo tee "$BACKUP/journeygo-staging.pgdump" >/dev/null
+sudo chmod 0600 "$BACKUP/journeygo-staging.pgdump"
+sudo sha256sum "$BACKUP/journeygo-staging.pgdump" \
+  | sudo tee "$BACKUP/journeygo-staging.pgdump.sha256" >/dev/null
+sudo chmod 0600 "$BACKUP/journeygo-staging.pgdump.sha256"
+sudo sha256sum -c "$BACKUP/journeygo-staging.pgdump.sha256"
 ```
 
 Redis 不保存任务真相。通常不恢复 Redis volume；Worker 启动扫描负责处理未投递或陈旧任务。
@@ -331,14 +333,14 @@ Redis 不保存任务真相。通常不恢复 Redis volume；Worker 启动扫描
 
 ```bash
 set -euo pipefail
-test "$TARGET_POSTGRES_CONTAINER" = journeyops-postgres-restore-drill
+test "$TARGET_POSTGRES_CONTAINER" = journeygo-postgres-restore-drill
 docker exec "$TARGET_POSTGRES_CONTAINER" \
-  dropdb -U journeyops --if-exists journeyops
+  dropdb -U journeygo --if-exists journeygo
 docker exec "$TARGET_POSTGRES_CONTAINER" \
-  createdb -U journeyops journeyops
-sudo cat /var/backups/tripstar/<STAMP>/journeyops-staging.pgdump \
+  createdb -U journeygo journeygo
+sudo cat /var/backups/journeygo/<STAMP>/journeygo-staging.pgdump \
   | docker exec -i "$TARGET_POSTGRES_CONTAINER" \
-  pg_restore -U journeyops -d journeyops --clean --if-exists \
+  pg_restore -U journeygo -d journeygo --clean --if-exists \
     --no-owner --no-privileges
 ```
 
@@ -430,22 +432,22 @@ revision 管理，默认保留。若还需回退到阶段 3 schema，再单独�
 
 ## Production Promotion Gate
 
-JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式切换生产前必须先盘点旧 JSON，制定
+JourneyGo 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式切换生产前必须先盘点旧 JSON，制定
 可重复执行且已在 staging 验证的数据导入方案，并核对任务数、终态数和历史结果。该迁移未完成前，
 不得将新栈提升为 production，也不得删除旧 JSON volume。公网提升还必须启用并验证应用级
 访问码、确认当前模型单价，并保留现有反向代理认证。
 
 ## Executed Backup Evidence
 
-- 2026-08-07 Oracle staging PostgreSQL backup: `/var/backups/tripstar/20260807T115742Z`
+- 2026-08-07 Oracle staging PostgreSQL backup: `/var/backups/journeygo/20260807T115742Z`
 - Format: PostgreSQL custom dump plus SHA-256 manifest
 - Permissions: backup directory `0700`, files `0600`
 - Verification: `sha256sum -c` passed
 
 ## Phase 3 Executed Evidence
 
-- 2026-08-08 pre-deploy backup: `/var/backups/tripstar/20260807T181543Z-phase3-predeploy`
-- Deployed source: `909e8ba`; image: `journeyops-app:phase3-909e8ba`
+- 2026-08-08 pre-deploy backup: `/var/backups/journeygo/20260807T181543Z-phase3-predeploy`
+- Deployed source: `909e8ba`; image: `journeygo-app:phase3-909e8ba`
 - Alembic: `20260808_02`; migration container exit: `0`
 - Staging graph task completed with native schema `2.0`, legacy client Adapter and 7 checkpoint rows
 - Worker restored to `PLANNER_ENGINE=legacy`; production `/health/ready` remained ready
@@ -453,8 +455,8 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 
 ## Phase 4 Executed Evidence
 
-- 2026-08-08 pre-deploy backup: `/var/backups/tripstar/20260808T005836Z-phase4-predeploy`
-- Deployed source: `946cee3`; image: `journeyops-app:phase4-946cee3`
+- 2026-08-08 pre-deploy backup: `/var/backups/journeygo/20260808T005836Z-phase4-predeploy`
+- Deployed source: `946cee3`; image: `journeygo-app:phase4-946cee3`
 - Alembic: `20260808_03`; staging and production readiness both remained `200`
 - Real no-Key JourneyGraph task completed with 4 persisted `unknown` evidence records and no task error
 - Real configured XHS call returned `unavailable` through the optional-provider boundary without failing a task
@@ -462,8 +464,8 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 
 ## Phase 5 Executed Evidence
 
-- 2026-08-08 pre-deploy backup: `/var/backups/tripstar/20260808T041757Z-phase5-predeploy`
-- Deployed source: `147d93b`; image: `journeyops-app:phase5-147d93b`
+- 2026-08-08 pre-deploy backup: `/var/backups/journeygo/20260808T041757Z-phase5-predeploy`
+- Deployed source: `147d93b`; image: `journeygo-app:phase5-147d93b`
 - Alembic remains `20260808_03`; migration container exit: `0`; no phase 5 schema migration
 - Real JourneyGraph task `task_6c97534bd3d148bd97ca` completed with explicit origin, recommended intercity
   option, closed timelines, recalculated budget, zero validation issues and zero revisions
@@ -473,8 +475,8 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 
 ## Phase 6 Executed Evidence
 
-- 2026-08-08 pre-deploy backup: `/var/backups/tripstar/20260808T080347Z-phase6-predeploy`
-- Deployed application source: `011a485`; image: `journeyops-app:phase6-011a485`
+- 2026-08-08 pre-deploy backup: `/var/backups/journeygo/20260808T080347Z-phase6-predeploy`
+- Deployed application source: `011a485`; image: `journeygo-app:phase6-011a485`
 - Alembic: `20260808_04`; migration container exit: `0`
 - Initial proposal survived API/Worker restart without creating a version; approval created V1
 - Scoped day-1 replan preserved day 0, approval created V2, and rollback created active V3
@@ -484,8 +486,8 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 
 ## Phase 7 Executed Evidence
 
-- 2026-08-08 pre-deploy backup: `/var/backups/tripstar/20260808T102339Z-phase7-predeploy`
-- Deployed source: `2634e73`; image: `journeyops-app:phase7-2634e73`
+- 2026-08-08 pre-deploy backup: `/var/backups/journeygo/20260808T102339Z-phase7-predeploy`
+- Deployed source: `2634e73`; image: `journeygo-app:phase7-2634e73`
 - Alembic: `20260808_05`; migration container exit: `0`
 - Live guardrails returned missing access `401`, injection `422`, budget `429` and Redis rate `429`
 - Live cost trace recorded 13,055 tokens, USD 0.00293888 and 56,579 ms on `deepseek-v4-flash`
@@ -495,11 +497,11 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 
 ## Phase 8 Executed Evidence
 
-- 2026-08-08 pre-deploy backup: `/var/backups/tripstar/20260808T132203Z-phase8-predeploy`
-- Deployed source: `f6ec417`; image: `journeyops-app:phase8-f6ec417`
+- 2026-08-08 pre-deploy backup: `/var/backups/journeygo/20260808T132203Z-phase8-predeploy`
+- Deployed source: `f6ec417`; image: `journeygo-app:phase8-f6ec417`
 - Alembic: `20260808_05`; staging `17861`, keyless demo `17862`, and production `17860` readiness all returned
   `200`
-- API and Worker run as non-root `journeyops`; final build has no credential build arguments or values
+- API and Worker run as non-root `journeygo`; final build has no credential build arguments or values
 - Real keyless task reached every JourneyGraph stage, paused for approval, created exactly one active immutable
   version and consumed zero model tokens
 - Production container ID, image, restart count and home-page SHA-256 remained unchanged
@@ -509,11 +511,11 @@ JourneyOps 新栈仍不读取或迁移 `backend/data/trip_tasks/*.json`。正式
 
 - Application source: `f35652d` (includes one-click workflow `d7fe4a2`).
 - URL: `https://staging.elonmusk0.asia`; existing private login unchanged.
-- Image: `journeyops-app:one-click-f35652d` on staging API and Worker only.
-- Release directory: `/opt/tripstar/releases/one-click-f35652d-20260917`.
+- Image: `journeygo-app:one-click-f35652d` on staging API and Worker only.
+- Release directory: `/opt/journeygo/releases/one-click-f35652d-20260917`.
   Contains source archives, layered Dockerfile, `one-click.compose.yaml`,
   `deploy.sh`, verification scripts and build log. Base dependencies match
-  `journeyops-app:memories-1245377`; backend and built frontend are replaced.
+  `journeygo-app:memories-1245377`; backend and built frontend are replaced.
 - Deployment uses the original staging checkout/env plus the existing travel
   override, memories override and new one-click override. Server branch and
   its untracked private backup are not modified.
@@ -542,11 +544,11 @@ paid counters. With no active tasks, recreate only API/Worker using the previous
 override stack (the previous image defaults one-click to disabled):
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging \
   -f docker-compose.yaml -f docker-compose.staging.yaml \
-  -f /opt/tripstar/releases/travel-d7f99ce-20260916/travel.release.compose.yaml \
-  -f /opt/tripstar/releases/memories-1245377-20260917/memories.compose.yaml \
+  -f /opt/journeygo/releases/travel-d7f99ce-20260916/travel.release.compose.yaml \
+  -f /opt/journeygo/releases/memories-1245377-20260917/memories.compose.yaml \
   up -d --no-deps --no-build worker trip-planner
 ```
 
@@ -556,9 +558,9 @@ or remove volumes as part of application rollback.
 ## Outdoor Handbook Staging Release (2026-09-17)
 
 - Application source: `f136167`; target: `https://staging.elonmusk0.asia` only.
-- Image: `journeyops-app:outdoor-f136167`, derived from the running
-  `journeyops-app:rail-2d90633` image with only `/app/frontend/dist` replaced.
-- Release directory: `/opt/tripstar/releases/outdoor-f136167-20260917`.
+- Image: `journeygo-app:outdoor-f136167`, derived from the running
+  `journeygo-app:rail-2d90633` image with only `/app/frontend/dist` replaced.
+- Release directory: `/opt/journeygo/releases/outdoor-f136167-20260917`.
   Includes the production frontend build, Dockerfile, compose override, build log,
   deployment script and previous compose file list. No secrets are included in Git.
 - Outdoor is the sole form/result theme. Preview switch removed; hero remains
@@ -577,8 +579,8 @@ or remove volumes as part of application rollback.
 Rollback only the staging API image, preserving the current compose settings:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
-release=/opt/tripstar/releases/outdoor-f136167-20260917
+cd /opt/journeygo/JourneyGo-staging
+release=/opt/journeygo/releases/outdoor-f136167-20260917
 compose=(docker compose --env-file .env.staging)
 IFS=',' read -ra paths < "$release/previous-compose-files.txt"
 for path in "${paths[@]}"; do compose+=(-f "$path"); done
@@ -591,9 +593,9 @@ this frontend rollback.
 ## Mobile Calendar and Task Recovery Hotfix (2026-09-17)
 
 - Source commits: `cfb2dfe` (calendar column clipping) and `a925c9d` (task connection recovery).
-- Staging API image: `journeyops-app:mobile-fix-a925c9d`, layered on
-  `journeyops-app:outdoor-f136167`; only built frontend files replaced.
-- Release directory: `/opt/tripstar/releases/mobile-fix-a925c9d-20260917`.
+- Staging API image: `journeygo-app:mobile-fix-a925c9d`, layered on
+  `journeygo-app:outdoor-f136167`; only built frontend files replaced.
+- Release directory: `/opt/journeygo/releases/mobile-fix-a925c9d-20260917`.
   Use its `previous-compose-files.txt` with the rollback commands above to restore
   the outdoor image. No schema or data rollback is needed.
 - Date table and all seven column widths now agree; rightmost Sunday cells are
@@ -612,9 +614,9 @@ this frontend rollback.
 ## Navigation and Result Delivery Follow-up (2026-09-17)
 
 - Source: `93cdca4` (shared navigation) and `f9a281d` (result delivery states).
-- Staging API image: `journeyops-app:nav-progress-f9a281d`; release directory:
-  `/opt/tripstar/releases/nav-progress-f9a281d-20260917`. Frontend-only layer on
-  `journeyops-app:mobile-fix-a925c9d`; worker and backend remain unchanged.
+- Staging API image: `journeygo-app:nav-progress-f9a281d`; release directory:
+  `/opt/journeygo/releases/nav-progress-f9a281d-20260917`. Frontend-only layer on
+  `journeygo-app:mobile-fix-a925c9d`; worker and backend remain unchanged.
 - All shared navigation menus expose Chinese/English only, hide settings by
   default and retain the GitHub link at every viewport width. Legacy translation
   packs remain for data compatibility.
@@ -634,9 +636,9 @@ this frontend rollback.
 
 - Source: `d5c8d10` (focus/scroll to generation progress) and `133a1bb`
   (one-click weather collection and missing-date notices).
-- Staging API and worker image: `journeyops-app:weather-133a1bb`.
-  Release directory: `/opt/tripstar/releases/weather-133a1bb-20260917`.
-  Layered on `journeyops-app:nav-progress-f9a281d`, replacing frontend assets,
+- Staging API and worker image: `journeygo-app:weather-133a1bb`.
+  Release directory: `/opt/journeygo/releases/weather-133a1bb-20260917`.
+  Layered on `journeygo-app:nav-progress-f9a281d`, replacing frontend assets,
   JourneyGraph wiring and weather enrichment only. No dependency/API/schema change.
 - Root cause: the one-click branch bypassed weather collection and returned the
   draft unchanged during enrichment. It now collects provider forecasts for each
@@ -657,30 +659,30 @@ this frontend rollback.
 Rollback both staging application services, not data or schema:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
-release=/opt/tripstar/releases/weather-133a1bb-20260917
-docker exec -i journeyops-worker-staging python < /opt/tripstar/releases/travel-d7f99ce-20260916/travel-active-check.py
+cd /opt/journeygo/JourneyGo-staging
+release=/opt/journeygo/releases/weather-133a1bb-20260917
+docker exec -i journeygo-worker-staging python < /opt/journeygo/releases/travel-d7f99ce-20260916/travel-active-check.py
 compose=(docker compose --env-file .env.staging)
 IFS=',' read -ra paths < "$release/previous-compose-files.txt"
 for path in "${paths[@]}"; do compose+=(-f "$path"); done
 "${compose[@]}" up -d --no-deps --no-build worker trip-planner
 ```
 
-This restores API `journeyops-app:nav-progress-f9a281d` and worker
-`journeyops-app:rail-2d90633`. Wait for both health checks before accepting traffic.
+This restores API `journeygo-app:nav-progress-f9a281d` and worker
+`journeygo-app:rail-2d90633`. Wait for both health checks before accepting traffic.
 
 ## Staging AMap Personal Map Enablement (2026-09-18)
 
 Subsequent application release: `d14605a`, documented in the result-details section
 below, retains this API flag and updates both staging application images.
 
-- Configuration-only release: `/opt/tripstar/releases/amap-enable-20260918`.
+- Configuration-only release: `/opt/journeygo/releases/amap-enable-20260918`.
   Append `amap-enable.compose.yaml` to the API container's active Compose file
   list. It sets only `trip-planner.environment.AMAP_PERSONAL_MAP_ENABLED=true`.
   Tracked source: `deploy/amap-personal-map.staging.yaml`; apply only to staging.
   The previous layered file list is saved as `previous-compose-files.txt`.
-- Only staging API was recreated, retaining `journeyops-app:form-help-9be791b`.
-  Worker stays on `journeyops-app:brand-cleanup-a5ccfb1`; its unused map flag
+- Only staging API was recreated, retaining `journeygo-app:form-help-9be791b`.
+  Worker stays on `journeygo-app:brand-cleanup-a5ccfb1`; its unused map flag
   remains false. Website exports execute synchronously in the API.
 - Zero active tasks before recreation. API healthy; authenticated homepage,
   `/health/ready` and travel capabilities returned 200. Paid flights remain
@@ -706,9 +708,9 @@ below, retains this API flag and updates both staging application images.
 Rollback only the staging API, after the active-task check:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
-release=/opt/tripstar/releases/amap-enable-20260918
-docker exec -i journeyops-worker-staging python < /opt/tripstar/releases/travel-d7f99ce-20260916/travel-active-check.py
+cd /opt/journeygo/JourneyGo-staging
+release=/opt/journeygo/releases/amap-enable-20260918
+docker exec -i journeygo-worker-staging python < /opt/journeygo/releases/travel-d7f99ce-20260916/travel-active-check.py
 compose=(docker compose --env-file .env.staging)
 IFS=',' read -ra paths < "$release/previous-compose-files.txt"
 for path in "${paths[@]}"; do compose+=(-f "$path"); done
@@ -722,9 +724,9 @@ flag without rebuilding images, changing worker configuration or modifying data.
 
 ### C-prefix Train Eligibility Follow-Up
 
-- Source `588213d`; release `/opt/tripstar/releases/train-c-588213d-20260918`.
-  API image `journeyops-app:train-c-api-588213d`; worker image
-  `journeyops-app:train-c-worker-588213d`. Each is layered onto its respective
+- Source `588213d`; release `/opt/journeygo/releases/train-c-588213d-20260918`.
+  API image `journeygo-app:train-c-api-588213d`; worker image
+  `journeygo-app:train-c-worker-588213d`. Each is layered onto its respective
   previous image, replacing only `one_click_travel.py`; no frontend/schema change.
 - C-prefix second-class trains now pass the same eligibility checks as G/D.
   Empty-candidate messages identify leg, route and date, distinguishing empty
@@ -744,8 +746,8 @@ flag without rebuilding images, changing worker configuration or modifying data.
   `result-details-d14605a`; do not delete queries or rewrite tasks.
 
 Scroll-interaction follow-up: `8becae8`, API image
-`journeyops-app:carousel-8becae8`, release directory
-`/opt/tripstar/releases/carousel-8becae8-20260918`. Removes mouseenter-driven
+`journeygo-app:carousel-8becae8`, release directory
+`/opt/journeygo/releases/carousel-8becae8-20260918`. Removes mouseenter-driven
 selection, which competed with wheel/drag events as cards moved under a stationary
 pointer. Side cards select on click, keyboard focus remains supported, and wheel
 events release to the page at either end. No visual redesign.
@@ -759,11 +761,11 @@ production/demo/data containers were unchanged. Roll back API only via this
 release's saved Compose list; it restores `carousel-05f5ce2`.
 
 Subsequent gallery-only release: `05f5ce2`, API image
-`journeyops-app:carousel-05f5ce2`, release directory
-`/opt/tripstar/releases/carousel-05f5ce2-20260918`. Restores the original
+`journeygo-app:carousel-05f5ce2`, release directory
+`/opt/journeygo/releases/carousel-05f5ce2-20260918`. Restores the original
 centered coverflow with smaller depth/overlap and removes image-bottom wave
 overlays for straight edges. The replacement grid and arrow-control designs
-are discarded. Worker remains `journeyops-app:result-details-d14605a`.
+are discarded. Worker remains `journeygo-app:result-details-d14605a`.
 All 54 frontend tests, production build and 390/900/1440px interaction checks
 passed. Deployment found zero active tasks; private ingress/readiness and map
 enablement passed, with worker, production, demo and data containers unchanged.
@@ -773,8 +775,8 @@ Rollback only `trip-planner` using this release's `previous-compose-files.txt`
 and the existing Compose loop after the active-task check. This restores the
 previous API image without changing data, worker or the personal-map flag.
 
-- Source: `d14605a`; API and worker: `journeyops-app:result-details-d14605a`.
-  Release: `/opt/tripstar/releases/result-details-d14605a-20260918`.
+- Source: `d14605a`; API and worker: `journeygo-app:result-details-d14605a`.
+  Release: `/opt/journeygo/releases/result-details-d14605a-20260918`.
 - Layers the built frontend and three changed backend modules onto the previous
   API image. No dependency changes or migrations. Existing Compose layers and
   the persistent personal-map API enablement are retained.
@@ -801,9 +803,9 @@ previous API image without changing data, worker or the personal-map flag.
 
 ## Sourced Costs, Attraction Introductions and Map Export (2026-09-17)
 
-- Source: `f784506`. Staging API and worker image: `journeyops-app:costs-f784506`,
-  layered on `journeyops-app:weather-133a1bb`.
-- Release: `/opt/tripstar/releases/costs-f784506-20260917`. Includes source archive,
+- Source: `f784506`. Staging API and worker image: `journeygo-app:costs-f784506`,
+  layered on `journeygo-app:weather-133a1bb`.
+- Release: `/opt/journeygo/releases/costs-f784506-20260917`. Includes source archive,
   built frontend, Dockerfile, compose override, deployment/verification scripts,
   build log and `previous-compose-files.txt` for rollback.
 - Ships short sourced attraction introductions, AMap per-person meal references,
@@ -828,4 +830,4 @@ previous API image without changing data, worker or the personal-map flag.
 
 Rollback both application services using this release's `previous-compose-files.txt`
 and the compose loop above, after checking for active tasks. It restores
-`journeyops-app:weather-133a1bb` for both API and worker; do not restore/delete data.
+`journeygo-app:weather-133a1bb` for both API and worker; do not restore/delete data.

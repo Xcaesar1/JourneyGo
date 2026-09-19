@@ -1,5 +1,7 @@
 # API v2 Durable Tasks
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 阶段 2 将 `/api/v2` 从 mock 升级为 PostgreSQL 持久任务 API。阶段 3 在 Worker 内增加可切换的
 JourneyGraph。阶段 4 在 JourneyGraph 输出及 legacy Adapter 中增加来源证据，但不改变任务提交、
 轮询和 WebSocket 契约。API 先提交数据库事务，再投递 Celery；Redis 只承载 broker、Pub/Sub
@@ -120,7 +122,7 @@ consent and a shared cumulative call ceiling. Contracts and price semantics: [Tr
 - 预计 token 或按运营方单价计算的最坏费用超限时返回 `429`；
 - 明确要求覆盖系统指令或提取 Secret 的输入在落库前返回 `422`。
 
-访问码只从未跟踪的环境变量读取。前端只在 `sessionStorage` 的 `journeyops.api_access_code` 保存当前
+访问码只从未跟踪的环境变量读取。前端只在 `sessionStorage` 的 `journeygo.api_access_code` 保存当前
 浏览器会话值并添加请求 Header；源码、长期本地存储、日志和遥测均不保存访问码。
 
 不可变版本元数据包含 `model_id`、`prompt_version`、`workflow_version`、`tool_versions` 和

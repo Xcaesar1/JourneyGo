@@ -1,5 +1,7 @@
 # Backup, Restore And Rollback
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 > 阶段 2 起 PostgreSQL 是任务事实源。本文保留阶段 0 的旧生产基线证据；多服务 staging
 > 的数据库备份、恢复和迁移回滚以 `docs/DEPLOYMENT.md` 为准。
 
@@ -10,7 +12,7 @@
 阶段 0 已在以下受限目录完成一次在线、crash-consistent 备份：
 
 ```text
-/var/backups/tripstar/20260806T045151Z
+/var/backups/journeygo/20260806T045151Z
 ```
 
 目录权限为 `0700`，归档和校验文件权限为 `0600`。包含：
@@ -29,28 +31,28 @@
 
 ```bash
 set -euo pipefail
-REPO=/opt/tripstar/TripStar
+REPO=/opt/journeygo/JourneyGo
 STAMP=$(date -u +%Y%m%dT%H%M%SZ)
-BACKUP=/var/backups/tripstar/$STAMP
-sudo install -d -m 0700 /var/backups/tripstar "$BACKUP"
+BACKUP=/var/backups/journeygo/$STAMP
+sudo install -d -m 0700 /var/backups/journeygo "$BACKUP"
 ```
 
 备份 Git 历史和当前工作树：
 
 ```bash
-git -C "$REPO" bundle create /tmp/tripstar-repository.bundle --all
-sudo install -m 0600 /tmp/tripstar-repository.bundle "$BACKUP/repository.bundle"
-rm -f /tmp/tripstar-repository.bundle
+git -C "$REPO" bundle create /tmp/journeygo-repository.bundle --all
+sudo install -m 0600 /tmp/journeygo-repository.bundle "$BACKUP/repository.bundle"
+rm -f /tmp/journeygo-repository.bundle
 sudo tar -czf "$BACKUP/working-tree.tar.gz" \
-  --exclude='TripStar/.git' \
-  -C /opt/tripstar TripStar
+  --exclude='JourneyGo/.git' \
+  -C /opt/journeygo JourneyGo
 sudo chmod 0600 "$BACKUP/working-tree.tar.gz"
 ```
 
 在线只读备份生产数据卷：
 
 ```bash
-VOLUME_DATA=/var/lib/docker/volumes/tripstar_trip_data/_data
+VOLUME_DATA=/var/lib/docker/volumes/journeygo_trip_data/_data
 sudo test -d "$VOLUME_DATA"
 sudo tar --numeric-owner -czf "$BACKUP/trip_data.tar.gz" -C "$VOLUME_DATA" .
 sudo chmod 0600 "$BACKUP/trip_data.tar.gz"
@@ -86,7 +88,7 @@ sudo sha256sum -c "$BACKUP/SHA256SUMS" >/dev/null
 先确认工作树和目标提交，不得覆盖未提交改动：
 
 ```bash
-cd /opt/tripstar/TripStar
+cd /opt/journeygo/JourneyGo
 git status --short --branch
 git fetch --prune origin
 git log --oneline --decorate -5 origin/main
@@ -111,7 +113,7 @@ curl --fail --silent --show-error http://127.0.0.1:17860/health/ready
 准备只在主机保存的 staging Secret 文件：
 
 ```bash
-cd /opt/tripstar/TripStar
+cd /opt/journeygo/JourneyGo
 cp .env.staging.example .env.staging
 chmod 0600 .env.staging
 ```
@@ -119,7 +121,7 @@ chmod 0600 .env.staging
 填充 `.env.staging` 后先验证合并配置，不启动服务：
 
 ```bash
-docker compose -p tripstar-staging \
+docker compose -p journeygo-staging \
   --env-file .env.staging \
   -f docker-compose.yaml \
   -f docker-compose.staging.yaml \
@@ -129,18 +131,18 @@ docker compose -p tripstar-staging \
 需要进行恢复演练时，先创建 staging volume，再把备份恢复到 staging volume，禁止写生产卷：
 
 ```bash
-docker volume create tripstar_staging_data >/dev/null
-STAGING_DATA=/var/lib/docker/volumes/tripstar_staging_data/_data
+docker volume create journeygo_staging_data >/dev/null
+STAGING_DATA=/var/lib/docker/volumes/journeygo_staging_data/_data
 sudo test -d "$STAGING_DATA"
-sudo tar -tzf /var/backups/tripstar/<STAMP>/trip_data.tar.gz >/dev/null
-sudo tar --numeric-owner -xzf /var/backups/tripstar/<STAMP>/trip_data.tar.gz \
+sudo tar -tzf /var/backups/journeygo/<STAMP>/trip_data.tar.gz >/dev/null
+sudo tar --numeric-owner -xzf /var/backups/journeygo/<STAMP>/trip_data.tar.gz \
   -C "$STAGING_DATA"
 ```
 
-确认目标是 `tripstar_staging_data` 后，才可启动 staging：
+确认目标是 `journeygo_staging_data` 后，才可启动 staging：
 
 ```bash
-docker compose -p tripstar-staging \
+docker compose -p journeygo-staging \
   --env-file .env.staging \
   -f docker-compose.yaml \
   -f docker-compose.staging.yaml \
@@ -163,22 +165,22 @@ curl --fail --silent --show-error http://127.0.0.1:17861/health/ready
 停止服务并再次校验目标：
 
 ```bash
-cd /opt/tripstar/TripStar
+cd /opt/journeygo/JourneyGo
 docker compose stop trip-planner
-PRODUCTION_DATA=/var/lib/docker/volumes/tripstar_trip_data/_data
+PRODUCTION_DATA=/var/lib/docker/volumes/journeygo_trip_data/_data
 sudo test "$(readlink -f "$PRODUCTION_DATA")" = \
-  /var/lib/docker/volumes/tripstar_trip_data/_data
-sudo sha256sum -c /var/backups/tripstar/<STAMP>/SHA256SUMS
-sudo tar -tzf /var/backups/tripstar/<STAMP>/trip_data.tar.gz >/dev/null
+  /var/lib/docker/volumes/journeygo_trip_data/_data
+sudo sha256sum -c /var/backups/journeygo/<STAMP>/SHA256SUMS
+sudo tar -tzf /var/backups/journeygo/<STAMP>/trip_data.tar.gz >/dev/null
 ```
 
 只有操作者显式设置确认变量后才清空并恢复：
 
 ```bash
-export CONFIRM_TRIPSTAR_PRODUCTION_RESTORE=yes
-test "$CONFIRM_TRIPSTAR_PRODUCTION_RESTORE" = yes
+export CONFIRM_JOURNEYGO_PRODUCTION_RESTORE=yes
+test "$CONFIRM_JOURNEYGO_PRODUCTION_RESTORE" = yes
 sudo find "$PRODUCTION_DATA" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
-sudo tar --numeric-owner -xzf /var/backups/tripstar/<STAMP>/trip_data.tar.gz \
+sudo tar --numeric-owner -xzf /var/backups/journeygo/<STAMP>/trip_data.tar.gz \
   -C "$PRODUCTION_DATA"
 ```
 
@@ -197,7 +199,7 @@ docker compose logs --tail=100 trip-planner
 共享分支优先使用可审计的 revert，不改写历史：
 
 ```bash
-cd /opt/tripstar/TripStar
+cd /opt/journeygo/JourneyGo
 git status --short --branch
 git show --stat <BAD_COMMIT>
 git revert <BAD_COMMIT>

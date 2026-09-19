@@ -1,5 +1,7 @@
 # Travel MCP Queries
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 - Add on-demand train, hotel and flight queries to the result page, separate from planning estimates and budget totals. Do not rewrite saved versions.
@@ -51,7 +53,7 @@ API_RATE_LIMIT_ENABLED=true
 ```
 
 - After explicit spending approval, enable flights and set `TRAVEL_FLIGHT_CALL_LIMIT` to the approved **cumulative call ceiling**. This is not money or a daily reset.
-- Redis key `journeyops:travel:flight:calls:<credential-digest>` is atomic and non-expiring. Reserve before calling; timeouts/errors still consume a slot because charging may have occurred. Cache hits cost no slot. Never automatically refund or retry.
+- Redis key `journeygo:travel:flight:calls:<credential-digest>` is atomic and non-expiring. Reserve before calling; timeouts/errors still consume a slot because charging may have occurred. Cache hits cost no slot. Never automatically refund or retry.
 - Raising the configured ceiling grants additional calls; it does not reset usage. Changing credentials starts a separate counter. Do not delete counters to bypass limits.
 - Fail closed if Redis is unavailable. Persist Redis; disable flights during Redis data loss/restore, reconcile the supplier portal, then explicitly approve a new ceiling. Counters cover this application only, not earlier diagnostics or other clients.
 - Key configuration alone cannot enable paid calls. Committed examples keep flights off and ceiling zero. Demo mode disables all external queries.
@@ -98,8 +100,8 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 ## Staging Release (2026-09-16)
 
 - Application source: `d7f99ce`, pushed to `Xcaesar1/JourneyGo` main.
-- Image: `journeyops-app:travel-d7f99ce`, successfully built from the root Dockerfile on the ARM64 staging host.
-- Release directory: `/opt/tripstar/releases/travel-d7f99ce-20260916`.
+- Image: `journeygo-app:travel-d7f99ce`, successfully built from the root Dockerfile on the ARM64 staging host.
+- Release directory: `/opt/journeygo/releases/travel-d7f99ce-20260916`.
 - Public site: `https://staging.elonmusk0.asia`, existing Basic Auth preserved.
 - Only staging API and Worker were recreated after confirming zero active tasks. Production, PostgreSQL and Redis container IDs/start times remained unchanged.
 - Train and hotel queries are enabled on the API. Flight remains disabled with cumulative limit zero: the earlier three-query authorization is exhausted. Worker does not automatically call any travel provider.
@@ -110,9 +112,9 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 #### Memories Release (Current)
 
-- Source: `1245377`; image: `journeyops-app:memories-1245377`; release: `/opt/tripstar/releases/memories-1245377-20260917`. Deployed from a local committed archive, not pushed to GitHub.
+- Source: `1245377`; image: `journeygo-app:memories-1245377`; release: `/opt/journeygo/releases/memories-1245377-20260917`. Deployed from a local committed archive, not pushed to GitHub.
 - Recreate with base/staging Compose files, the travel override, the prior loading override, then this release's `memories.compose.yaml`. Private variables, provider flags and volumes remain inherited.
-- `memories-deploy.sh` builds the normal root Dockerfile, checks active tasks and health, and automatically rolls back to `journeyops-app:loading-f46af59` if publication fails.
+- `memories-deploy.sh` builds the normal root Dockerfile, checks active tasks and health, and automatically rolls back to `journeygo-app:loading-f46af59` if publication fails.
 - Only staging API/Worker were recreated after zero active tasks. Production/PostgreSQL/Redis container identities and start times remained unchanged. No migration, paid query, Caddy change or authentication change.
 - Live Chrome regressions passed: Memories in four languages at 360/390/1440, home at 390/1440, and result/PNG export with mocked supplier APIs. Authenticated `/history` and `/result` returned 200; the real history API returned the expected items shape; anonymous `/history` returned 401. Train/hotel remain enabled and flight disabled.
 - Public ingress verification passed: HTML/API/401/404 no-store, successful hashed assets private immutable, gzip, Vary and ETag 304. Main JS compressed transfer: 310235 bytes. This does not establish that the previously reported real-phone normal-mode white screen has been resolved.
@@ -120,62 +122,62 @@ Browser regression mocks providers and spends no credit. Backend fixtures are sy
 
 #### Loading Optimization Release (Previous)
 
-- Source: `f46af59`; image: `journeyops-app:loading-f46af59`; release: `/opt/tripstar/releases/loading-f46af59-20260917`. Deployed from a local committed archive, not pushed to GitHub.
+- Source: `f46af59`; image: `journeygo-app:loading-f46af59`; release: `/opt/journeygo/releases/loading-f46af59-20260917`. Deployed from a local committed archive, not pushed to GitHub.
 - Recreate with base/staging Compose files, the travel override, then this release's `loading.compose.yaml`. Preserve private environment and provider flags. `loading-deploy.sh` checks active tasks and health, and automatically rolls back to the ambient image on deployment failure.
 - Only API/Worker were recreated; production/PostgreSQL/Redis container identities and start times remained unchanged. No database migration or paid query; train/hotel enabled, flight disabled.
 - Live home regression passed at 390/1440 in all four languages, including motion and reduced motion. Travel/result regression and PNG export passed with mocked supplier APIs. Public gzip/cache/auth checks and real browser cache reuse passed; details in `FRONTEND_LOADING.md`.
 - User-approved staging-only Caddy cache changes retain password protection and no-store on HTML/API/errors. Private original backup: `caddy-staging.before` in this release directory. Use explicit deferred header blocks compatible with Caddy 2.6.2.
-- Application rollback: replace the loading override with `/opt/tripstar/releases/ambient-8499c3c-20260916/ambient.compose.yaml`; recreate only worker/trip-planner with `--no-deps --no-build`. Restore ingress separately using the documented private backup if rolling back caching.
+- Application rollback: replace the loading override with `/opt/journeygo/releases/ambient-8499c3c-20260916/ambient.compose.yaml`; recreate only worker/trip-planner with `--no-deps --no-build`. Restore ingress separately using the documented private backup if rolling back caching.
 
 #### Default Enhanced Motion Release (Previous)
 
-- Source: `8499c3c`, pushed to GitHub main. Image: `journeyops-app:ambient-8499c3c`.
-- Release directory: `/opt/tripstar/releases/ambient-8499c3c-20260916`.
+- Source: `8499c3c`, pushed to GitHub main. Image: `journeygo-app:ambient-8499c3c`.
+- Release directory: `/opt/journeygo/releases/ambient-8499c3c-20260916`.
 - Recreate with base/staging Compose files, the travel override, then this release's `ambient.compose.yaml`. Private environment and provider flags remain inherited from the travel override.
-- `ambient-deploy.sh` checks active tasks, health and protected containers; automatic rollback restores `journeyops-app:motion-0cc1839`. Manual rollback: substitute `/opt/tripstar/releases/motion-0cc1839-20260916/motion.compose.yaml` for the ambient override.
+- `ambient-deploy.sh` checks active tasks, health and protected containers; automatic rollback restores `journeygo-app:motion-0cc1839`. Manual rollback: substitute `/opt/journeygo/releases/motion-0cc1839-20260916/motion.compose.yaml` for the ambient override.
 - Includes stronger atmosphere/camera movement and removal of the pause control. System reduced-motion and mobile camera fallback remain. No database/API migration or paid query.
 - Deployment checks passed: API/Worker healthy, protected production/PostgreSQL/Redis containers unchanged, train/hotel enabled and flight disabled. Public HTML/JS/CSS returned 200; served CSS contains enhanced scaling and no pause toggle. Full live Chrome regression remains incomplete due navigation/resource transfer timeouts, including after isolating external fonts and trying system network settings. Local browser regression and build passed before deployment; do not label this release's full live browser test passed.
 
 #### Homepage Motion Release (Previous)
 
-- Source: `0cc1839`, pushed to GitHub main. Image: `journeyops-app:motion-0cc1839`.
-- Release directory: `/opt/tripstar/releases/motion-0cc1839-20260916`.
+- Source: `0cc1839`, pushed to GitHub main. Image: `journeygo-app:motion-0cc1839`.
+- Release directory: `/opt/journeygo/releases/motion-0cc1839-20260916`.
 - Use base/staging Compose files, the travel override, then `motion.compose.yaml` in this release. Provider configuration and private environment remain inherited from the travel override.
-- `motion-deploy.sh` checks active tasks, application health and protected containers, with automatic rollback to `journeyops-app:hero-661534c`. Manual rollback: replace the motion override with `/opt/tripstar/releases/hero-661534c-20260916/hero.compose.yaml`.
+- `motion-deploy.sh` checks active tasks, application health and protected containers, with automatic rollback to `journeygo-app:hero-661534c`. Manual rollback: replace the motion override with `/opt/journeygo/releases/hero-661534c-20260916/hero.compose.yaml`.
 - No migrations or paid queries. Browser regression `tests/home-hero.cjs` checks four-language layouts, animation/pause, mobile/reduced-motion behavior and explore-only entry without altering form data or triggering generation.
 - Verified after deployment: API/Worker healthy, production/PostgreSQL/Redis unchanged, provider capabilities unchanged. Live browser regression passed all four languages at 390/1440 pixels, actual animation movement, pause/resume, mobile/reduced-motion settings, removed search and preserved form data. API responses in the browser regression were mocked; no trip generation or supplier search was made.
 
 #### Landscape Homepage Release (Previous)
 
-- Source: `661534c`, pushed to GitHub main. Image: `journeyops-app:hero-661534c`.
-- Release directory: `/opt/tripstar/releases/hero-661534c-20260916`.
+- Source: `661534c`, pushed to GitHub main. Image: `journeygo-app:hero-661534c`.
+- Release directory: `/opt/journeygo/releases/hero-661534c-20260916`.
 - Use the base/staging Compose files, the travel override, then this release's `hero.compose.yaml`. Existing private configuration and provider flags are inherited from the travel override.
-- `hero-deploy.sh` builds archived source, checks active tasks and application health, and restores `journeyops-app:slogan-4738b30` on failure. Manual rollback: substitute `/opt/tripstar/releases/slogan-4738b30-20260916/slogan.compose.yaml` for the hero override. Preserve data volumes and Redis counters.
+- `hero-deploy.sh` builds archived source, checks active tasks and application health, and restores `journeygo-app:slogan-4738b30` on failure. Manual rollback: substitute `/opt/journeygo/releases/slogan-4738b30-20260916/slogan.compose.yaml` for the hero override. Preserve data volumes and Redis counters.
 - No API/database migration. Production is out of scope.
 - Deployment verified: API/Worker healthy; production/PostgreSQL/Redis unchanged; live four-language layouts at 390/1440 pixels, new PNG favicon hash, background loading, hidden settings and search handoff passed. Real capabilities retain train/hotel enabled and flight disabled; no supplier query was made.
 - Browser acceptance: set `HOME_UI_URL` to the staging URL and `HOME_UI_AUTH_FILE` to a private JSON file containing `username`/`password`, then run `node tests/home-hero.cjs` with Playwright available. The script mocks API responses; it checks live page assets/layout without generating trips or querying suppliers.
 
 #### Slogan Release (Previous)
 
-- Image: `journeyops-app:slogan-4738b30`, built from source commit `4738b30`, pushed to GitHub main on 2026-09-16.
-- Release directory: `/opt/tripstar/releases/slogan-4738b30-20260916`.
-- Append the branding override described below, then `-f /opt/tripstar/releases/slogan-4738b30-20260916/slogan.compose.yaml`, to the travel Compose command.
+- Image: `journeygo-app:slogan-4738b30`, built from source commit `4738b30`, pushed to GitHub main on 2026-09-16.
+- Release directory: `/opt/journeygo/releases/slogan-4738b30-20260916`.
+- Append the branding override described below, then `-f /opt/journeygo/releases/slogan-4738b30-20260916/slogan.compose.yaml`, to the travel Compose command.
 - `slogan-deploy.sh` checks active tasks, retains provider/private configuration, validates health and automatically restores the branding image on failure. Manual rollback: omit only the slogan override.
 - API/Worker health passed; production, PostgreSQL and Redis container identities/start times remained unchanged. No migration or paid query was performed.
 - Live Chrome acceptance passed for all four slogans at 390/1280 pixels without horizontal overflow; original favicon hash and provider flags remain correct. Result layout checks used browser-only fixtures and mocked API responses.
 
 #### Branding Release (Previous)
 
-The current staging image is `journeyops-app:brand-4fd35d2` (2026-09-16), containing the simplified result navigation, JourneyGo naming and supplied favicon. Release directory: `/opt/tripstar/releases/brand-4fd35d2-20260916`. It retains the travel release configuration and private environment. No database migration or provider query is required for this UI release.
+The current staging image is `journeygo-app:brand-4fd35d2` (2026-09-16), containing the simplified result navigation, JourneyGo naming and supplied favicon. Release directory: `/opt/journeygo/releases/brand-4fd35d2-20260916`. It retains the travel release configuration and private environment. No database migration or provider query is required for this UI release.
 
 Acceptance: API/Worker healthy; authenticated public page title is JourneyGo; served favicon SHA-256 matches the supplied JPEG; train/hotel enabled and flight disabled. Browser-only fixture checks passed at 390/1280 pixels with both removed panels absent. Result API responses were mocked for this layout check; no live supplier search or paid model call was made. Source was deployed from the local committed archive; GitHub push was not part of this release.
 
-For the current release, append `-f /opt/tripstar/releases/brand-4fd35d2-20260916/brand.compose.yaml` after the travel override below. Omitting it restores `travel-d7f99ce`, which is also the rollback procedure for the branding release. The branding release's `brand-release-deploy.sh` builds its archived source, checks active tasks, updates only API/Worker, waits for health and automatically restores the travel image on failure. Production, PostgreSQL and Redis container identities/start times were unchanged during deployment.
+For the current release, append `-f /opt/journeygo/releases/brand-4fd35d2-20260916/brand.compose.yaml` after the travel override below. Omitting it restores `travel-d7f99ce`, which is also the rollback procedure for the branding release. The branding release's `brand-release-deploy.sh` builds its archived source, checks active tasks, updates only API/Worker, waits for health and automatically restores the travel image on failure. Production, PostgreSQL and Redis container identities/start times were unchanged during deployment.
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
-  -f /opt/tripstar/releases/travel-d7f99ce-20260916/travel.release.compose.yaml \
+  -f /opt/journeygo/releases/travel-d7f99ce-20260916/travel.release.compose.yaml \
   up -d --no-deps --no-build worker trip-planner
 ```
 
@@ -184,13 +186,13 @@ Prefer the release's `travel-release-deploy.sh`, which checks active tasks, wait
 ### Roll Back
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging -f docker-compose.yaml -f docker-compose.staging.yaml \
-  -f /opt/tripstar/releases/travel-d7f99ce-20260916/travel.release.rollback.yaml \
+  -f /opt/journeygo/releases/travel-d7f99ce-20260916/travel.release.rollback.yaml \
   up -d --no-deps --no-build worker trip-planner
 ```
 
-Both prior application services use `journeyops-app:weather-20260916-r3`. Preserve Redis data and all persistent volumes; do not run migrations or alter ingress.
+Both prior application services use `journeygo-app:weather-20260916-r3`. Preserve Redis data and all persistent volumes; do not run migrations or alter ingress.
 
 ### Verified After Deployment
 

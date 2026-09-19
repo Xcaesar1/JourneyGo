@@ -3,7 +3,7 @@ import { DEFAULT_LOCALE, SUPPORTED_LOCALES, messages, type AppLocale } from './m
 
 export type { AppLocale } from './messages'
 
-const LOCALE_STORAGE_KEY = 'tripstar-locale'
+const LOCALE_STORAGE_KEY = 'journeygo-locale'
 
 const normalizeLocale = (locale: string): AppLocale => {
   if (SUPPORTED_LOCALES.includes(locale as AppLocale)) {

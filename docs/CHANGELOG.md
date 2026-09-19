@@ -1,12 +1,21 @@
-# Changelog From Upstream
+# JourneyGo Changelog
 
-本文件记录 JourneyGo 相对 `1sdv/TripStar` 的二次开发差异，不替代 Git 历史。下方条目是对应日期的历史记录，不代表当前界面或部署状态。
+本文件记录 JourneyGo 的功能演进，不替代 Git 历史。下方条目是对应日期的历史记录，不代表当前界面或部署状态。
+
+## README And Namespace Unification - 2026-09-19
+
+- README 改为产品展示页：简介、核心亮点、真机运行结果、系统架构、工作流、部署、代码导读与 Star History；优先展示第三轮成都及高德整趟地图。
+- 统一仓库文件、代码、部署示例、浏览器存储和评测数据命名；更新记录改为 `docs/CHANGELOG.md`，移除项目上游介绍与贡献致谢章节，保留 LICENSE 和第三方版权声明。
+- 当前文件内容及现存仓库路径旧品牌扫描为零；忽略的私有脚本、依赖缓存、Git 历史与运行环境不改写。
+- 本地验证：后端 747 项通过、4 项基础设施测试跳过；新增健康接口品牌与航班计数断言后，相关 102 项再次通过；前端 69 项通过，构建成功。
+- README 3 项链接/图片/入口测试、Ruff、Compose Demo/staging 配置解析通过；离线评测 JourneyGraph 35/36，与原基线一致。
+- Docker Linux 引擎未运行，未验证新镜像启动或有状态迁移；构建仍有既有旧资源与大包警告。本轮仅提交仓库改动，未部署，迁移要求见 `BRANDING_MIGRATION.md`。
 
 ## Repository Branding Cleanup - 2026-09-18
 
 - 删除停止维护的英文、日文 README，主文档仅保留中文入口。
 - 启动脚本和聊天助手统一使用 JourneyGo 品牌；保留容器启动逻辑。
-- 保留许可证、上游归因、历史验收和真实部署标识，避免破坏运行及回滚。
+- 保留许可证及历史验收；当前统一命名的升级边界见 `BRANDING_MIGRATION.md`。
 
 ## Memories Page - 2026-09-17
 
@@ -79,7 +88,7 @@
 
 ## JourneyGo Brand Assets - 2026-09-16
 
-- 三种语言 README 使用用户提供的 JourneyGo 品牌图，替换日文页原有 TripStar 顶图。
+- 三种语言 README 使用用户提供的 JourneyGo 品牌图，替换日文页原有 JourneyGo 顶图。
 - 网站 Favicon 使用用户提供的独立 JPG 图标，并修正 MIME 类型；保留原图，不重绘或伪造透明背景。
 - 仅静态资源与文档变更，无 API/数据库影响；回滚本次提交可恢复旧图片。
 

@@ -30,7 +30,7 @@ const fs = require('node:fs');
         message: '请调整酒店偏好', pending_input: paused ? { message: '请调整酒店偏好', provider: 'hotel' } : null,
         result: paused ? null : { success: true, data: plan } });
       page.on('pageerror', error => errors.push(error.message));
-      await page.addInitScript(locale => { localStorage.setItem('tripstar-locale', locale); sessionStorage.setItem('tripTaskId', 'fixture-task'); }, locale);
+      await page.addInitScript(locale => { localStorage.setItem('journeygo-locale', locale); sessionStorage.setItem('tripTaskId', 'fixture-task'); }, locale);
       await page.route('https://api.qrserver.com/**', route => route.abort());
       await page.route('**/api/**', route => {
         const path = new URL(route.request().url()).pathname;

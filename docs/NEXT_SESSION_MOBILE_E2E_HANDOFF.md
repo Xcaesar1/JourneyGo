@@ -1,5 +1,7 @@
 # 新会话执行交接：五天高铁与飞机完整实测
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## 第三轮新城市验证（优先于下方历史）
 
 - 用户最新澄清：不全选景点、不全选兴趣，只要求新城市、新任务。本轮杭州 `task_c6c8e6920bd149b59eb8`，成都 `task_259e985acea44f08830c`。
@@ -34,7 +36,7 @@
 - 丽江 task `task_0954c6f772aa4cc6b128` awaiting_input / landmark_unplaced。三个酒店、9月21日至23日均有去程、无返程公交结果。16:00 的额外诊断探测同样为空。不要以跳过雪山冒充完成。
 - 用户已授权“评估包车，不预订”。尚未授权替换正式行程，也没有取得日期特定的可确认包车总价。评估报告与真实证据见 `docs/demo/mobile-e2e/20260919/`。
 - 原始材料和脚本在 `artifacts/mobile-e2e-{shenzhen-wuhan,guangzhou-lijiang,datong-regression}/`、`artifacts/mobile-routes.cjs`。本机连接需进程级 `NO_PROXY=localhost,127.0.0.1`，避免 CDP 被 HTTP_PROXY 转发而 502。
-- 当前不再需要重复部署；本次发布目录 `/opt/tripstar/releases/landmarks-0f3d67c-20260919` 有 state/quota/protected 前后匹配证据。生产未变，无新高德专属地图，无预订。
+- 当前不再需要重复部署；本次发布目录 `/opt/journeygo/releases/landmarks-0f3d67c-20260919` 有 state/quota/protected 前后匹配证据。生产未变，无新高德专属地图，无预订。
 
 ## 用户当前授权与目标
 
@@ -51,8 +53,8 @@
 
 - 工作目录 `Q:/VPS/JourneyGo`，Windows PowerShell，当前分支 `main`。没有项目 `.codegraph/`。
 - 已提交并推送：`e6307f3` 地标优先与去重；`c8305f0` 高德公交空铁路字段兼容；`347e846` 基于高德父子 POI 的景区内部组件去重；`fe8f73f` 手机卡片完整显示游览估算与半日/整日标签。
-- 截至本交接核对，staging API 为 `journeyops-app:cities-api-e6307f3`，worker 为 `journeyops-app:cities-worker-e6307f3`，均 healthy。不要把 Git 最新提交当作已部署版本。
-- `347e846` 的远程 API/worker 镜像已构建，但服务未切换。发布目录 `/opt/tripstar/releases/landmarks-347e846-20260918/` 已有 build 日志、release.compose.yaml、previous-compose-files.txt、state-before.txt、quota-before.txt；没有 state-after/protected-after 完成证据。
+- 截至本交接核对，staging API 为 `journeygo-app:cities-api-e6307f3`，worker 为 `journeygo-app:cities-worker-e6307f3`，均 healthy。不要把 Git 最新提交当作已部署版本。
+- `347e846` 的远程 API/worker 镜像已构建，但服务未切换。发布目录 `/opt/journeygo/releases/landmarks-347e846-20260918/` 已有 build 日志、release.compose.yaml、previous-compose-files.txt、state-before.txt、quota-before.txt；没有 state-after/protected-after 完成证据。
 - 上次本地 SSH 发布连接未返回，原工具 session_id=38650，本地 ssh.exe PID=17760（使用前重新检查 PID/命令，不能盲杀）。远程 `pgrep -af 'deploy.sh|docker compose|docker exec.*python|travel-active'` 没找到进程，但这个模式未涵盖 `docker-compose`；新会话必须检查实际进程及 Compose 状态，防止重复部署。
 - 本次交接文件写入前，仅剩 Landing.vue 的改动已经作为 `fe8f73f` 提交推送。本交接文件单独提交；先用 `git status` 核对，不回滚任何新出现的用户改动。
 
@@ -110,8 +112,8 @@
 
 ## 部署入口与保护
 
-- SSH alias `oracle-cpamp`；Compose 工作目录 `/opt/tripstar/JourneyOps-staging`。
-- 私有站点凭据 `C:/Users/god/.codex/private/journeyops-staging/access.json`，只有 url/username/password。不得打印、写入 README 或提交。
+- SSH alias `oracle-cpamp`；Compose 工作目录 `/opt/journeygo/JourneyGo-staging`。
+- 私有站点凭据 `C:/Users/god/.codex/private/journeygo-staging/access.json`，只有 url/username/password。不得打印、写入 README 或提交。
 - 可复用 `artifacts/city-release/{deploy.sh,Dockerfile.api,Dockerfile.worker,verify.py,quota.py}`。当前 FROM/expected 是 e6307f3，运行前按实际容器确认；release 路径按 commit 构造。
 - 保留容器标签里的既有 Compose 配置链，不从过期远程 checkout 全量重建覆盖现有修复。用精确运行文件 tar 和新前端 dist 叠加。
 - 发布前确认 active_tasks=0；健康检查 API 和 worker；核对生产/demo/db 容器 ID 未变化、部署前后业务数据 hash 与航班计数相同。

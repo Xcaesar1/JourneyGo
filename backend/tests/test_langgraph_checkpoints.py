@@ -12,16 +12,16 @@ from backend.app.domain.trip_models import TRIP_REQUEST_V2_EXAMPLE, TripRequestV
 
 def test_checkpoint_database_url_converts_sqlalchemy_driver() -> None:
     assert checkpoint_database_url(
-        "postgresql+psycopg://user:password@postgres:5432/journeyops"
-    ) == "postgresql://user:password@postgres:5432/journeyops"
+        "postgresql+psycopg://user:password@postgres:5432/journeygo"
+    ) == "postgresql://user:password@postgres:5432/journeygo"
     assert checkpoint_database_url(
-        "postgresql://user:password@postgres:5432/journeyops"
-    ) == "postgresql://user:password@postgres:5432/journeyops"
+        "postgresql://user:password@postgres:5432/journeygo"
+    ) == "postgresql://user:password@postgres:5432/journeygo"
 
 
 def test_checkpoint_database_url_rejects_non_postgres_backends() -> None:
     with pytest.raises(ValueError, match="require a PostgreSQL"):
-        checkpoint_database_url("sqlite:///journeyops.db")
+        checkpoint_database_url("sqlite:///journeygo.db")
 
 
 def test_checkpoint_serializer_round_trips_allowlisted_models() -> None:

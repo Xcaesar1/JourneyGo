@@ -32,12 +32,14 @@ class HealthEndpointsTest(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
         self.assertEqual("alive", response.json()["status"])
+        self.assertEqual("journeygo-api", response.json()["service"])
 
     def test_ready_reports_accessible_data_directory(self):
         response = self.client.get("/health/ready")
 
         self.assertEqual(200, response.status_code)
         self.assertEqual("ready", response.json()["status"])
+        self.assertEqual("journeygo-api", response.json()["service"])
         self.assertEqual(
             "ready",
             response.json()["checks"]["data_directory"]["status"],

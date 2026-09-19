@@ -9,7 +9,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-DEFAULT_DATABASE_URL = "postgresql+psycopg://journeyops:journeyops@localhost:5432/journeyops"
+DEFAULT_DATABASE_URL = "postgresql+psycopg://journeygo:journeygo@localhost:5432/journeygo"
 
 
 def database_url() -> str:

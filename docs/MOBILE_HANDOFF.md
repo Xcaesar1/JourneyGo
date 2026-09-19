@@ -1,5 +1,7 @@
 # Mobile Debugging Handoff
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 Updated: 2026-09-16. Historical verification record; read README.md and docs/DEPLOYMENT.md and verify current state before acting.
 
 ## Continuation verification (2026-09-16)
@@ -22,9 +24,9 @@ Updated: 2026-09-16. Historical verification record; read README.md and docs/DEP
 
 ## Published outcome (supersedes the original handoff below)
 
-- Fix commit `f62e7bd`; staging image `journeyops-app:mobile-f62e7bd`.
-- Published to staging only via `/opt/tripstar/releases/mobile-20260916/deploy.sh`.
-  Previous image `journeyops-app:branding-732d191` retained; private env backup in
+- Fix commit `f62e7bd`; staging image `journeygo-app:mobile-f62e7bd`.
+- Published to staging only via `/opt/journeygo/releases/mobile-20260916/deploy.sh`.
+  Previous image `journeygo-app:branding-732d191` retained; private env backup in
   the release directory. Only IMAGE_TAG changed. No migration or worker restart.
 - Production and worker container ID/image/restart/start-time snapshots matched.
 - Public valid TLS; homepage, temporary AMap page and readiness return anonymous
@@ -46,7 +48,7 @@ Updated: 2026-09-16. Historical verification record; read README.md and docs/DEP
 
 ## Objective and authorization
 
-- Fix JourneyOps on the user's real Android phone, then validate and deploy staging only.
+- Fix JourneyGo on the user's real Android phone, then validate and deploy staging only.
 - User approved staging deployment of mobile layout fixes, walking/transit navigation, and a temporary AMap test page.
 - Do not change production, historical trip data, database schema, DNS, or access controls.
 - User prefers walking and public transit; driving is out of scope.
@@ -55,10 +57,10 @@ Updated: 2026-09-16. Historical verification record; read README.md and docs/DEP
 
 ## Workspace
 
-- Work directly in Q:\VPS\JourneyOps, branch staging. Do not create a worktree or discard uncommitted work.
+- Work directly in Q:\VPS\JourneyGo, branch staging. Do not create a worktree or discard uncommitted work.
 - HEAD 3796c84 (protected staging HTTPS documentation).
 - Previous commit 2e03ece adds walking/transit navigation. Base 732d191 contains branding.
-- Uncommitted mobile work: frontend/src/views/Result.vue, frontend/src/components/NavBar.vue, frontend/src/components/OverviewAttractionCard.vue, frontend/package.json, frontend/src/views/Result.mobile-layout.test.mjs, docs/CHANGELOG_FROM_UPSTREAM.md.
+- Uncommitted mobile work: frontend/src/views/Result.vue, frontend/src/components/NavBar.vue, frontend/src/components/OverviewAttractionCard.vue, frontend/package.json, frontend/src/views/Result.mobile-layout.test.mjs, docs/CHANGELOG.md.
 - Preserve these edits, review their diff, and finish them rather than recreating them.
 - Existing fixes include mobile section-button grid, wrapping action buttons, single-column attraction cards, smaller dark mobile overview cards, and navbar width correction.
 - No backend/API/schema changes have been made for this mobile work.
@@ -72,7 +74,7 @@ Updated: 2026-09-16. Historical verification record; read README.md and docs/DEP
 - USB authorization was accepted by user. `adb devices -l` returned state device, not unauthorized.
 - Forward for Chrome: `adb forward tcp:19222 localabstract:chrome_devtools_remote`.
 - CDP endpoint http://127.0.0.1:19222; connect using Playwright chromium.connectOverCDP.
-- Only inspect the JourneyOps tab; do not inspect unrelated tabs or phone data.
+- Only inspect the JourneyGo tab; do not inspect unrelated tabs or phone data.
 - Phone tab is https://staging.elonmusk0.asia/result?plan_id=task_cce34c13907342d9b6c6.
 - Recheck connection first. User keeps USB connected and phone unlocked; may need another authorization after reconnect.
 - No backup, sync, rooting, flashing, or mobile app installation was performed.
@@ -104,18 +106,18 @@ Inspection used programmatic menu clicks only to diagnose panels blocked by layo
 ## Staging and credentials
 
 - Public staging: https://staging.elonmusk0.asia, protected with whole-site BasicAuth.
-- Credentials JSON is stored privately at C:\Users\god\.codex\private\journeyops-staging\access.json. Read only for authenticated tooling; never print/store credentials in code, logs, prompts, or Git.
+- Credentials JSON is stored privately at C:\Users\god\.codex\private\journeygo-staging\access.json. Read only for authenticated tooling; never print/store credentials in code, logs, prompts, or Git.
 - Phone Chrome already authenticated.
-- SSH alias oracle-cpamp. Repository /opt/tripstar/JourneyOps-staging. Remote base was 732d191; verify again before deploying.
-- Staging API container helloagents-trip-planner-staging, image journeyops-app:branding-732d191, loopback 17861. Worker journeyops-worker-staging uses an older image; do not restart worker.
-- Production container helloagents-trip-planner, public https://elonmusk0.asia, loopback17860. Record fresh container/image/restart baseline and verify unchanged after staging deployment.
+- SSH alias oracle-cpamp. Repository /opt/journeygo/JourneyGo-staging. Remote base was 732d191; verify again before deploying.
+- Staging API container journeygo-staging, image journeygo-app:branding-732d191, loopback 17861. Worker journeygo-worker-staging uses an older image; do not restart worker.
+- Production container journeygo, public https://elonmusk0.asia, loopback17860. Record fresh container/image/restart baseline and verify unchanged after staging deployment.
 - Existing Caddy protection injects API access code, strips Authorization before proxying. Do not dump Caddy import or .env.staging (secrets).
-- Server private credentials /opt/tripstar/private/staging-access.json. Existing untracked .env.demo.backup.amap.20260820T031935Z must be preserved.
+- Server private credentials /opt/journeygo/private/staging-access.json. Existing untracked .env.demo.backup.amap.20260820T031935Z must be preserved.
 
 ## Deployment pattern
 
 - Read existing docs/DEPLOYMENT.md and artifacts/branding-release/{Dockerfile,deploy.sh}.
-- Prior pattern: build local frontend; create a frontend-only image FROM journeyops-app:branding-732d191, COPY dist to /app/frontend/dist, chown journeyops.
+- Prior pattern: build local frontend; create a frontend-only image FROM journeygo-app:branding-732d191, COPY dist to /app/frontend/dist, chown journeygo.
 - Transfer release archive and git bundle; remote fast-forward only after checking expected HEAD and worktree.
 - Back up .env.staging privately, update only IMAGE_TAG. Recreate only trip-planner with existing staging compose files, --no-deps --no-build. Do not restart worker or migrate database.
 - Keep previous image tag for rollback; restore staging image only on failure.

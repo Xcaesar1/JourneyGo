@@ -18,7 +18,7 @@ const assert = require('node:assert/strict');
     await page.goto(auth.url);
     await page.evaluate(plan => {
       sessionStorage.setItem('tripPlan', JSON.stringify(plan));
-      localStorage.setItem('tripstar-locale', 'zh-CN');
+      localStorage.setItem('journeygo-locale', 'zh-CN');
     }, sample.data);
     await page.goto(new URL('/result', auth.url).href);
     const nav = page.locator('.mobile-section-nav');

@@ -1,8 +1,10 @@
 # Phase 7 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
-阶段 7 为 JourneyOps 增加可复现离线评测、运行版本清单、端到端 trace、持久脱敏遥测和模型费用
+阶段 7 为 JourneyGo 增加可复现离线评测、运行版本清单、端到端 trace、持久脱敏遥测和模型费用
 防护。本文为阶段 7 的历史验收记录，不作为当前开发计划。legacy
 `backend/app/agents/legacy/trip_planner_agent.py` 未修改；生产容器、生产数据、Caddy 和 DNS 未修改。
 
@@ -59,8 +61,8 @@ authorization data and credentials are excluded. Redis rate-limit failures fail 
 
 ## Offline Evaluation
 
-Dataset `journeyops-travel-v1.0.0`, evaluator `journeyops-evaluator/1.0.0`, fixture
-`journeyops-offline-observations/1.0.0` and seed `20260808` are pinned in the repository.
+Dataset `journeygo-travel-v1.0.0`, evaluator `journeygo-evaluator/1.0.0`, fixture
+`journeygo-offline-observations/1.0.0` and seed `20260808` are pinned in the repository.
 
 | Engine | Passed | Pass rate | Fixture latency | Fixture cost |
 | --- | ---: | ---: | ---: | ---: |
@@ -123,9 +125,9 @@ expected safe degradation rather than a hidden successful research claim.
 | Compose rendering | PASS |
 | GitHub CI | `31253092858`; Python and Frontend jobs passed for `2634e73` |
 | CI database | PostgreSQL migration `20260808_05`, Redis integration and offline artifact passed |
-| Oracle backup | `/var/backups/tripstar/20260808T102339Z-phase7-predeploy` |
+| Oracle backup | `/var/backups/journeygo/20260808T102339Z-phase7-predeploy` |
 | Backup verification | directory `0700`, files `0600`; SHA-256, Git bundle and pg_dump catalog passed |
-| Oracle deployment | source `2634e73`; image `journeyops-app:phase7-2634e73` |
+| Oracle deployment | source `2634e73`; image `journeygo-app:phase7-2634e73` |
 | Oracle schema | Alembic `20260808_05`; migrate exit `0` |
 | Staging health | PostgreSQL, Redis, Worker and API healthy; live/ready `200` |
 | Secret audit | 3 configured sensitive values; zero matches in telemetry and API/Worker logs |
@@ -171,7 +173,7 @@ No open P0 issue was found in the phase 7 implementation or staging deployment.
 
 ## Rollback
 
-Prefer application rollback to `journeyops-app:phase6-011a485` while retaining schema `20260808_05`. A rollback
+Prefer application rollback to `journeygo-app:phase6-011a485` while retaining schema `20260808_05`. A rollback
 source tree must retain the phase 7 migration file, or replace only API/Worker with `--no-deps --no-build` so the old
 migrate service is not executed. Do not use `docker compose down -v`.
 
@@ -179,7 +181,7 @@ Schema downgrade deletes all phase 7 telemetry, trace IDs and version runtime ma
 approval, the verified phase 7 backup and a maintenance window:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging \
   -f docker-compose.yaml -f docker-compose.staging.yaml \
   stop trip-planner worker

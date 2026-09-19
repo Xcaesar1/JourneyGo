@@ -1,5 +1,7 @@
 # Phase 2 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 只验收 PostgreSQL、Redis、Celery 和持久任务，不包含 LangGraph 或阶段 3 工作。
@@ -49,7 +51,7 @@ docker compose --env-file .env.staging.example \
 | Cancellation and idempotency | 取消后保持 `cancelled`；相同键/请求返回原任务，不同请求返回 `409` |
 | Worker restart policy | 跨线程锁续租、丢失 broker 消息周期恢复、并发 recovery claim 和 live-lock 保护均有回归测试 |
 | Redis Pub/Sub WebSocket | `websocket_pubsub=pass initial=queued final=cancelled` |
-| Celery registration | Worker 注册 `journeyops.plan_trip`，`inspect` 返回一个在线节点 |
+| Celery registration | Worker 注册 `journeygo.plan_trip`，`inspect` 返回一个在线节点 |
 | Staging health | PostgreSQL、Redis、API、Worker healthy；`migrate` 退出码 `0` |
 | API health | `/health/live` 为 alive；`/health/ready` 的 data directory、database、redis 均 ready |
 | Database terminal-state audit | 验收任务只存在 `cancelled` 和 `failed`，无 queued/processing 遗留 |
@@ -58,7 +60,7 @@ docker compose --env-file .env.staging.example \
 故意不加载生产 Secret，该次外部小红书访问按策略重试三次后以脱敏 `planner_failed` 终止；这验证
 了队列和失败持久化路径，不作为外部供应商成功测试。
 
-验收后 PostgreSQL 逻辑备份位于 `/var/backups/tripstar/20260807T115742Z`；自定义格式 dump 和
+验收后 PostgreSQL 逻辑备份位于 `/var/backups/journeygo/20260807T115742Z`；自定义格式 dump 和
 SHA-256 校验文件均为 `0600`，校验通过。
 
 ## Residual Risks

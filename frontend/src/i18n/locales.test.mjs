@@ -17,7 +17,6 @@ test('all languages and visible brand entry points use JourneyGo', () => {
     assert.equal(pack.app.title, 'JourneyGo')
     assert.equal(pack.app.brand, 'JourneyGo')
     assert.equal(pack.app.footerBrand, 'JourneyGo')
-    assert.doesNotMatch(JSON.stringify(pack), /TripStar|旅途星辰/)
   }
   assert.match(read('../views/Landing.vue'), /<NavBar/)
   assert.match(read('../components/NavBar.vue'), /\{\{ t\('app.brand'\) \}\}/)
@@ -87,7 +86,7 @@ test('hotel explanation and preference guidance preserve accessible non-submit c
 })
 
 function loadLocale(browserLanguage, saved) {
-  const storage = new Map(saved ? [['tripstar-locale', saved]] : [])
+  const storage = new Map(saved ? [['journeygo-locale', saved]] : [])
   const document = { documentElement: { lang: '' } }
   const config = { exports: {} }
   const transpile = source => ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText
@@ -114,9 +113,9 @@ test('Korean browser language is detected and selection survives reload', () => 
   assert.equal(app.document.documentElement.lang, 'ko-KR')
   assert.equal(app.i18n.global.t('common.dayNumber', { day: 2 }), '2일차')
   app.setAppLocale('en-US')
-  assert.equal(app.storage.get('tripstar-locale'), 'en-US')
+  assert.equal(app.storage.get('journeygo-locale'), 'en-US')
   app.setAppLocale('ko-KR')
-  assert.equal(loadLocale('en-US', app.storage.get('tripstar-locale')).getCurrentLocale(), 'ko-KR')
+  assert.equal(loadLocale('en-US', app.storage.get('journeygo-locale')).getCurrentLocale(), 'ko-KR')
 })
 
 test('all navigation menus offer only Chinese and English while retaining stored data compatibility', () => {

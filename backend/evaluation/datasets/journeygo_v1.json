@@ -1,5 +1,5 @@
 {
-  "dataset_version": "journeyops-travel-v1.0.0",
+  "dataset_version": "journeygo-travel-v1.0.0",
   "seed": 20260808,
   "cases": [
     {"case_id":"eval_001","category":"domestic_transit","description":"Nanning to Guilin by public transit with a noon arrival.","request":{"route":"Nanning-Guilin","days":3,"constraints":["public_transit","noon_arrival"]},"assertions":["schema_valid","date_consistent","budget_consistent","no_critical_conflicts","source_coverage"]},

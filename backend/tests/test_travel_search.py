@@ -66,6 +66,7 @@ class Store:
 
     def eval(self, script, count, key, maximum):
         assert script == service.RESERVE and count == 1
+        assert key.startswith("journeygo:travel:flight:calls:")
         if self.reservations >= maximum:
             return 0
         self.reservations += 1

@@ -1,4 +1,4 @@
-"""Compatibility adapters between JourneyOps contracts."""
+"""Compatibility adapters between JourneyGo contracts."""
 
 from .trip_plan import trip_plan_v2_to_legacy
 

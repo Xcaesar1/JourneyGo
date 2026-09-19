@@ -1,8 +1,10 @@
 # Phase 8 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
-Phase 8 packages JourneyOps for recruiter review. It does not deploy or modify production, publish a release, or
+Phase 8 packages JourneyGo for recruiter review. It does not deploy or modify production, publish a release, or
 start another phase. The legacy Planner implementation remains unchanged.
 
 ## Delivered
@@ -15,7 +17,7 @@ start another phase. The legacy Planner implementation remains unchanged.
 - AMap-only browser map path with domain-restricted browser credentials loaded from the browser-safe runtime
   settings endpoint; credentials are not embedded in Docker build arguments or image layers.
 - Container log rotation, resource limits, health checks and non-root application runtime.
-- Chinese/English README, Before/After architecture, upstream changelog, ADR, HTTPS examples and demo script.
+- Historical README editions, Before/After architecture, project changelog, ADR, HTTPS examples and demo script.
 
 ## Acceptance Evidence
 
@@ -29,7 +31,7 @@ start another phase. The legacy Planner implementation remains unchanged.
 | Offline 36-case evaluation | legacy `28/36`; journey_graph `35/36` | Passed |
 | Frontend browser flow | form, WebSocket progress, review, approve, V1; console `0` errors / `0` warnings | Passed |
 | Keyless end-to-end demo | Oracle isolated stack on `127.0.0.1:17862` | Passed |
-| Oracle staging | final image `journeyops-app:phase8-f6ec417`; API/Worker healthy as `journeyops` | Passed |
+| Oracle staging | final image `journeygo-app:phase8-f6ec417`; API/Worker healthy as `journeygo` | Passed |
 | Screenshots | `docs/assets/phase8/01-form.png` through `04-version.png` | Passed |
 | Production isolation | original container ID, image, restart count and home hash unchanged | Passed |
 | GitHub CI | run `31260998555` for `f6ec417` | Passed |
@@ -37,12 +39,12 @@ start another phase. The legacy Planner implementation remains unchanged.
 
 ## Oracle Evidence
 
-- Pre-deploy backup: `/var/backups/tripstar/20260808T132203Z-phase8-predeploy`; repository bundle, PostgreSQL
+- Pre-deploy backup: `/var/backups/journeygo/20260808T132203Z-phase8-predeploy`; repository bundle, PostgreSQL
   custom dump, image manifest and SHA-256 manifest all verified. Directory mode is `0700`; files are `0600`.
-- Staging: `127.0.0.1:17861`, image `journeyops-app:phase8-f6ec417`, Alembic `20260808_05 (head)`, readiness
+- Staging: `127.0.0.1:17861`, image `journeygo-app:phase8-f6ec417`, Alembic `20260808_05 (head)`, readiness
   `200`, API/Worker restart counts `0`, and no recent `Traceback`, `CRITICAL` or permission-denied lines.
 - Demo: `127.0.0.1:17862`, independent PostgreSQL/Redis/data volumes, readiness `200`, model/provider keys not
-  required, and API/Worker both run as the non-root `journeyops` user.
+  required, and API/Worker both run as the non-root `journeygo` user.
 - Real demo task: `task_0ef1915e09cc44379ef5`, trip `trip_8e13c1a1ea9f40eb9670`, trace
   `trace_594bbf3d7f3f4fa3873c688764090998`.
 - Observed stages: queued, initializing, workflow start, normalize request, prepare research, research web,
@@ -52,7 +54,7 @@ start another phase. The legacy Planner implementation remains unchanged.
   plus output tokens remained `0`; the result identifies deterministic Demo mode.
 - Production remained `200` on `127.0.0.1:17860`. Container
   `3e6848a91f74c88d47500cad16c083a53cfe42d2ee89c6694ca8e933860da851`, image
-  `tripstar-trip-planner`, restart count `0`, and home SHA-256
+  `journeygo-trip-planner`, restart count `0`, and home SHA-256
   `15a17d2170fe8caf50a7d6e4ba4e6565116a830d5ecc5595516cc416485fc09c` are unchanged.
 
 ## Browser Evidence

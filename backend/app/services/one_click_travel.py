@@ -420,7 +420,7 @@ class OneClickPlanner:
                 if not store.eval(
                     RESERVE,
                     1,
-                    f"journeyops:travel:flight:calls:{account}",
+                    f"journeygo:travel:flight:calls:{account}",
                     self.settings.travel_flight_call_limit,
                 ):
                     raise PlanningInputRequired(

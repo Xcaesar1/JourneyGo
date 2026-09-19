@@ -26,7 +26,7 @@ export function canRoute(place: NavigationPlace): boolean {
 
 export function amapUrl(place: NavigationPlace, city: string, mode: TravelMode,
   native = true, from?: NavigationPlace): string {
-  const params = new URLSearchParams({ src: 'JourneyOps', callnative: native ? '1' : '0' })
+  const params = new URLSearchParams({ src: 'JourneyGo', callnative: native ? '1' : '0' })
   const point = (value: NavigationPlace) =>
     `${value.location!.longitude},${value.location!.latitude},${value.name.replace(/,/g, ' ')}`
   if (canRoute(place) && (!from || canRoute(from))) {
@@ -66,7 +66,7 @@ export function dayStops(day: DayPlan): NavigationStop[] {
 
 export function progressKey(planId: string, day: DayPlan): string {
   // Include the exact itinerary so changed routes never inherit stale progress.
-  return `journeyops:progress:v1:${JSON.stringify([planId, day.date, day.day_index,
+  return `journeygo:progress:v1:${JSON.stringify([planId, day.date, day.day_index,
     dayStops(day).map(s => [s.id, s.name, s.address, s.poi_id, s.location, s.time])])}`
 }
 

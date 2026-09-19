@@ -1,5 +1,5 @@
 {
-  "fixture_version": "journeyops-offline-observations/1.0.0",
+  "fixture_version": "journeygo-offline-observations/1.0.0",
   "defaults": {
     "legacy": {"latency_ms": 118000, "model_cost_usd": 0.19},
     "journey_graph": {"latency_ms": 91000, "model_cost_usd": 0.14}

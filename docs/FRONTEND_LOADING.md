@@ -1,5 +1,7 @@
 # Frontend Loading Verification
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 - Keep the homepage history-free. Its Memories entry sits between GitHub and the language selector; `/history` is lazy-loaded and requests at most 50 records only when opened.
@@ -36,5 +38,5 @@ Deployment verification on 2026-09-17: public main JS gzip transfer 309939 bytes
 Memories deployment verification on 2026-09-17: source `1245377`, live main JS gzip transfer 310235 bytes. Authentication, cache and mocked browser regressions passed; see `TRAVEL_MCP.md` for the active release, verification scope and rollback stack. The earlier mobile normal-mode white-screen report still needs confirmation on the affected phone.
 
 - Restore the prior application image and any separately approved ingress change. No database rollback or migration is required.
-- Current application release: `/opt/tripstar/releases/memories-1245377-20260917`, image `journeyops-app:memories-1245377`. Reverting Memories means omitting its Compose override and retaining the loading/travel overrides; recreate only staging API/Worker with `--no-deps --no-build`. Previous image: `journeyops-app:loading-f46af59`. No ingress changes were made by Memories.
-- For a separately approved rollback of the older loading/cache release: its directory is `/opt/tripstar/releases/loading-f46af59-20260917`, with prior image `journeyops-app:ambient-8499c3c`. The original ingress backup is `caddy-staging.before` in that directory, mode 0600. Restore it with `sudo cp` (without `-p`) to `/etc/caddy/journeyops-staging.caddy`, validate `/etc/caddy/Caddyfile`, then gracefully reload Caddy. Never print the backup or expanded configuration because they contain credentials.
+- Current application release: `/opt/journeygo/releases/memories-1245377-20260917`, image `journeygo-app:memories-1245377`. Reverting Memories means omitting its Compose override and retaining the loading/travel overrides; recreate only staging API/Worker with `--no-deps --no-build`. Previous image: `journeygo-app:loading-f46af59`. No ingress changes were made by Memories.
+- For a separately approved rollback of the older loading/cache release: its directory is `/opt/journeygo/releases/loading-f46af59-20260917`, with prior image `journeygo-app:ambient-8499c3c`. The original ingress backup is `caddy-staging.before` in that directory, mode 0600. Restore it with `sudo cp` (without `-p`) to `/etc/caddy/journeygo-staging.caddy`, validate `/etc/caddy/Caddyfile`, then gracefully reload Caddy. Never print the backup or expanded configuration because they contain credentials.

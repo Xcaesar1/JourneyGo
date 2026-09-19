@@ -1,5 +1,7 @@
 # Phase 6 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 阶段 6 为 JourneyGraph 增加持久人工审核、局部动态重规划、结构化差异和不可变版本回滚。
@@ -134,9 +136,9 @@ retest.
 | Local frontend build | PASS; existing static-resource, mixed-import and large-chunk warnings remain |
 | Focused human-review tests | `5 passed` |
 | GitHub CI | run `31248988084`; Python and Frontend jobs passed for `011a485` |
-| Oracle pre-deploy backup | `/var/backups/tripstar/20260808T080347Z-phase6-predeploy` |
+| Oracle pre-deploy backup | `/var/backups/journeygo/20260808T080347Z-phase6-predeploy` |
 | Backup verification | directory `0700`, files `0600`; SHA-256, Git bundle and pg_dump catalog passed |
-| Oracle deployment | application source `011a485`; image `journeyops-app:phase6-011a485` |
+| Oracle deployment | application source `011a485`; image `journeygo-app:phase6-011a485` |
 | Oracle schema | Alembic `20260808_04 (head)`; migrate exit `0` |
 | Staging health | PostgreSQL, Redis, Worker and API healthy; live/ready both `200` |
 | Secret audit | 3 configured non-empty sensitive values checked; zero matches in response and API/Worker logs |
@@ -187,7 +189,7 @@ Schema downgrade is destructive because it removes all review records, active-ve
 metadata. It requires a verified `pg_dump`, a maintenance window and explicit approval:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 docker compose --env-file .env.staging \
   -f docker-compose.yaml -f docker-compose.staging.yaml \
   stop trip-planner worker

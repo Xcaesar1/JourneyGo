@@ -1,5 +1,7 @@
 # Mobile E2E: 2026-09-19
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 Historical snapshot: Lijiang was subsequently recovered and approved under the driving-fallback policy. See the [round-two live mobile results](../20260919-r2/README.md) for current status; retain the blocked evidence below as history.
 
 ## Result
@@ -26,7 +28,7 @@ Historical snapshot: Lijiang was subsequently recovered and approved under the d
 - Found and fixed missing departure date/time in landmark transit requests: `0f3d67c`. Outbound uses the planned day start; return uses arrival plus visit plus meal/rest. Cache identities now include both date and time.
 - API semantics: [AMap public-transit request documentation](https://lbs.amap.com/api/webservice/guide/api/direction).
 - Final backend: 713 passed, 4 infrastructure integration tests skipped; Ruff passed. Frontend: 63 passed; production build passed with existing asset/chunk warnings.
-- Staging API/worker use `cities-api-0f3d67c` / `cities-worker-0f3d67c`, healthy. Release: `/opt/tripstar/releases/landmarks-0f3d67c-20260919`.
+- Staging API/worker use `cities-api-0f3d67c` / `cities-worker-0f3d67c`, healthy. Release: `/opt/journeygo/releases/landmarks-0f3d67c-20260919`.
 - Release script completed with active task count zero and matching before/after quota, business-data hashes and protected production/demo/database container identities.
 - Flight cumulative limit remains 10. Usage moved from 6 to 8 only for the new Lijiang round trip; recovery reused those two successful records.
 

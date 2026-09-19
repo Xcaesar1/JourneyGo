@@ -20,9 +20,9 @@ import type { TravelCapabilities, TravelSearchRequest, TravelSearchResponse } fr
 const ENV_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 const MOBILE_STYLE_PREVIEW = import.meta.env.DEV && import.meta.env.MODE === 'mobile'
 const ENV_AMAP_WEB_JS_KEY = import.meta.env.VITE_AMAP_WEB_JS_KEY ?? ''
-const RUNTIME_API_BASE_STORAGE_KEY = 'tripstar.runtime.api_base_url'
-const RUNTIME_AMAP_WEB_JS_KEY_STORAGE_KEY = 'tripstar.runtime.amap_web_js_key'
-const API_ACCESS_CODE_STORAGE_KEY = 'journeyops.api_access_code'
+const RUNTIME_API_BASE_STORAGE_KEY = 'journeygo.runtime.api_base_url'
+const RUNTIME_AMAP_WEB_JS_KEY_STORAGE_KEY = 'journeygo.runtime.amap_web_js_key'
+const API_ACCESS_CODE_STORAGE_KEY = 'journeygo.api_access_code'
 const DEFAULT_RUNTIME_BACKEND_SETTINGS: BackendRuntimeSettings = {
   vite_amap_web_js_key: '',
   vite_amap_security_js_code: '',
@@ -37,7 +37,7 @@ const DEFAULT_RUNTIME_BACKEND_SETTINGS: BackendRuntimeSettings = {
   runtime_secret_updates_enabled: false,
 }
 
-export const RUNTIME_SETTINGS_UPDATED_EVENT = 'tripstar:runtime-settings-updated'
+export const RUNTIME_SETTINGS_UPDATED_EVENT = 'journeygo:runtime-settings-updated'
 const t = i18n.global.t
 
 const normalizeBaseUrl = (value: string | null | undefined): string => {

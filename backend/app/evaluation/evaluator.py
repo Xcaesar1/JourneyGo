@@ -16,7 +16,7 @@ from .models import (
     EvaluationReport,
 )
 
-EVALUATOR_VERSION = "journeyops-evaluator/1.0.0"
+EVALUATOR_VERSION = "journeygo-evaluator/1.0.0"
 
 
 def load_dataset(path: Path) -> EvaluationDataset:

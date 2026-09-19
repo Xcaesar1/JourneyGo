@@ -15,7 +15,7 @@ from ...domain.research_models import ResearchQuery, SourceEvidence
 
 def _cache_key(provider: str, query: ResearchQuery) -> str:
     material = f"{provider.strip().lower()}\x1f{query.id}\x1f{query.query}".encode()
-    return f"journeyops:research:v1:{hashlib.sha256(material).hexdigest()}"
+    return f"journeygo:research:v1:{hashlib.sha256(material).hexdigest()}"
 
 
 class NoopResearchCache:
@@ -67,7 +67,7 @@ class MemoryResearchCache:
 class RedisResearchCache:
     """Shared cache used by API and worker processes in staging and production."""
 
-    def __init__(self, client: Redis, *, namespace: str = "journeyops:research:v1") -> None:
+    def __init__(self, client: Redis, *, namespace: str = "journeygo:research:v1") -> None:
         self._client = client
         self._namespace = namespace.rstrip(":")
 

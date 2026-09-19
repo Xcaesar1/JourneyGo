@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     """应用配置"""
 
     # 应用基本配置
-    app_name: str = "HelloAgents智能旅行助手"
+    app_name: str = "JourneyGo"
     app_version: str = "2.0.0"
     debug: bool = False
 

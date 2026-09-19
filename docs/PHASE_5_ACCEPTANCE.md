@@ -1,5 +1,7 @@
 # Phase 5 Acceptance
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 阶段 5 把 JourneyGraph 从目的地内容生成升级为带出发地、城际交通、闭合时间轴、程序预算和
@@ -95,9 +97,9 @@ Execution date: 2026-08-08 Asia/Shanghai.
 | Local Ruff | staged architecture and critical existing-backend checks passed |
 | Local frontend build | PASS; existing static-resource, mixed-import and large-chunk warnings remain |
 | GitHub implementation CI | run `31241413676` passed for source `147d93b` |
-| Oracle pre-deploy backup | `/var/backups/tripstar/20260808T041757Z-phase5-predeploy` |
+| Oracle pre-deploy backup | `/var/backups/journeygo/20260808T041757Z-phase5-predeploy` |
 | Backup verification | directory `0700`, five files `0600`, all SHA-256 entries and Git bundle passed; pg_dump catalog readable |
-| Oracle deployment | source `147d93b`; image `journeyops-app:phase5-147d93b`; migrate exit `0` |
+| Oracle deployment | source `147d93b`; image `journeygo-app:phase5-147d93b`; migrate exit `0` |
 | Oracle schema | Alembic `20260808_03 (head)`; phase 5 adds no migration |
 | Health isolation | staging API/Worker healthy and ready `200`; production ready stayed `200`, response hash unchanged, restart count `0` |
 | Real task | `task_6c97534bd3d148bd97ca`; JourneyGraph schema `2.0`; one immutable version |
@@ -142,7 +144,7 @@ No open P0 issue was found in the phase 5 implementation or staging deployment.
   repeatable staging import and count reconciliation pass is complete.
 - AMap provides a driving baseline only. Intercity train/flight options are useful estimates but are not tied
   to official schedules, live fares or availability; a future ticketing Provider is required for booking-grade data.
-- The production-only AMap `securityJsCode` behavior still needs a Secret-safe merge into JourneyOps before
+- The production-only AMap `securityJsCode` behavior still needs a Secret-safe merge into JourneyGo before
   promotion; no security code may be committed or returned through a public settings endpoint.
 
 ### P2
@@ -159,7 +161,7 @@ No open P0 issue was found in the phase 5 implementation or staging deployment.
 Fast functional rollback keeps schema and data intact:
 
 ```bash
-cd /opt/tripstar/JourneyOps-staging
+cd /opt/journeygo/JourneyGo-staging
 sed -i 's/^PLANNER_ENGINE=.*/PLANNER_ENGINE=legacy/' .env.staging
 sed -i 's/^PLANNER_COMPARE_ENGINES=.*/PLANNER_COMPARE_ENGINES=false/' .env.staging
 sed -i 's/^XHS_ENABLED=.*/XHS_ENABLED=false/' .env.staging
@@ -173,7 +175,7 @@ Phase 5 adds no database migration, so Alembic remains at `20260808_03`. Use aud
 code rollback and keep all volumes. If an image rollback is required, pin a previously verified image while
 retaining a source tree that contains revision `20260808_03`; do not run an older migrate image that does not
 recognize the current revision. Database restoration is destructive and may only target an explicitly isolated
-restore-drill stack after verifying `/var/backups/tripstar/20260808T041757Z-phase5-predeploy`.
+restore-drill stack after verifying `/var/backups/journeygo/20260808T041757Z-phase5-predeploy`.
 
 ## Phase Boundary
 

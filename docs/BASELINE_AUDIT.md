@@ -1,4 +1,6 @@
-# JourneyGo Historical Upstream Baseline Audit
+# JourneyGo Historical Baseline Audit
+
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
 
 > 本文记录本项目改造前的历史状态，不是当前运行说明。当前部署以 `docs/DEPLOYMENT.md` 为准。
 
@@ -26,11 +28,10 @@
 
 | 项目 | 现状 |
 | --- | --- |
-| 上游项目 | `1sdv/TripStar` |
-| 当前项目 | `Xcaesar1/JourneyOps` |
+| 当前项目 | `Xcaesar1/JourneyGo` |
 | 分支 | `main` |
 | 审计前 HEAD | `96b9c5e764208e50761695b2daec60889ff817f9` |
-| License | GPL-2.0，必须保留原许可证和上游归因 |
+| License | GPL-2.0，保留原许可证和版权声明 |
 | Python 应用 | FastAPI + Pydantic，Gunicorn 单 Worker + Uvicorn Worker |
 | 前端 | Vue 3 + Vite，构建产物由 FastAPI 同源提供 |
 | Agent | 现有 `trip_planner_agent.py`，本阶段未移动、重写或修改 |
@@ -67,11 +68,11 @@ frontend/src/views/Result.vue
 | 根分区 | 96 GiB，总使用约 14 GiB |
 | 内存 | 23 GiB，总使用约 1.5 GiB |
 | Compose service | `trip-planner` |
-| Container | `helloagents-trip-planner` |
-| Image | `tripstar-trip-planner` |
+| Container | `journeygo` |
+| Image | `journeygo-trip-planner` |
 | 生产监听 | `127.0.0.1:17860 -> 7860/tcp` |
 | Restart policy | `unless-stopped` |
-| 数据卷 | `tripstar_trip_data`，审计时约 76 KiB |
+| 数据卷 | `journeygo_trip_data`，审计时约 76 KiB |
 | 持久化任务数 | 5 个 JSON 文件 |
 | 公网入口 | `https://elonmusk0.asia`，Caddy TLS + Basic Auth 后反向代理 |
 
@@ -84,9 +85,9 @@ flowchart LR
     U["浏览器"] --> D["Cloudflare DNS"]
     D --> C["Caddy: HTTPS + Basic Auth"]
     C --> P["127.0.0.1:17860"]
-    P --> F["单容器 helloagents-trip-planner"]
+    P --> F["单容器 journeygo"]
 
-    subgraph F["TripStar 单容器"]
+    subgraph F["JourneyGo 单容器"]
         V["Vue 3 静态资源"]
         G["Gunicorn: 1 Uvicorn worker"]
         A["FastAPI /api"]
@@ -252,7 +253,7 @@ stateDiagram-v2
 | 后端健康端点自动化测试 | PASS，容器内 `unittest` 3/3 |
 | 审计前已有测试 | 无可运行的既有测试 |
 | production `docker compose config --quiet` | PASS |
-| staging 合并配置与隔离断言 | PASS；仅 `17861` 和 `tripstar_staging_data` |
+| staging 合并配置与隔离断言 | PASS；仅 `17861` 和 `journeygo_staging_data` |
 | 生产 `/health` | PASS，HTTP 200，19.791 ms |
 | 生产 `/health/live` | PASS，HTTP 200，1.773 ms |
 | 生产 `/health/ready` | PASS，HTTP 200，2.186 ms |
@@ -264,8 +265,8 @@ stateDiagram-v2
 以下命令为 2026-08-06 阶段 0 验证时实际使用的可复现命令：
 
 ```bash
-docker exec helloagents-trip-planner python -m unittest backend.tests.test_health -v
-cd /opt/tripstar/TripStar && docker compose config --quiet
+docker exec journeygo python -m unittest backend.tests.test_health -v
+cd /opt/journeygo/JourneyGo && docker compose config --quiet
 curl --fail --silent --show-error http://127.0.0.1:17860/health
 curl --fail --silent --show-error http://127.0.0.1:17860/health/live
 curl --fail --silent --show-error http://127.0.0.1:17860/health/ready

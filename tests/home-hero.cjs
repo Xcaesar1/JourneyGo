@@ -34,7 +34,7 @@ const crypto = require('node:crypto');
     assert.equal(digest(await iconResponse.body()), digest(fs.readFileSync('frontend/favicon.png')));
     for (const [code, locale] of [['zh', 'zh-CN'], ['en', 'en-US']]) {
       const pack = JSON.parse(fs.readFileSync(`frontend/src/i18n/locales/${code}.json`, 'utf8'));
-      await page.evaluate(locale => localStorage.setItem('tripstar-locale', locale), locale);
+      await page.evaluate(locale => localStorage.setItem('journeygo-locale', locale), locale);
       for (const width of [390, 1440]) {
         await page.setViewportSize({ width, height: 900 });
         await page.reload({ waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -49,10 +49,10 @@ const crypto = require('node:crypto');
       }
     }
     for (const previous of ['ja-JP', 'ko-KR']) {
-      await page.evaluate(value => localStorage.setItem('tripstar-locale', value), previous);
+      await page.evaluate(value => localStorage.setItem('journeygo-locale', value), previous);
       await page.reload({ waitUntil: 'domcontentloaded' });
       await page.locator('#hero-title').waitFor();
-      assert.equal(await page.evaluate(() => localStorage.getItem('tripstar-locale')), 'zh-CN');
+      assert.equal(await page.evaluate(() => localStorage.getItem('journeygo-locale')), 'zh-CN');
       assert.equal(await page.locator('html').getAttribute('lang'), 'zh-CN');
     }
     await page.locator('.lang-select-nav').click();

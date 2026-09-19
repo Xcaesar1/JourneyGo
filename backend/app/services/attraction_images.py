@@ -39,7 +39,7 @@ class AttractionImageService:
     def _cache_key(poi_id: str, name: str, city: str) -> str:
         readable = "-".join(part.strip() for part in (poi_id, city, name) if part.strip())
         safe = re.sub(r"[^0-9A-Za-z\u4e00-\u9fff._-]+", "-", readable).strip("-")
-        return f"journeyops:attraction-image:v1:{safe[:180] or 'unknown'}"
+        return f"journeygo:attraction-image:v1:{safe[:180] or 'unknown'}"
 
     async def _cache_get(self, key: str) -> AttractionImage | None:
         if self._cache is None:
@@ -89,7 +89,7 @@ class AttractionImageService:
                     "page_size": 10,
                     "mature": "false",
                 },
-                headers={"User-Agent": "JourneyOps/2.0 attraction-image-resolver"},
+                headers={"User-Agent": "JourneyGo/2.0 attraction-image-resolver"},
             )
             response.raise_for_status()
             payload = response.json()

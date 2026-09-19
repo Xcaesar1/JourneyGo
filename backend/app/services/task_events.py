@@ -24,7 +24,7 @@ def redis_url() -> str:
 
 def task_channel(task_id: str) -> str:
     """Return the isolated Pub/Sub channel for one task."""
-    return f"journeyops:trip-task:{task_id}"
+    return f"journeygo:trip-task:{task_id}"
 
 
 def task_snapshot(task: TripTask) -> dict[str, Any]:

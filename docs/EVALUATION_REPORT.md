@@ -1,15 +1,17 @@
 # JourneyGo Evaluation Report
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Reproducibility Contract
 
 | Item | Value |
 | --- | --- |
-| Dataset | `journeyops-travel-v1.0.0` |
+| Dataset | `journeygo-travel-v1.0.0` |
 | Cases | 36 |
-| Evaluator | `journeyops-evaluator/1.0.0` |
+| Evaluator | `journeygo-evaluator/1.0.0` |
 | Seed | `20260808` |
 | Engines | `legacy`, `journey_graph` |
-| Fixture | `journeyops-offline-observations/1.0.0` |
+| Fixture | `journeygo-offline-observations/1.0.0` |
 | CI floor | each engine pass rate `>= 0.75` |
 
 The dataset covers domestic and overseas travel, multi-city transfers, weather, closures, reservations,
@@ -22,7 +24,7 @@ Run from the repository root without network or model calls:
 
 ```bash
 python -m backend.scripts.run_evaluation \
-  --dataset backend/evaluation/datasets/journeyops_v1.json \
+  --dataset backend/evaluation/datasets/journeygo_v1.json \
   --observations backend/evaluation/fixtures/offline_observations_v1.json \
   --minimum-pass-rate 0.75 \
   --output artifacts/evaluation-report.json

@@ -73,7 +73,7 @@ def _consume_rate_limit(request: Request, settings: Settings) -> None:
     route_digest = hashlib.sha256(request.url.path.encode()).hexdigest()[:16]
     window = settings.api_rate_limit_window_seconds
     bucket = int(time.time()) // window
-    key = f"journeyops:rate:{route_digest}:{identity_digest}:{bucket}"
+    key = f"journeygo:rate:{route_digest}:{identity_digest}:{bucket}"
     client = Redis.from_url(redis_url(), decode_responses=True)
     try:
         pipeline = client.pipeline()

@@ -19,7 +19,7 @@ const fs = require('node:fs');
   try {
     for (const locale of ['zh-CN', 'en-US']) {
       await page.goto(base, { waitUntil: 'networkidle' });
-      await page.evaluate(value => localStorage.setItem('tripstar-locale', value), locale);
+      await page.evaluate(value => localStorage.setItem('journeygo-locale', value), locale);
       await page.reload({ waitUntil: 'networkidle' });
       await page.locator('.planning-hint').first().waitFor();
       assert.equal(await page.locator('.ant-picker input').first().evaluate(el => el.readOnly), true);

@@ -1,5 +1,7 @@
 # Mobile Travel E2E: 2026-09-18
 
+> 命名说明：本文中的名称已统一为 JourneyGo，历史服务器标识请查阅提交 `def71ad` 中的原文件；本次未迁移线上环境。升级前阅读仓库 `docs/BRANDING_MIGRATION.md`。
+
 ## Scope
 
 - Target: https://staging.elonmusk0.asia only, real Android Chrome through ADB/CDP.
@@ -41,8 +43,8 @@
 
 ## Deployment
 
-- Code release: `a8ac897`; API `journeyops-app:cities-api-a8ac897`, worker `journeyops-app:cities-worker-a8ac897`.
-- Release directory: `/opt/tripstar/releases/mobile-a8ac897-20260918`.
+- Code release: `a8ac897`; API `journeygo-app:cities-api-a8ac897`, worker `journeygo-app:cities-worker-a8ac897`.
+- Release directory: `/opt/journeygo/releases/mobile-a8ac897-20260918`.
 - Frontend rule notices shipped in `fbbf749`; subsequent backend-only layers retain that frontend.
 - Both containers healthy. Each rollout checked zero active tasks, retained Compose overrides, and compared task/review/version/query hashes and the paid counter before/after deployment. Intended test submissions/reviews happened outside those comparison windows.
 - Production, demo and staging database/Redis container identities and start times were unchanged. No database migration.

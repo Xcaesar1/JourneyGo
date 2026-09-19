@@ -9,7 +9,7 @@ from pathlib import Path
 from backend.app.evaluation import evaluate_dataset, load_dataset, load_fixture_observations
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DATASET = ROOT / "backend" / "evaluation" / "datasets" / "journeyops_v1.json"
+DEFAULT_DATASET = ROOT / "backend" / "evaluation" / "datasets" / "journeygo_v1.json"
 DEFAULT_FIXTURE = ROOT / "backend" / "evaluation" / "fixtures" / "offline_observations_v1.json"
 
 

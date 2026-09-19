@@ -1,4 +1,4 @@
-"""Durable Celery execution for feature-flagged JourneyOps planners."""
+"""Durable Celery execution for feature-flagged JourneyGo planners."""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ from ..services.travel_ledger import PlanningInputRequired
 from .celery_app import celery_app
 
 LOGGER = logging.getLogger(__name__)
-TASK_NAME = "journeyops.plan_trip"
+TASK_NAME = "journeygo.plan_trip"
 _RECOVERY_STOP = threading.Event()
 _RECOVERY_THREAD: threading.Thread | None = None
 _RECOVERY_THREAD_GUARD = threading.Lock()
@@ -244,7 +244,7 @@ def _start_recovery_thread() -> None:
         _RECOVERY_STOP.clear()
         _RECOVERY_THREAD = threading.Thread(
             target=_recovery_loop,
-            name="journeyops-task-recovery",
+            name="journeygo-task-recovery",
             daemon=True,
         )
         _RECOVERY_THREAD.start()
@@ -262,7 +262,7 @@ def run_trip_planning(self: Any, task_id: str) -> dict[str, Any]:
     redis_client = Redis.from_url(redis_url(), decode_responses=True)
     lock_timeout = int(os.getenv("TRIP_TASK_LOCK_TIMEOUT", "90"))
     lock = redis_client.lock(
-        f"journeyops:task-lock:{task_id}",
+        f"journeygo:task-lock:{task_id}",
         timeout=lock_timeout,
         blocking_timeout=1,
         thread_local=False,
@@ -1276,6 +1276,6 @@ def _execution_lock_active(task_id: str) -> bool:
         socket_timeout=1,
     )
     try:
-        return bool(client.exists(f"journeyops:task-lock:{task_id}"))
+        return bool(client.exists(f"journeygo:task-lock:{task_id}"))
     finally:
         client.close()

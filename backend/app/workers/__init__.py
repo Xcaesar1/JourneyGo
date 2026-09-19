@@ -1,1 +1,1 @@
-"""Celery workers for durable JourneyOps tasks."""
+"""Celery workers for durable JourneyGo tasks."""

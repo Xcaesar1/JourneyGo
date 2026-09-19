@@ -1,4 +1,4 @@
-journeyops.example.com {
+journeygo.example.com {
     encode zstd gzip
 
     header {
@@ -14,7 +14,7 @@ journeyops.example.com {
     }
 
     log {
-        output file /var/log/caddy/journeyops-access.log {
+        output file /var/log/caddy/journeygo-access.log {
             roll_size 10MiB
             roll_keep 5
         }
