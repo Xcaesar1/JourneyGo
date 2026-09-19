@@ -34,4 +34,8 @@
 - 后端完整回归：741 passed，4 项基础设施集成测试 skipped；Ruff 通过。
 - 前端回归：65 passed，覆盖驾车 URI 模式、固定起终点方向、不可用路线不显示入口、费用范围文案。
 - 覆盖：公交成功不调用驾车、仅返程驾车、往返独立驾车、无道路证据仍受阻、不缩短游览凑时间、无效响应拒绝、未知费用不入总额、专日路线校验。
-- 本文记录本地实现。尚未部署本次修改、尚未在 staging 恢复丽江任务；旧任务的受阻状态不因本地测试通过而被标记为完成。
+- 代码与真机地图展示材料已提交并推送：`fbd5a45`。
+- 已仅部署 staging：API `journeyops-app:cities-api-fbd5a45`，worker `journeyops-app:cities-worker-fbd5a45`，均通过 healthy 检查和镜像内离线功能检查。
+- 发布目录 `/opt/tripstar/releases/landmarks-fbd5a45-20260919` 保存构建日志及 state/quota/protected 前后比对结果，均一致；发布前 active_tasks=0，生产、数据库和 Redis 容器未替换。
+- 外部 HTTPS 核验：测试站首页引用新 bundle；`index-DSasKnsk.js` 与 `Result-DWtNOokM.js` 均返回 200，SHA-256 与本地构建一致。
+- 手机 CDP `127.0.0.1:60445` 当前拒绝连接，本次未进行真机页面交互复测，未恢复丽江任务；旧任务不能因发布通过而标记完成。未发起新供应商查询或创建地图。
