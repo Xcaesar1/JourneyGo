@@ -1,5 +1,7 @@
 # Mobile E2E: 2026-09-19
 
+Historical snapshot: Lijiang was subsequently recovered and approved under the driving-fallback policy. See the [round-two live mobile results](../20260919-r2/README.md) for current status; retain the blocked evidence below as history.
+
 ## Result
 
 - Shenzhen to Wuhan: completed and approved, real G1040/G1042 round trip, five days and four nights. Known quotes plus estimates total CNY 2802, not an all-inclusive booking price.

@@ -1,0 +1,936 @@
+{
+  "checkedAt": "2026-09-19T01:13:08.712Z",
+  "deployedCode": "fbd5a45",
+  "taskId": "task_0954c6f772aa4cc6b128",
+  "status": "completed",
+  "testKind": "recovered-live-task-with-retained-flight-quotes",
+  "input": {
+    "origin": "广州",
+    "destinations": [
+      {
+        "city": "丽江",
+        "days": 5
+      }
+    ],
+    "startDate": "2026-09-20",
+    "endDate": "2026-09-24",
+    "travelers": 1,
+    "budget": "5000",
+    "mode": "flight",
+    "notes": ""
+  },
+  "outbound": {
+    "number": "ZH8903",
+    "from": "广州白云",
+    "to": "丽江三义",
+    "departure": "2026-09-20T07:35:00",
+    "arrival": "2026-09-20T10:30:00",
+    "seat": "经济舱",
+    "priceCents": 45000
+  },
+  "inbound": {
+    "number": "JD5132",
+    "from": "丽江三义",
+    "to": "广州白云",
+    "departure": "2026-09-24T08:10:00",
+    "arrival": "2026-09-24T10:30:00",
+    "seat": "经济舱",
+    "priceCents": 74000
+  },
+  "costItems": [
+    {
+      "category": "outbound",
+      "status": "quoted",
+      "amount_cents": 45000
+    },
+    {
+      "category": "return",
+      "status": "quoted",
+      "amount_cents": 74000
+    },
+    {
+      "category": "hotel",
+      "status": "estimated",
+      "amount_cents": 101200
+    },
+    {
+      "category": "meals",
+      "status": "estimated",
+      "amount_cents": 24400
+    },
+    {
+      "category": "local_transport",
+      "status": "estimated",
+      "amount_cents": 12000
+    },
+    {
+      "category": "tickets",
+      "status": "unknown",
+      "amount_cents": null
+    },
+    {
+      "category": "hotel_taxes",
+      "status": "unknown",
+      "amount_cents": null
+    },
+    {
+      "category": "flight_taxes",
+      "status": "unknown",
+      "amount_cents": null
+    },
+    {
+      "category": "driving_transfers",
+      "status": "unknown",
+      "amount_cents": null,
+      "dates": [
+        "2026-09-21"
+      ]
+    }
+  ],
+  "knownCents": 119000,
+  "estimatedCents": 137600,
+  "totalCents": 256600,
+  "costsComplete": false,
+  "excludedCosts": [
+    "unpriced_meals",
+    "tickets",
+    "hotel_taxes",
+    "driving_transfers"
+  ],
+  "days": [
+    {
+      "date": "2026-09-20",
+      "sights": [
+        {
+          "name": "丽江古城-古城大水车",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "出发城市内接驳（预估60分钟，需按实际出发位置核实）",
+          "start": "2026-09-20T04:35:00",
+          "end": "2026-09-20T05:35:00",
+          "minutes": 60
+        },
+        {
+          "title": "去程候车 / 值机预留",
+          "start": "2026-09-20T05:35:00",
+          "end": "2026-09-20T07:35:00",
+          "minutes": 120
+        },
+        {
+          "title": "ZH8903 广州白云 → 丽江三义",
+          "start": "2026-09-20T07:35:00",
+          "end": "2026-09-20T10:30:00",
+          "minutes": 175
+        },
+        {
+          "title": "下机 / 出站预留（估算）",
+          "start": "2026-09-20T10:30:00",
+          "end": "2026-09-20T11:30:00",
+          "minutes": 60
+        },
+        {
+          "title": "到站后接驳至酒店（估算）",
+          "start": "2026-09-20T11:30:00",
+          "end": "2026-09-20T13:38:00",
+          "minutes": 128
+        },
+        {
+          "title": "自由安排 / 休息（含入住、离店准备）",
+          "start": "2026-09-20T13:38:00",
+          "end": "2026-09-20T14:08:00",
+          "minutes": 30
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-20T14:08:00",
+          "end": "2026-09-20T14:34:00",
+          "minutes": 26
+        },
+        {
+          "title": "丽江古城-古城大水车",
+          "start": "2026-09-20T14:34:00",
+          "end": "2026-09-20T16:04:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-20T16:04:00",
+          "end": "2026-09-20T16:30:00",
+          "minutes": 26
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-20T16:30:00",
+          "end": "2026-09-20T21:00:00",
+          "minutes": 270
+        }
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "sights": [
+        {
+          "name": "玉龙雪山国家级风景名胜区",
+          "minutes": 360
+        }
+      ],
+      "timeline": [
+        {
+          "title": "驾车接驳至景点（自行安排车辆，费用未评估）",
+          "start": "2026-09-21T09:00:00",
+          "end": "2026-09-21T10:14:00",
+          "minutes": 74
+        },
+        {
+          "title": "玉龙雪山国家级风景名胜区",
+          "start": "2026-09-21T10:14:00",
+          "end": "2026-09-21T16:14:00",
+          "minutes": 360
+        },
+        {
+          "title": "景区用餐 / 休息（餐厅与费用待核实）",
+          "start": "2026-09-21T16:14:00",
+          "end": "2026-09-21T17:14:00",
+          "minutes": 60
+        },
+        {
+          "title": "驾车返回酒店（自行安排车辆，费用未评估）",
+          "start": "2026-09-21T17:14:00",
+          "end": "2026-09-21T18:22:00",
+          "minutes": 68
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-21T18:22:00",
+          "end": "2026-09-21T18:42:00",
+          "minutes": 20
+        },
+        {
+          "title": "东巴谷野山菌",
+          "start": "2026-09-21T18:42:00",
+          "end": "2026-09-21T19:42:00",
+          "minutes": 60
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-21T19:42:00",
+          "end": "2026-09-21T20:02:00",
+          "minutes": 20
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-21T20:02:00",
+          "end": "2026-09-21T21:00:00",
+          "minutes": 58
+        }
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "sights": [
+        {
+          "name": "丽江古城",
+          "minutes": 90
+        },
+        {
+          "name": "白沙古镇",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-22T09:00:00",
+          "end": "2026-09-22T09:29:00",
+          "minutes": 29
+        },
+        {
+          "title": "丽江古城",
+          "start": "2026-09-22T09:29:00",
+          "end": "2026-09-22T10:59:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-22T10:59:00",
+          "end": "2026-09-22T11:19:00",
+          "minutes": 20
+        },
+        {
+          "title": "樱花餐厅",
+          "start": "2026-09-22T11:19:00",
+          "end": "2026-09-22T12:19:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-22T12:19:00",
+          "end": "2026-09-22T13:20:00",
+          "minutes": 61
+        },
+        {
+          "title": "白沙古镇",
+          "start": "2026-09-22T13:20:00",
+          "end": "2026-09-22T14:50:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-22T14:50:00",
+          "end": "2026-09-22T15:43:00",
+          "minutes": 53
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-22T15:43:00",
+          "end": "2026-09-22T21:00:00",
+          "minutes": 317
+        }
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "sights": [
+        {
+          "name": "丽江玉水寨风景区",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-23T09:00:00",
+          "end": "2026-09-23T10:17:00",
+          "minutes": 77
+        },
+        {
+          "title": "丽江玉水寨风景区",
+          "start": "2026-09-23T10:17:00",
+          "end": "2026-09-23T11:47:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-23T11:47:00",
+          "end": "2026-09-23T12:31:00",
+          "minutes": 44
+        },
+        {
+          "title": "牛谭情·云南特色小香锅",
+          "start": "2026-09-23T12:31:00",
+          "end": "2026-09-23T13:31:00",
+          "minutes": 60
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-23T13:31:00",
+          "end": "2026-09-23T14:24:00",
+          "minutes": 53
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-23T14:24:00",
+          "end": "2026-09-23T21:00:00",
+          "minutes": 396
+        }
+      ]
+    },
+    {
+      "date": "2026-09-24",
+      "sights": [],
+      "timeline": [
+        {
+          "title": "酒店至返程枢纽（估算）",
+          "start": "2026-09-24T04:02:00",
+          "end": "2026-09-24T06:10:00",
+          "minutes": 128
+        },
+        {
+          "title": "候车 / 值机预留",
+          "start": "2026-09-24T06:10:00",
+          "end": "2026-09-24T08:10:00",
+          "minutes": 120
+        },
+        {
+          "title": "JD5132 丽江三义 → 广州白云",
+          "start": "2026-09-24T08:10:00",
+          "end": "2026-09-24T10:30:00",
+          "minutes": 140
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-24T10:30:00",
+          "end": "2026-09-24T21:00:00",
+          "minutes": 630
+        }
+      ]
+    }
+  ],
+  "evidencedTransfers": [
+    {
+      "estimate_id": "d1-0900-transport",
+      "origin": "拾光呈境酒店(丽江古城大水车店)",
+      "destination": "玉龙雪山国家级风景名胜区",
+      "mode": "driving",
+      "distance_meters": 27515,
+      "duration_minutes": 74,
+      "provider": "amap-driving",
+      "status": "estimated",
+      "detail": "；接驳距离达到10公里，驾车含预留时间比公共交通更短；公共交通优先，远距离或无可用公共交通时采用高德驾车路线兜底，并预留30分钟接驳时间；可自行驾车或尝试网约车/顺风车，需自行确认接单、接送点及景区车辆通行限制；费用未评估、不计入预算，非已预约车辆"
+    },
+    {
+      "estimate_id": "d1-1714-transport",
+      "origin": "玉龙雪山国家级风景名胜区",
+      "destination": "拾光呈境酒店(丽江古城大水车店)",
+      "mode": "driving",
+      "distance_meters": 27030,
+      "duration_minutes": 68,
+      "provider": "amap-driving",
+      "status": "estimated",
+      "detail": "；未取得可用公共交通方案；公共交通优先，远距离或无可用公共交通时采用高德驾车路线兜底，并预留30分钟接驳时间；可自行驾车或尝试网约车/顺风车，需自行确认接单、接送点及景区车辆通行限制；费用未评估、不计入预算，非已预约车辆"
+    }
+  ],
+  "localEstimatedTransfers": 14,
+  "warnings": [
+    "daily_commute_high",
+    "opening_hours_unverified"
+  ],
+  "providerQueries": [
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:02.917595+00:00",
+      "fetchedAt": "2026-09-18T16:06:05.264004+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:06.200255+00:00",
+      "fetchedAt": "2026-09-18T16:06:07.122131+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:51.077044+00:00",
+      "fetchedAt": "2026-09-18T16:14:52.678029+00:00"
+    },
+    {
+      "provider": "flight",
+      "scope": "outbound",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:05:47.664903+00:00",
+      "fetchedAt": "2026-09-18T16:05:50.087530+00:00"
+    },
+    {
+      "provider": "flight",
+      "scope": "return",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:05:50.094379+00:00",
+      "fetchedAt": "2026-09-18T16:05:52.322706+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "search",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:05:52.340039+00:00",
+      "fetchedAt": "2026-09-18T16:05:59.743716+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:05:59.763541+00:00",
+      "fetchedAt": "2026-09-18T16:06:00.800802+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:00.812468+00:00",
+      "fetchedAt": "2026-09-18T16:06:02.905193+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:05.275014+00:00",
+      "fetchedAt": "2026-09-18T16:06:06.194500+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:07.133116+00:00",
+      "fetchedAt": "2026-09-18T16:06:08.768745+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:08.785706+00:00",
+      "fetchedAt": "2026-09-18T16:06:09.843084+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:09.854062+00:00",
+      "fetchedAt": "2026-09-18T16:06:10.905054+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:10.917496+00:00",
+      "fetchedAt": "2026-09-18T16:06:12.524171+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:12.536587+00:00",
+      "fetchedAt": "2026-09-18T16:06:15.114328+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:15.121717+00:00",
+      "fetchedAt": "2026-09-18T16:06:16.263031+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:16.273888+00:00",
+      "fetchedAt": "2026-09-18T16:06:17.329651+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:17.335529+00:00",
+      "fetchedAt": "2026-09-18T16:06:19.042359+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:19.056410+00:00",
+      "fetchedAt": "2026-09-18T16:06:21.058795+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:21.141679+00:00",
+      "fetchedAt": "2026-09-18T16:06:22.730701+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:39.049481+00:00",
+      "fetchedAt": "2026-09-18T16:14:39.973265+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:39.980314+00:00",
+      "fetchedAt": "2026-09-18T16:14:40.921964+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:40.928382+00:00",
+      "fetchedAt": "2026-09-18T16:14:41.886671+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:22.738741+00:00",
+      "fetchedAt": "2026-09-18T16:06:24.754647+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:24.761011+00:00",
+      "fetchedAt": "2026-09-18T16:06:28.801339+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:28.808220+00:00",
+      "fetchedAt": "2026-09-18T16:06:29.710618+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:29.716312+00:00",
+      "fetchedAt": "2026-09-18T16:06:31.085993+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:31.092467+00:00",
+      "fetchedAt": "2026-09-18T16:06:32.572357+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:41.897277+00:00",
+      "fetchedAt": "2026-09-18T16:14:42.816851+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:42.823224+00:00",
+      "fetchedAt": "2026-09-18T16:14:44.378932+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:44.478303+00:00",
+      "fetchedAt": "2026-09-18T16:14:45.497686+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:45.503532+00:00",
+      "fetchedAt": "2026-09-18T16:14:46.416524+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:46.423367+00:00",
+      "fetchedAt": "2026-09-18T16:14:48.112843+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:32.579257+00:00",
+      "fetchedAt": "2026-09-18T16:06:33.517523+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:33.523023+00:00",
+      "fetchedAt": "2026-09-18T16:06:34.910137+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:34.915769+00:00",
+      "fetchedAt": "2026-09-18T16:06:35.761448+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:35.766803+00:00",
+      "fetchedAt": "2026-09-18T16:06:37.720194+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:48.118938+00:00",
+      "fetchedAt": "2026-09-18T16:14:50.123719+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:50.134853+00:00",
+      "fetchedAt": "2026-09-18T16:14:51.069813+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:37.727020+00:00",
+      "fetchedAt": "2026-09-18T16:06:39.726724+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "detail",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:39.732611+00:00",
+      "fetchedAt": "2026-09-18T16:06:43.079604+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "detail",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:43.085352+00:00",
+      "fetchedAt": "2026-09-18T16:06:46.852091+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "detail",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:46.857179+00:00",
+      "fetchedAt": "2026-09-18T16:06:50.381342+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:50.388400+00:00",
+      "fetchedAt": "2026-09-18T16:06:52.927796+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:52.933917+00:00",
+      "fetchedAt": "2026-09-18T16:06:53.846517+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:53.854966+00:00",
+      "fetchedAt": "2026-09-18T16:06:54.743535+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:54.749556+00:00",
+      "fetchedAt": "2026-09-18T16:06:55.595688+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:55.698814+00:00",
+      "fetchedAt": "2026-09-18T16:06:56.579577+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:56.584975+00:00",
+      "fetchedAt": "2026-09-18T16:06:57.422836+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:57.528083+00:00",
+      "fetchedAt": "2026-09-18T16:06:58.382616+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:06:58.389400+00:00",
+      "fetchedAt": "2026-09-18T16:07:01.318607+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:37.692366+00:00",
+      "fetchedAt": "2026-09-18T16:14:39.042152+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:52.777261+00:00",
+      "fetchedAt": "2026-09-18T16:14:54.381607+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:54.389029+00:00",
+      "fetchedAt": "2026-09-18T16:14:55.339174+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:55.346258+00:00",
+      "fetchedAt": "2026-09-18T16:14:56.278191+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:56.285296+00:00",
+      "fetchedAt": "2026-09-18T16:14:57.270058+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:57.276649+00:00",
+      "fetchedAt": "2026-09-18T16:14:58.236535+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-18T16:14:58.243380+00:00",
+      "fetchedAt": "2026-09-18T16:14:59.181575+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_driving",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:04:30.479138+00:00",
+      "fetchedAt": "2026-09-19T01:04:31.604195+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_transit",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:04:31.611060+00:00",
+      "fetchedAt": "2026-09-19T01:04:32.978495+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "landmark_driving",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:04:32.983687+00:00",
+      "fetchedAt": "2026-09-19T01:04:33.901207+00:00"
+    },
+    {
+      "provider": "model",
+      "scope": "place_selection",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:04:33.916322+00:00",
+      "fetchedAt": "2026-09-19T01:05:12.534914+00:00"
+    }
+  ],
+  "flightQueryCount": 2,
+  "flightQuotesUnchanged": true,
+  "audit": {
+    "errors": [],
+    "sections": [
+      {
+        "label": "行程概览",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "预算明细",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "景点地图",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "每日行程",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "知识图谱",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "天气信息",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      }
+    ],
+    "expandedDays": 5,
+    "mapCanvas": 1,
+    "swipeChanged": true
+  },
+  "drivingNavigation": {
+    "checkedAt": "2026-09-19T01:09:43.407Z",
+    "legs": [
+      {
+        "from": "拾光呈境酒店(丽江古城大水车店)",
+        "to": "玉龙雪山国家级风景名胜区",
+        "mode": "car",
+        "text": "09:00\n10:14\n交通\n驾车接驳至景点（自行安排车辆，费用未评估）\n74 分钟\n\n；接驳距离达到10公里，驾车含预留时间比公共交通更短；公共交通优先，远距离或无可用公共交通时采用高德驾车路线兜底，并预留30分钟接驳时间；可自行驾车或尝试网约车/顺风车，需自行确认接单、接送点及景区车辆通行限制；费用未评估、不计入预算，非已预约车辆\n\n高德驾车路线\n步行去这里\n公交／地铁去这里\n路线与备用方式"
+      },
+      {
+        "from": "玉龙雪山国家级风景名胜区",
+        "to": "拾光呈境酒店(丽江古城大水车店)",
+        "mode": "car",
+        "text": "17:14\n18:22\n交通\n驾车返回酒店（自行安排车辆，费用未评估）\n68 分钟\n\n；未取得可用公共交通方案；公共交通优先，远距离或无可用公共交通时采用高德驾车路线兜底，并预留30分钟接驳时间；可自行驾车或尝试网约车/顺风车，需自行确认接单、接送点及景区车辆通行限制；费用未评估、不计入预算，非已预约车辆\n\n高德驾车路线\n步行去这里\n公交／地铁去这里\n路线与备用方式"
+      }
+    ],
+    "openedNative": false
+  },
+  "bookingStatus": "not_booked",
+  "mapsCreated": 0,
+  "screenshots": [
+    {
+      "file": "saved-overview.png",
+      "sha256": "3030758e91ab4142625c576faa47e50b834994a33a02adfe31ec641210fa8514"
+    },
+    {
+      "file": "landmark-day.png",
+      "sha256": "d5920b58a2b12bd8c0edfb0b610bcb316b800fdc759f4bbb91a5afc915354c10"
+    },
+    {
+      "file": "budget-viewport.png",
+      "sha256": "3c1bf1468dc9df372b33ce6e32209d6454751a7e221025a6d167994c0a32ce15"
+    },
+    {
+      "file": "map.png",
+      "sha256": "81a4446f97fdf3b3b8f63f1d8b179ae51dc343be00f5d9fad2bd054dab8da764"
+    },
+    {
+      "file": "logistics-0.png",
+      "sha256": "adae100135f641cba5a9bf2a606d93f58697b4b66d4f0aa2e537f07ce1723666"
+    },
+    {
+      "file": "driving-leg-0.png",
+      "sha256": "898922dff2add6c7d6f564ffab47ed0bd5b6d367a323e2a68795e6b475267053"
+    },
+    {
+      "file": "driving-leg-1.png",
+      "sha256": "becfa9681f7a8fba441dd7da645777b0f2152e2413cebd315f8e42ad3a48bc2c"
+    },
+    {
+      "file": "unpriced-costs.png",
+      "sha256": "c4e39102c957b25e245b74fc904340eb265e12c7dbdce1ce9ea05efb872267ad"
+    }
+  ]
+}

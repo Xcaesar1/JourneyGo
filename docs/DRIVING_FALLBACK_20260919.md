@@ -38,4 +38,4 @@
 - 已仅部署 staging：API `journeyops-app:cities-api-fbd5a45`，worker `journeyops-app:cities-worker-fbd5a45`，均通过 healthy 检查和镜像内离线功能检查。
 - 发布目录 `/opt/tripstar/releases/landmarks-fbd5a45-20260919` 保存构建日志及 state/quota/protected 前后比对结果，均一致；发布前 active_tasks=0，生产、数据库和 Redis 容器未替换。
 - 外部 HTTPS 核验：测试站首页引用新 bundle；`index-DSasKnsk.js` 与 `Result-DWtNOokM.js` 均返回 200，SHA-256 与本地构建一致。
-- 手机 CDP `127.0.0.1:60445` 当前拒绝连接，本次未进行真机页面交互复测，未恢复丽江任务；旧任务不能因发布通过而标记完成。未发起新供应商查询或创建地图。
+- 初次发布时手机 CDP 拒绝连接，彼时未恢复丽江任务。随后用户重新连接 ADB，第二轮已完成真机恢复和审核保存：玉龙雪山游览 360 分钟，往返驾车 74 / 68 分钟，固定起终点链接检查通过，费用明确未评估。见 [第二轮实测](demo/mobile-e2e/20260919-r2/README.md)。未刷新航班、未预订、未新建地图；原生导航未打开。

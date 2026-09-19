@@ -49,16 +49,17 @@ docker compose --env-file .env.demo -f docker-compose.yaml -f docker-compose.dem
 
 以上为阶段 8 的历史演示截图，使用确定性脱敏 Fixture，不代表当前山野手册界面；Oracle 独立 Demo 栈另行完成真实 API、Worker、JourneyGraph、审批和持久化验收。
 
-## 真机实测：五天高铁行程
+## 真机实测：高铁与飞机五天行程
 
-2026-09-19 在真实 Android 手机上完成深圳到武汉五天四晚测试：往返 G1040 / G1042，黄鹤楼安排 120 分钟，草案审核后保存。已统计费用 2802 元，包含估算，不含全部待核实费用，未发生预订。
+2026-09-19 在真实 Android 手机上完成两条五天四晚行程并审核保存：深圳到武汉往返 G1040 / G1042，黄鹤楼 120 分钟，已统计费用 2900 元；广州到丽江复用 ZH8903 / JD5132 航班报价，玉龙雪山完整游览 360 分钟，采用高德驾车路线完成往返，已统计费用 2566 元。金额包含估算，不含全部待核实费用；驾车费用未评估，不是零元，未发生预订。
 
 <p>
-  <img src="docs/demo/mobile-e2e/20260919/shenzhen-wuhan/section-0.png" alt="真机保存的深圳到武汉行程" width="260" />
-  <img src="docs/demo/mobile-e2e/20260919/shenzhen-wuhan/map.png" alt="真机景点地图" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r2/shenzhen-wuhan/saved-overview.png" alt="真机保存的深圳到武汉行程" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r2/guangzhou-lijiang/saved-overview.png" alt="真机保存的广州到丽江行程" width="260" />
+  <img src="docs/demo/mobile-e2e/20260919-r2/guangzhou-lijiang/driving-leg-1.png" alt="玉龙雪山返程驾车路线及费用边界" width="260" />
 </p>
 
-广州到丽江测试仍因玉龙雪山返程公交证据不足而暂停，不计为成功案例。完整结果、截图、限制及修复版本见 [真机实测记录](docs/demo/mobile-e2e/20260919/README.md)。
+本轮为一次新高铁任务和一次丽江旧任务恢复，未新增付费航班查询。完整结果、精选截图、验证数据及限制见 [第二轮真机实测记录](docs/demo/mobile-e2e/20260919-r2/README.md)。
 
 ## 产品亮点：整趟地点带进高德
 

@@ -1,5 +1,12 @@
 # Deployment And Rollback
 
+## Staging Flight Quota 15 And Mobile Retest (2026-09-19)
+
+- User explicitly authorized raising the total flight-call limit from 10 to 15. Applied `TRAVEL_FLIGHT_CALL_LIMIT=15` to staging API and worker only, retaining the existing Compose chain and `fbd5a45` images.
+- Overlay and verification evidence: `/opt/tripstar/releases/quota15-20260919/`. Both services healthy; active tasks were zero before recreation. Counter, task data and protected production state matched before/after; no counter reset or database replacement.
+- End-of-test counter: 8 used, 7 remaining. This round made no new paid flight calls: Lijiang recovered with unchanged retained quotes. Any further quota increase requires authorization.
+- Real Android verification completed and approved both fresh Wuhan rail and recovered Lijiang flight itineraries. See [round-two evidence](demo/mobile-e2e/20260919-r2/README.md). Older quota and blocked-phone entries below are historical.
+
 ## Nationwide Flight City Registry (2026-09-18)
 
 - Source `55c42d4`; staging API `journeyops-app:cities-api-55c42d4`, worker

@@ -1,0 +1,780 @@
+{
+  "checkedAt": "2026-09-19T01:14:24.424Z",
+  "deployedCode": "fbd5a45",
+  "taskId": "task_dd969c78306d402ebd79",
+  "status": "completed",
+  "testKind": "new-live-task",
+  "input": {
+    "origin": "深圳",
+    "destinations": [
+      {
+        "city": "武汉",
+        "days": 5
+      }
+    ],
+    "startDate": "2026-09-20",
+    "endDate": "2026-09-24",
+    "travelers": 1,
+    "budget": "5000",
+    "mode": "train",
+    "notes": "本轮真实环境复测：优先公共交通（公交、地铁），单程10公里及以上比较驾车路线，驾车费用不评估。"
+  },
+  "outbound": {
+    "number": "G1040",
+    "from": "深圳北",
+    "to": "汉口",
+    "departure": "2026-09-20T10:23:00",
+    "arrival": "2026-09-20T15:42:00",
+    "seat": "二等座",
+    "priceCents": 64050
+  },
+  "inbound": {
+    "number": "G1042",
+    "from": "汉口",
+    "to": "深圳北",
+    "departure": "2026-09-24T15:04:00",
+    "arrival": "2026-09-24T20:32:00",
+    "seat": "二等座",
+    "priceCents": 64050
+  },
+  "costItems": [
+    {
+      "category": "outbound",
+      "status": "quoted",
+      "amount_cents": 64050
+    },
+    {
+      "category": "return",
+      "status": "quoted",
+      "amount_cents": 64050
+    },
+    {
+      "category": "hotel",
+      "status": "estimated",
+      "amount_cents": 86400
+    },
+    {
+      "category": "meals",
+      "status": "estimated",
+      "amount_cents": 60500
+    },
+    {
+      "category": "local_transport",
+      "status": "estimated",
+      "amount_cents": 15000
+    },
+    {
+      "category": "tickets",
+      "status": "unknown",
+      "amount_cents": null
+    },
+    {
+      "category": "hotel_taxes",
+      "status": "unknown",
+      "amount_cents": null
+    }
+  ],
+  "knownCents": 128100,
+  "estimatedCents": 161900,
+  "totalCents": 290000,
+  "costsComplete": false,
+  "excludedCosts": [
+    "unpriced_meals",
+    "tickets",
+    "hotel_taxes"
+  ],
+  "days": [
+    {
+      "date": "2026-09-20",
+      "sights": [],
+      "timeline": [
+        {
+          "title": "出发城市内接驳（预估60分钟，需按实际出发位置核实）",
+          "start": "2026-09-20T08:23:00",
+          "end": "2026-09-20T09:23:00",
+          "minutes": 60
+        },
+        {
+          "title": "去程候车 / 值机预留",
+          "start": "2026-09-20T09:23:00",
+          "end": "2026-09-20T10:23:00",
+          "minutes": 60
+        },
+        {
+          "title": "G1040 深圳北 → 汉口",
+          "start": "2026-09-20T10:23:00",
+          "end": "2026-09-20T15:42:00",
+          "minutes": 319
+        },
+        {
+          "title": "下机 / 出站预留（估算）",
+          "start": "2026-09-20T15:42:00",
+          "end": "2026-09-20T16:12:00",
+          "minutes": 30
+        },
+        {
+          "title": "到站后接驳至酒店（估算）",
+          "start": "2026-09-20T16:12:00",
+          "end": "2026-09-20T16:55:00",
+          "minutes": 43
+        },
+        {
+          "title": "自由安排 / 休息（含入住、离店准备）",
+          "start": "2026-09-20T16:55:00",
+          "end": "2026-09-20T17:25:00",
+          "minutes": 30
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-20T17:25:00",
+          "end": "2026-09-20T17:47:00",
+          "minutes": 22
+        },
+        {
+          "title": "大中华酒楼(江汉路店)",
+          "start": "2026-09-20T17:47:00",
+          "end": "2026-09-20T18:47:00",
+          "minutes": 60
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-20T18:47:00",
+          "end": "2026-09-20T19:09:00",
+          "minutes": 22
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-20T19:09:00",
+          "end": "2026-09-20T21:00:00",
+          "minutes": 111
+        }
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "sights": [
+        {
+          "name": "黄鹤楼",
+          "minutes": 120
+        },
+        {
+          "name": "江汉关大楼",
+          "minutes": 90
+        },
+        {
+          "name": "咸安坊",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-21T09:00:00",
+          "end": "2026-09-21T09:39:00",
+          "minutes": 39
+        },
+        {
+          "title": "黄鹤楼",
+          "start": "2026-09-21T09:39:00",
+          "end": "2026-09-21T11:39:00",
+          "minutes": 120
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-21T11:39:00",
+          "end": "2026-09-21T12:02:00",
+          "minutes": 23
+        },
+        {
+          "title": "老武汉武汉菜(黄鹤楼店)",
+          "start": "2026-09-21T12:02:00",
+          "end": "2026-09-21T13:02:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-21T13:02:00",
+          "end": "2026-09-21T13:36:00",
+          "minutes": 34
+        },
+        {
+          "title": "江汉关大楼",
+          "start": "2026-09-21T13:36:00",
+          "end": "2026-09-21T15:06:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-21T15:06:00",
+          "end": "2026-09-21T15:27:00",
+          "minutes": 21
+        },
+        {
+          "title": "自由活动 / 休息",
+          "start": "2026-09-21T15:27:00",
+          "end": "2026-09-21T17:00:00",
+          "minutes": 93
+        },
+        {
+          "title": "大中华酒楼(江汉路店)",
+          "start": "2026-09-21T17:00:00",
+          "end": "2026-09-21T18:00:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-21T18:00:00",
+          "end": "2026-09-21T18:22:00",
+          "minutes": 22
+        },
+        {
+          "title": "咸安坊",
+          "start": "2026-09-21T18:22:00",
+          "end": "2026-09-21T19:52:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-21T19:52:00",
+          "end": "2026-09-21T20:14:00",
+          "minutes": 22
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-21T20:14:00",
+          "end": "2026-09-21T21:00:00",
+          "minutes": 46
+        }
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "sights": [
+        {
+          "name": "巴公房子",
+          "minutes": 90
+        },
+        {
+          "name": "武昌江滩",
+          "minutes": 90
+        },
+        {
+          "name": "解放公园",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-22T09:00:00",
+          "end": "2026-09-22T09:24:00",
+          "minutes": 24
+        },
+        {
+          "title": "巴公房子",
+          "start": "2026-09-22T09:24:00",
+          "end": "2026-09-22T10:54:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-22T10:54:00",
+          "end": "2026-09-22T11:18:00",
+          "minutes": 24
+        },
+        {
+          "title": "大中华酒楼(江汉路店)",
+          "start": "2026-09-22T11:18:00",
+          "end": "2026-09-22T12:18:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-22T12:18:00",
+          "end": "2026-09-22T12:51:00",
+          "minutes": 33
+        },
+        {
+          "title": "武昌江滩",
+          "start": "2026-09-22T12:51:00",
+          "end": "2026-09-22T14:21:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-22T14:21:00",
+          "end": "2026-09-22T14:50:00",
+          "minutes": 29
+        },
+        {
+          "title": "自由活动 / 休息",
+          "start": "2026-09-22T14:50:00",
+          "end": "2026-09-22T17:00:00",
+          "minutes": 130
+        },
+        {
+          "title": "武汉宴禧庭(三阳路店)",
+          "start": "2026-09-22T17:00:00",
+          "end": "2026-09-22T18:00:00",
+          "minutes": 60
+        },
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-22T18:00:00",
+          "end": "2026-09-22T18:25:00",
+          "minutes": 25
+        },
+        {
+          "title": "解放公园",
+          "start": "2026-09-22T18:25:00",
+          "end": "2026-09-22T19:55:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-22T19:55:00",
+          "end": "2026-09-22T20:28:00",
+          "minutes": 33
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-22T20:28:00",
+          "end": "2026-09-22T21:00:00",
+          "minutes": 32
+        }
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "sights": [
+        {
+          "name": "东湖生态旅游风景区",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-23T09:00:00",
+          "end": "2026-09-23T10:15:00",
+          "minutes": 75
+        },
+        {
+          "title": "东湖生态旅游风景区",
+          "start": "2026-09-23T10:15:00",
+          "end": "2026-09-23T11:45:00",
+          "minutes": 90
+        },
+        {
+          "title": "前往餐厅（估算）",
+          "start": "2026-09-23T11:45:00",
+          "end": "2026-09-23T12:36:00",
+          "minutes": 51
+        },
+        {
+          "title": "巴厘龙虾(沙湖·花园店)",
+          "start": "2026-09-23T12:36:00",
+          "end": "2026-09-23T13:36:00",
+          "minutes": 60
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-23T13:36:00",
+          "end": "2026-09-23T14:21:00",
+          "minutes": 45
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-23T14:21:00",
+          "end": "2026-09-23T21:00:00",
+          "minutes": 399
+        }
+      ]
+    },
+    {
+      "date": "2026-09-24",
+      "sights": [
+        {
+          "name": "汉口江滩2期",
+          "minutes": 90
+        }
+      ],
+      "timeline": [
+        {
+          "title": "市内接驳（估算）",
+          "start": "2026-09-24T09:00:00",
+          "end": "2026-09-24T09:32:00",
+          "minutes": 32
+        },
+        {
+          "title": "汉口江滩2期",
+          "start": "2026-09-24T09:32:00",
+          "end": "2026-09-24T11:02:00",
+          "minutes": 90
+        },
+        {
+          "title": "返回酒店（估算）",
+          "start": "2026-09-24T11:02:00",
+          "end": "2026-09-24T11:34:00",
+          "minutes": 32
+        },
+        {
+          "title": "自由安排 / 休息（含入住、离店准备）",
+          "start": "2026-09-24T11:34:00",
+          "end": "2026-09-24T13:21:00",
+          "minutes": 107
+        },
+        {
+          "title": "酒店至返程枢纽（估算）",
+          "start": "2026-09-24T13:21:00",
+          "end": "2026-09-24T14:04:00",
+          "minutes": 43
+        },
+        {
+          "title": "候车 / 值机预留",
+          "start": "2026-09-24T14:04:00",
+          "end": "2026-09-24T15:04:00",
+          "minutes": 60
+        },
+        {
+          "title": "G1042 汉口 → 深圳北",
+          "start": "2026-09-24T15:04:00",
+          "end": "2026-09-24T20:32:00",
+          "minutes": 328
+        },
+        {
+          "title": "自由安排 / 休息",
+          "start": "2026-09-24T20:32:00",
+          "end": "2026-09-24T21:00:00",
+          "minutes": 28
+        }
+      ]
+    }
+  ],
+  "evidencedTransfers": [],
+  "localEstimatedTransfers": 22,
+  "warnings": [
+    "daily_commute_high",
+    "opening_hours_unverified"
+  ],
+  "providerQueries": [
+    {
+      "provider": "hotel",
+      "scope": "search",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:39.233779+00:00",
+      "fetchedAt": "2026-09-19T01:08:48.261259+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:04.931630+00:00",
+      "fetchedAt": "2026-09-19T01:09:05.878376+00:00"
+    },
+    {
+      "provider": "train",
+      "scope": "outbound",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:25.611589+00:00",
+      "fetchedAt": "2026-09-19T01:08:32.685650+00:00"
+    },
+    {
+      "provider": "train",
+      "scope": "return",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:32.693742+00:00",
+      "fetchedAt": "2026-09-19T01:08:39.209203+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:48.277613+00:00",
+      "fetchedAt": "2026-09-19T01:08:49.341275+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:49.353555+00:00",
+      "fetchedAt": "2026-09-19T01:08:50.451305+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:50.462906+00:00",
+      "fetchedAt": "2026-09-19T01:08:51.427873+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:51.439918+00:00",
+      "fetchedAt": "2026-09-19T01:08:52.375011+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:52.383518+00:00",
+      "fetchedAt": "2026-09-19T01:08:53.333811+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:53.346619+00:00",
+      "fetchedAt": "2026-09-19T01:08:54.335155+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:54.346581+00:00",
+      "fetchedAt": "2026-09-19T01:08:55.380925+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:55.390412+00:00",
+      "fetchedAt": "2026-09-19T01:08:56.344251+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:56.350136+00:00",
+      "fetchedAt": "2026-09-19T01:08:57.391770+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:57.405781+00:00",
+      "fetchedAt": "2026-09-19T01:08:58.544502+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:58.556750+00:00",
+      "fetchedAt": "2026-09-19T01:08:59.581656+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:08:59.588684+00:00",
+      "fetchedAt": "2026-09-19T01:09:00.709871+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:00.722379+00:00",
+      "fetchedAt": "2026-09-19T01:09:01.780780+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:01.836950+00:00",
+      "fetchedAt": "2026-09-19T01:09:03.006954+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:03.014997+00:00",
+      "fetchedAt": "2026-09-19T01:09:03.978546+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:03.984581+00:00",
+      "fetchedAt": "2026-09-19T01:09:04.925911+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:05.883959+00:00",
+      "fetchedAt": "2026-09-19T01:09:06.839988+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:06.846121+00:00",
+      "fetchedAt": "2026-09-19T01:09:07.796584+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:07.802125+00:00",
+      "fetchedAt": "2026-09-19T01:09:08.732272+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:08.737673+00:00",
+      "fetchedAt": "2026-09-19T01:09:09.880040+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:09.885641+00:00",
+      "fetchedAt": "2026-09-19T01:09:10.831673+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:10.839681+00:00",
+      "fetchedAt": "2026-09-19T01:09:11.807320+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:11.812395+00:00",
+      "fetchedAt": "2026-09-19T01:09:12.759600+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "detail",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:12.767017+00:00",
+      "fetchedAt": "2026-09-19T01:09:20.742971+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "detail",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:20.752715+00:00",
+      "fetchedAt": "2026-09-19T01:09:26.116640+00:00"
+    },
+    {
+      "provider": "hotel",
+      "scope": "detail",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:26.123502+00:00",
+      "fetchedAt": "2026-09-19T01:09:31.228914+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:31.236095+00:00",
+      "fetchedAt": "2026-09-19T01:09:32.210397+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:32.217249+00:00",
+      "fetchedAt": "2026-09-19T01:09:33.133499+00:00"
+    },
+    {
+      "provider": "amap",
+      "scope": "poi",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:33.139850+00:00",
+      "fetchedAt": "2026-09-19T01:09:34.115920+00:00"
+    },
+    {
+      "provider": "model",
+      "scope": "place_selection",
+      "status": "succeeded",
+      "createdAt": "2026-09-19T01:09:34.134265+00:00",
+      "fetchedAt": "2026-09-19T01:10:11.026804+00:00"
+    }
+  ],
+  "flightQueryCount": 0,
+  "flightQuotesUnchanged": false,
+  "audit": {
+    "errors": [],
+    "sections": [
+      {
+        "label": "行程概览",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "预算明细",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "景点地图",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "每日行程",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "知识图谱",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      },
+      {
+        "label": "天气信息",
+        "width": {
+          "viewport": 363,
+          "scroll": 363
+        }
+      }
+    ],
+    "expandedDays": 5,
+    "mapCanvas": 1,
+    "swipeChanged": true
+  },
+  "bookingStatus": "not_booked",
+  "mapsCreated": 0,
+  "screenshots": [
+    {
+      "file": "saved-overview.png",
+      "sha256": "4fb791b79580904bdbde06e132ccf11787c7520552c285f10e0aadcb8635069d"
+    },
+    {
+      "file": "landmark-day.png",
+      "sha256": "4ad82012ffe27426506e03007f55c92e402304abb8f168262c9170f209f4c2e6"
+    },
+    {
+      "file": "budget-viewport.png",
+      "sha256": "9c75a0663da0ac15bf6faf7658d41095119b9dae4f8484cbaaad34d551181046"
+    },
+    {
+      "file": "map.png",
+      "sha256": "7220c68b7124f167b57fb0638e1c30d46f49e36559457ded334c36e194858d58"
+    },
+    {
+      "file": "logistics-0.png",
+      "sha256": "99cb4489d3b713973a4679c11c8814c9ac8ab183c0e459d549029991d3364e09"
+    },
+    {
+      "file": "02-landmark.png",
+      "sha256": "9b3425f0cdc270c8013354cf7235542c8b5f0d3bc2d77fc3825c2ea90448bfc1"
+    }
+  ]
+}
