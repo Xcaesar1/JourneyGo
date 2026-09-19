@@ -8,11 +8,19 @@
 
 让出发更简单，让每一天都有清晰的安排。
 
-[![CI](https://github.com/Xcaesar1/JourneyGo/actions/workflows/ci.yml/badge.svg)](https://github.com/Xcaesar1/JourneyGo/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-GPL--2.0-blue)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab)](backend/requirements.txt)
+[![FastAPI](https://img.shields.io/badge/FastAPI-API-009688)](backend/requirements.txt)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Workflow-1c3c3c)](backend/app/agents/journey_graph/graph.py)
+[![Celery](https://img.shields.io/badge/Celery-Workers-37814a)](backend/app/workers/celery_app.py)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169e1)](docker-compose.yaml)
+[![Redis](https://img.shields.io/badge/Redis-7-dc382d)](docker-compose.yaml)
+
 [![Vue](https://img.shields.io/badge/Vue-3-42b883)](frontend/package.json)
-[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688)](backend/requirements.txt)
-[![Stars](https://img.shields.io/github/stars/Xcaesar1/JourneyGo?style=flat)](https://github.com/Xcaesar1/JourneyGo/stargazers)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6)](frontend/package.json)
+[![Vite](https://img.shields.io/badge/Vite-6-646cff)](frontend/package.json)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2-d71f00)](backend/app/db/models.py)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ed)](Dockerfile)
 
 [项目简介](#项目简介) · [核心亮点](#核心亮点) · [实际运行结果](#实际运行结果) · [快速部署](#快速部署与运行指北) · [Star History](#star-history)
 
@@ -45,18 +53,18 @@ JourneyGo 把**旅行需求、真实交通查询、每日安排与地图出行**
 
 ## 实际运行结果
 
-以下来自 **2026-09-19 第三轮 Android 真机验证**，使用新城市、新任务与真实查询，不是 UI 效果图。当前优先展示成都最终保存版本。
+以下展示 **2026-09-19 第三轮验证**中保存的成都行程，使用真实查询结果，不是虚构的 UI 效果图。概览及高德 App 图来自 Android 真机；每日景点与天气图为同一已保存结果的移动尺寸浏览器补充截图。
 
 ### 广州 → 成都：五天四晚飞机行程
 
 2026-09-20 至 2026-09-24，往返航班 **JD5161 / ZH9442**，住宿 **成都麦田天阅酒店**。已统计费用 **2370 元**，其中已知费用 750 元、估算费用 1620 元；驾车日市内交通费用未评估，不是整趟全包价。
 
 <table>
-  <tr><th>正式行程概览</th><th>返程机场接驳</th><th>中文天气预报</th></tr>
+  <tr><th>正式行程概览</th><th>每日行程 · 景点照片</th><th>中文天气预报</th></tr>
   <tr>
     <td><img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/saved-overview.png" alt="成都五天行程概览" width="260" /></td>
-    <td><img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/airport-day-5.png" alt="成都返程机场接驳时间安排" width="260" /></td>
-    <td><img src="docs/demo/mobile-e2e/20260919-r3/guangzhou-chengdu/weather-localized.png" alt="日期清晰且天气描述为中文的手机页面" width="260" /></td>
+    <td><img src="docs/assets/showcase/chengdu-daily-attractions.png" alt="成都每日行程中的桂溪生态公园景点照片与游览信息" width="260" /></td>
+    <td><img src="docs/assets/showcase/chengdu-weather.png" alt="成都已保存行程的中文天气预报" width="260" /></td>
   </tr>
 </table>
 
@@ -78,17 +86,6 @@ JourneyGo 把**旅行需求、真实交通查询、每日安排与地图出行**
 </table>
 
 导入的是地点与每日分组，不是公交班次或预订。高德默认连线、排序与驾车展示不代表原路书的全部交通安排。
-
-### 高铁补充验证与可复现记录
-
-| 路线 | 真实验证结果 | 当前边界 |
-| --- | --- | --- |
-| 广州 → 成都 · 飞机 | 五天四晚正式行程、机场往返接驳、中文天气、5 天 19 条地图记录 | 经人工筛选修订；驾车费用未评估。 |
-| 上海 → 杭州 · 高铁 | 五天四晚保存、D2287 / G7526、5 天 25 条地图记录 | 发现灯光秀排在上午及地点体验重叠，作为流程验证，不作为优秀行程样板。 |
-
-[本轮完整记录与 22 张截图](docs/demo/mobile-e2e/20260919-r3/README.md) · [历史武汉 / 丽江验证](docs/demo/mobile-e2e/20260919-r2/README.md)
-
-另有 36 个固定离线场景用于回归：JourneyGraph 通过 35/36。该评测使用 Fixture，不能替代真实供应商可用性或价格验证，详见 [评测报告](docs/EVALUATION_REPORT.md)。
 
 ## 系统架构
 

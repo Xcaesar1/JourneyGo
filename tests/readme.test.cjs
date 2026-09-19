@@ -26,6 +26,15 @@ test('README architecture fences and repository links stay consistent', () => {
   assert.match(readme, /api\.star-history\.com\/svg\?repos=Xcaesar1\/JourneyGo/);
 });
 
+test('showcase presents attractions and technology badges without CI or star counters', () => {
+  assert.match(readme, /chengdu-daily-attractions\.png/);
+  assert.doesNotMatch(readme, /返程机场接驳<\/th>|高铁补充验证与可复现记录/);
+  assert.doesNotMatch(readme, /badge\.svg|img\.shields\.io\/github\/stars/);
+  for (const tech of ['LangGraph', 'Celery', 'PostgreSQL', 'Redis', 'TypeScript', 'Docker']) {
+    assert.ok(readme.includes(`[![${tech}]`), tech);
+  }
+});
+
 test('renamed deployment and evaluation entry points exist', () => {
   for (const file of ['deploy/nginx/journeygo.conf.example', 'docs/CHANGELOG.md',
     'docs/BRANDING_MIGRATION.md', 'backend/evaluation/datasets/journeygo_v1.json']) {
